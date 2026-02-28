@@ -133,9 +133,9 @@ func _spawn_village() -> void:
 		{ "x": 13, "y": 13, "w": 2, "h": 2, "label": "Well",               "color": Color(0.35, 0.55, 0.75) },
 	]
 	for b in buildings:
-		for bx in range(b.w):
-			for by in range(b.h):
-				var coords := Vector2i(b.x + bx, b.y + by)
+		for bx: int in range(int(b.w)):
+			for by: int in range(int(b.h)):
+				var coords := Vector2i(int(b.x) + bx, int(b.y) + by)
 				_create_tile(coords, b.color, "building", "", false)
 
 # ── Tile helpers ──────────────────────────────────────────────────────────────
