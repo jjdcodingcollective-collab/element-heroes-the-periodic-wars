@@ -1,0 +1,14 @@
+# Godot 4 generated files
+.godot/
+*.uid
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Export presets (contains build paths)
+export_presets.cfg
+
+# Compiled GDScript cache
+*.gdc
+*.gde
