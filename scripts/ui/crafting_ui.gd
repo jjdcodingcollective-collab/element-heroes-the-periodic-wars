@@ -25,7 +25,7 @@ func _ready() -> void:
 			grid_slots.append(child)
 
 	# Wire each slot button to set its own cell
-	for i in range(grid_slots.size()):
+	for i: int in range(grid_slots.size()):
 		var slot: Button = grid_slots[i]
 		slot.pressed.connect(_on_slot_pressed.bind(i))
 
