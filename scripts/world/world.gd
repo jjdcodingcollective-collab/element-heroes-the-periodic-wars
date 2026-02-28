@@ -113,7 +113,7 @@ func _generate_world() -> void:
 
 			var ore_n: float = noise.get_noise_2d(x * 4.1, y * 4.1)
 			if ore_n > 0.5 and biome.elements.size() > 0:
-				var idx := int(abs(ore_n * 10)) % biome.elements.size()
+				var idx: int = int(abs(ore_n * 10)) % (biome.elements.size() as int)
 				var element: String = biome.elements[idx]
 				_create_tile(coords, ORE_COLORS.get(element, Color.WHITE), "ore", element, true)
 				continue
