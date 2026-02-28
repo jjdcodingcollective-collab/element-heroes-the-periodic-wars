@@ -1,18 +1,18 @@
 # Element Heroes — The Periodic Wars
 
-> A pixel-based 2D science adventure game inspired by Terraria, with Minecraft-style crafting built around all 118 elements of the periodic table.
+> A pixel-based 2D top-down adventure game with Minecraft-style crafting built around all 118 elements of the periodic table.
 
 ---
 
 ## About the Game
 
-**Element Heroes** is an educational adventure game where players explore a procedurally generated pixel world, collect raw elements, and combine them into real chemical compounds to craft tools, weapons, structures, and more. Every mechanic is grounded in real chemistry — making science fun for grades 6–12.
+**Element Heroes** is an educational adventure game where players explore a procedurally generated top-down pixel world, collect raw elements, and combine them into real chemical compounds to craft tools, weapons, structures, and more. Every mechanic is grounded in real chemistry — making science fun for grades 6–12.
 
 ---
 
 ## Core Features
 
-- **Terraria-style exploration** — Side-scrolling pixel world with biomes, caves, sky islands, and deep magma layers
+- **Top-down exploration** — Bird's-eye pixel world with distinct biome regions spread across the map
 - **Minecraft-style crafting** — 3×3 crafting grid where element arrangements follow real chemical formulas
 - **All 118 elements** — Collect, combine, and discover every element on the periodic table
 - **Chemistry-driven mechanics** — Alkali metals explode in water, noble gases are chemically inert, metals conduct electricity
@@ -24,12 +24,28 @@
 
 | Biome | Elements | Theme |
 |-------|----------|-------|
-| Surface Plains | Na, K, C, N, O | Alkali metals & nonmetals |
-| Underground Mines | Fe, Cu, Zn, Ni | Transition metals |
-| Crystal Caverns | He, Ne, Ar, F, Cl | Noble gases & halogens |
-| Deep Magma Layer | U, Th, Ra, Pu | Radioactive elements |
-| Sky Islands | Al, Mg, Li, Be | Lightweight metals |
-| Ocean Floor | Hg, Br, I | Lanthanides & aquatic elements |
+| Surface Plains | Na, K, C, N, O | Starting area — alkali metals & nonmetals |
+| Underground Mines | Fe, Cu, Zn, Ni | Rocky cavern region — transition metals |
+| Crystal Caverns | He, Ne, Ar, F, Cl | Glowing cave region — noble gases & halogens |
+| Sky Islands | Al, Mg, Li, Be | Elevated rocky platforms — lightweight metals |
+| Ocean Floor | Hg, Br, I | Flooded region — lanthanides & aquatic elements |
+| Magma Layer | U, Th, Ra, Pu | Dangerous southern region — radioactive elements |
+
+Biomes are arranged as distinct horizontal regions on the top-down map. Players travel between them on foot, unlocking new elements and story content as they explore.
+
+---
+
+## Controls
+
+| Key | Action |
+|-----|--------|
+| W / A / S / D | Move (8-directional) |
+| Left Click | Dig / collect element node |
+| Right Click | Place block |
+| E | Open inventory |
+| C | Open element compendium |
+| F | Interact |
+| X | Open crafting bench |
 
 ---
 
@@ -92,7 +108,7 @@ Full plan: [`.claude/plans/game-development-plan.md`](.claude/plans/game-develop
 
 ## MVP Checklist
 
-- [ ] Procedural world generation (2 biomes)
+- [ ] Procedural top-down world generation (2 biomes)
 - [ ] 20 collectible elements
 - [ ] 3×3 crafting grid with 30+ compound recipes
 - [ ] Basic combat (5 enemy types)
@@ -118,7 +134,7 @@ Full plan: [`.claude/plans/game-development-plan.md`](.claude/plans/game-develop
 - **Noble Gas Wraiths** — Chemically inert, immune to compound effects
 - **Iron Constructs** — Weaken with acid/oxidation
 - **Toxic Sludges** — Heavy metal compounds, poison damage
-- **Radioactive Elementals** — Deep biome bosses
+- **Radioactive Elementals** — Magma region bosses
 
 ---
 

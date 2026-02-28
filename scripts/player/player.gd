@@ -1,57 +1,44 @@
 extends CharacterBody2D
 
+# Top-down 8-directional movement. No gravity.
+
 const SPEED: float = 120.0
-const JUMP_VELOCITY: float = -280.0
 const TILE_SIZE: int = 16
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
-@onready var dig_raycast: RayCast2D = $DigRayCast
 @onready var inventory: Node = $Inventory
 
-var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
-var is_on_floor_last: bool = false
-var facing_right: bool = true
+var facing: Vector2 = Vector2.DOWN  # tracks last move direction for dig aim
 
 func _ready() -> void:
-	# Draw a placeholder magenta rectangle so the player is visible without sprites
+	# Placeholder coloured rectangle — replace with sprite sheet later
 	var rect = ColorRect.new()
 	rect.color = Color(0.9, 0.2, 0.6)
-	rect.size = Vector2(12, 24)
-	rect.position = Vector2(-6, -24)
+	rect.size = Vector2(12, 12)
+	rect.position = Vector2(-6, -6)
 	add_child(rect)
 
-func _physics_process(delta: float) -> void:
-	_apply_gravity(delta)
-	_handle_jump()
+func _physics_process(_delta: float) -> void:
 	_handle_movement()
 	_update_animation()
 	move_and_slide()
 
-func _apply_gravity(delta: float) -> void:
-	if not is_on_floor():
-		velocity.y += gravity * delta
-
-func _handle_jump() -> void:
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = JUMP_VELOCITY
-
 func _handle_movement() -> void:
-	var direction := Input.get_axis("move_left", "move_right")
-	if direction != 0:
-		velocity.x = direction * SPEED
-		facing_right = direction > 0
-		animated_sprite.flip_h = not facing_right
-	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
+	var dir := Vector2(
+		Input.get_axis("move_left", "move_right"),
+		Input.get_axis("move_up",   "move_down")
+	).normalized()
+
+	velocity = dir * SPEED
+
+	if dir != Vector2.ZERO:
+		facing = dir
 
 func _update_animation() -> void:
-	# AnimatedSprite2D animations are optional for now — skip if no frames loaded
 	if animated_sprite.sprite_frames == null:
 		return
-	if not is_on_floor():
-		animated_sprite.play("jump")
-	elif abs(velocity.x) > 1:
-		animated_sprite.play("run")
+	if velocity.length() > 1:
+		animated_sprite.play("walk")
 	else:
 		animated_sprite.play("idle")
 
@@ -64,7 +51,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_tree().call_group("ui", "toggle_compendium")
 
 func _try_dig() -> void:
-	# Cast toward mouse position to determine dig target tile
+	# Dig the tile the mouse is hovering over
 	var mouse_pos = get_global_mouse_position()
 	var world_node = get_parent()
 	if world_node.has_method("dig_tile"):

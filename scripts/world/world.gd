@@ -1,37 +1,49 @@
 extends Node2D
 
-# World — procedural world using ColorRect tiles. No TileSet asset needed.
-# Each tile is a ColorRect child node, coloured by type.
-# Phase 2 will replace this with a proper TileMap + sprite sheet.
+# World — top-down procedural world using ColorRect tiles.
+# Camera looks straight down. Biomes spread across the X/Y plane.
+# Phase 2 will replace ColorRects with a proper TileMap + sprite sheet.
 
 const TILE_SIZE: int = 16
-const WORLD_WIDTH: int = 200   # tiles (reduced for prototype performance)
-const WORLD_HEIGHT: int = 120  # tiles
-const SEA_LEVEL: int = 40      # tile row where surface starts
+const WORLD_WIDTH: int  = 200  # tiles
+const WORLD_HEIGHT: int = 200  # tiles
 
 # Tile colours
-const COLOR_SKY   := Color(0.53, 0.81, 0.98)   # light blue
-const COLOR_DIRT  := Color(0.55, 0.37, 0.21)   # brown
-const COLOR_STONE := Color(0.45, 0.45, 0.45)   # grey
-const COLOR_GRASS := Color(0.24, 0.65, 0.24)   # green (surface row)
+const COLOR_GRASS  := Color(0.24, 0.65, 0.24)   # open ground
+const COLOR_DIRT   := Color(0.55, 0.37, 0.21)   # soft terrain
+const COLOR_STONE  := Color(0.45, 0.45, 0.45)   # hard terrain
+const COLOR_WATER  := Color(0.20, 0.55, 0.90)   # water tiles (impassable)
+const COLOR_SAND   := Color(0.87, 0.80, 0.55)   # sandy areas
+const COLOR_LAVA   := Color(0.95, 0.35, 0.05)   # lava (impassable, damages)
 
 # Ore colours by element symbol
 const ORE_COLORS := {
-	"Na": Color(0.9,  0.9,  0.3),   # yellow
-	"K":  Color(0.8,  0.6,  0.9),   # purple
-	"C":  Color(0.15, 0.15, 0.15),  # dark (coal)
-	"Fe": Color(0.7,  0.35, 0.1),   # rust orange
-	"Cu": Color(0.72, 0.45, 0.2),   # copper
-	"Zn": Color(0.6,  0.75, 0.75),  # teal
-	"Ni": Color(0.5,  0.7,  0.5),   # pale green
-	"Ag": Color(0.85, 0.85, 0.90),  # silver
-	"Au": Color(1.0,  0.85, 0.0),   # gold
-	"Pt": Color(0.9,  0.95, 1.0),   # platinum white
-	"U":  Color(0.2,  0.8,  0.2),   # radioactive green
-	"Th": Color(0.3,  0.9,  0.4),   # thorium green
+	"Na": Color(0.9,  0.9,  0.3),
+	"K":  Color(0.8,  0.6,  0.9),
+	"C":  Color(0.15, 0.15, 0.15),
+	"Fe": Color(0.7,  0.35, 0.1),
+	"Cu": Color(0.72, 0.45, 0.2),
+	"Zn": Color(0.6,  0.75, 0.75),
+	"Ni": Color(0.5,  0.7,  0.5),
+	"Ag": Color(0.85, 0.85, 0.90),
+	"Au": Color(1.0,  0.85, 0.0),
+	"Pt": Color(0.9,  0.95, 1.0),
+	"U":  Color(0.2,  0.8,  0.2),
+	"Th": Color(0.3,  0.9,  0.4),
 }
 
-# tile_data[Vector2i] = { "type": "dirt"|"stone"|"ore"|"air", "element": "Fe" }
+# Biome regions (by tile X range) — mirrors story biomes
+# Surface Plains | Underground Mines | Crystal Caverns | Sky Islands | Ocean Floor | Magma Layer
+const BIOMES := [
+	{ "name": "surface_plains",   "x_start": 0,   "x_end": 39,  "base": "grass", "elements": ["Na","K","C"] },
+	{ "name": "underground_mines","x_start": 40,  "x_end": 79,  "base": "stone", "elements": ["Fe","Cu","Zn","Ni"] },
+	{ "name": "crystal_caverns",  "x_start": 80,  "x_end": 109, "base": "stone", "elements": ["Ag","Au"] },
+	{ "name": "sky_islands",      "x_start": 110, "x_end": 139, "base": "dirt",  "elements": ["K","Na"] },
+	{ "name": "ocean_floor",      "x_start": 140, "x_end": 169, "base": "sand",  "elements": ["Cu","Zn"] },
+	{ "name": "magma_layer",      "x_start": 170, "x_end": 199, "base": "stone", "elements": ["U","Th","Pt"] },
+]
+
+# tile_data[Vector2i] = { "type": String, "element": String, "passable": bool }
 var tile_data: Dictionary = {}
 var tile_nodes: Dictionary = {}  # Vector2i -> ColorRect
 
@@ -41,39 +53,63 @@ func _ready() -> void:
 func _generate_world() -> void:
 	var noise = FastNoiseLite.new()
 	noise.seed = randi()
-	noise.frequency = 0.04
+	noise.frequency = 0.05
 
 	for x in range(WORLD_WIDTH):
-		var surface_y = SEA_LEVEL + int(noise.get_noise_1d(x) * 8)
+		var biome = _get_biome(x)
 		for y in range(WORLD_HEIGHT):
 			var coords = Vector2i(x, y)
-			if y < surface_y:
-				tile_data[coords] = { "type": "air", "element": "" }
-				# Don't create a node for air — sky is the background colour
-			elif y == surface_y:
-				_create_tile(coords, COLOR_GRASS, "dirt", "")
-			else:
-				var depth = y - surface_y
-				var ore_noise = noise.get_noise_2d(x * 3.7, y * 3.7)
-				var element = _get_ore_for_depth(depth, ore_noise)
-				if element != "":
-					_create_tile(coords, ORE_COLORS.get(element, Color.WHITE), "ore", element)
-				else:
-					var color = COLOR_DIRT if depth < 8 else COLOR_STONE
-					var type  = "dirt"    if depth < 8 else "stone"
-					_create_tile(coords, color, type, "")
+			var n = noise.get_noise_2d(x, y)
 
-func _create_tile(coords: Vector2i, color: Color, type: String, element: String) -> void:
+			# Water/lava borders between biomes
+			if biome.name == "ocean_floor" and n > 0.3:
+				_create_tile(coords, COLOR_WATER, "water", "", false)
+				continue
+			if biome.name == "magma_layer" and n > 0.4:
+				_create_tile(coords, COLOR_LAVA, "lava", "", false)
+				continue
+
+			# Scatter impassable terrain rocks
+			if n > 0.55:
+				var base_color = COLOR_STONE if biome.base == "stone" else COLOR_DIRT
+				_create_tile(coords, base_color, "rock", "", false)
+				continue
+
+			# Ore nodes
+			var ore_noise = noise.get_noise_2d(x * 4.1, y * 4.1)
+			if ore_noise > 0.5 and biome.elements.size() > 0:
+				var idx = int(abs(ore_noise * 10)) % biome.elements.size()
+				var element = biome.elements[idx]
+				_create_tile(coords, ORE_COLORS.get(element, Color.WHITE), "ore", element, true)
+				continue
+
+			# Open ground
+			var base_color = _base_color(biome.base)
+			_create_tile(coords, base_color, biome.base, "", true)
+
+func _get_biome(x: int) -> Dictionary:
+	for b in BIOMES:
+		if x >= b.x_start and x <= b.x_end:
+			return b
+	return BIOMES[0]
+
+func _base_color(base: String) -> Color:
+	match base:
+		"grass": return COLOR_GRASS
+		"stone": return COLOR_STONE
+		"sand":  return COLOR_SAND
+		_:       return COLOR_DIRT
+
+func _create_tile(coords: Vector2i, color: Color, type: String, element: String, passable: bool) -> void:
 	var rect = ColorRect.new()
 	rect.color = color
 	rect.size = Vector2(TILE_SIZE, TILE_SIZE)
 	rect.position = Vector2(coords.x * TILE_SIZE, coords.y * TILE_SIZE)
 	add_child(rect)
-	tile_data[coords] = { "type": type, "element": element }
+	tile_data[coords] = { "type": type, "element": element, "passable": passable }
 	tile_nodes[coords] = rect
 
-	# Add a StaticBody2D for solid tiles so the player collides with them
-	if type != "air":
+	if not passable:
 		var body = StaticBody2D.new()
 		body.position = rect.position + Vector2(TILE_SIZE / 2.0, TILE_SIZE / 2.0)
 		var shape = CollisionShape2D.new()
@@ -85,44 +121,26 @@ func _create_tile(coords: Vector2i, color: Color, type: String, element: String)
 		add_child(body)
 		tile_data[coords]["body"] = body
 
-func _get_ore_for_depth(depth: int, noise_val: float) -> String:
-	if depth < 15:
-		if noise_val > 0.6:  return "Na"
-		if noise_val > 0.55: return "K"
-		if noise_val > 0.5:  return "C"
-	elif depth < 50:
-		if noise_val > 0.65: return "Fe"
-		if noise_val > 0.6:  return "Cu"
-		if noise_val > 0.55: return "Zn"
-		if noise_val > 0.5:  return "Ni"
-	elif depth < 100:
-		if noise_val > 0.7:  return "Ag"
-		if noise_val > 0.65: return "Au"
-		if noise_val > 0.6:  return "Pt"
-	else:
-		if noise_val > 0.8:  return "U"
-		if noise_val > 0.75: return "Th"
-	return ""
-
 func world_to_tile(world_pos: Vector2) -> Vector2i:
 	return Vector2i(int(world_pos.x / TILE_SIZE), int(world_pos.y / TILE_SIZE))
 
-# Dig a tile — removes its visual and collision, returns element symbol (or "")
 func dig_tile(tile_coords: Vector2i) -> String:
 	var data = tile_data.get(tile_coords, {})
-	if data.is_empty() or data["type"] == "air":
+	if data.is_empty() or not data.get("passable", true):
+		return ""
+	# Only ore tiles yield elements
+	var element = data.get("element", "")
+	if element == "":
 		return ""
 
-	var element = data.get("element", "")
-
-	# Remove visual
 	if tile_nodes.has(tile_coords):
 		tile_nodes[tile_coords].queue_free()
 		tile_nodes.erase(tile_coords)
-
-	# Remove collision body
 	if data.has("body"):
 		data["body"].queue_free()
 
-	tile_data[tile_coords] = { "type": "air", "element": "" }
+	# Leave open ground behind
+	var biome = _get_biome(tile_coords.x)
+	var base_color = _base_color(biome.base)
+	_create_tile(tile_coords, base_color, biome.base, "", true)
 	return element

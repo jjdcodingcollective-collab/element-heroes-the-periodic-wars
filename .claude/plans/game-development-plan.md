@@ -5,16 +5,16 @@
 
 ## Summary
 
-A 2D pixel-art adventure game inspired by Terraria's exploration and combat, featuring a Minecraft-style crafting system built entirely around the 118 elements of the periodic table. Players explore a procedurally generated world, collect elements, combine them into compounds, and use chemistry-based mechanics to progress.
+A 2D pixel-art top-down adventure game with Minecraft-style crafting built entirely around the 118 elements of the periodic table. Players explore a procedurally generated top-down world viewed from above, collect elements, combine them into compounds, and use chemistry-based mechanics to progress.
 
 ---
 
 ## Core Concept
 
-- **World:** Procedurally generated 2D side-scrolling pixel world with biomes themed around element groups (metals, gases, halogens, etc.)
+- **World:** Procedurally generated top-down pixel world with biomes arranged as distinct regions spread across the map
 - **Progression:** Collect raw elements → craft compounds → unlock tools/weapons/structures
 - **Learning:** Every interaction teaches real chemistry (element properties, compound formulas, reactions)
-- **Theme:** Terraria-style adventure with combat, exploration, and survival elements
+- **Theme:** Top-down adventure with combat, exploration, and survival elements — viewed from above like classic Zelda or Stardew Valley
 
 ---
 
@@ -38,16 +38,16 @@ A 2D pixel-art adventure game inspired by Terraria's exploration and combat, fea
    - Design "crafting recipe" system where element ratios = real chemical formulas
 
 3. **Core Engine Systems**
-   - Tilemap renderer (pixel grid world)
-   - Player controller (move, jump, dig, place blocks)
-   - Basic physics (gravity, collision)
-   - Camera system with parallax
+   - Tilemap renderer (top-down pixel grid world)
+   - Player controller (8-directional movement, dig, place blocks)
+   - Top-down collision (no gravity — overhead view)
+   - Camera follows player with smooth tracking
 
 4. **Prototype Deliverable**
-   - Flat test world with 10 elements to collect
+   - Open test world with 10 elements to collect
    - Basic crafting bench UI
    - 2–3 craftable compounds
-   - Player can walk, dig, and place blocks
+   - Player can walk in all 8 directions, dig, and place blocks
 
 ---
 
