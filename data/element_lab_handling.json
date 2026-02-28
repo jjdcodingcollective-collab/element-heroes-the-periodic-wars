@@ -1,0 +1,828 @@
+[
+  {
+    "symbol": "H",
+    "atomic_number": 1,
+    "container": "pressurized_canister",
+    "handling": "standard",
+    "hazards": ["flammable"]
+  },
+  {
+    "symbol": "He",
+    "atomic_number": 2,
+    "container": "pressurized_canister",
+    "handling": "standard",
+    "hazards": ["inert"]
+  },
+  {
+    "symbol": "Li",
+    "atomic_number": 3,
+    "container": "inert_container",
+    "handling": "glove_box",
+    "hazards": ["pyrophoric", "corrosive", "flammable"]
+  },
+  {
+    "symbol": "Be",
+    "atomic_number": 4,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "B",
+    "atomic_number": 5,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "C",
+    "atomic_number": 6,
+    "container": "standard_vial",
+    "handling": "standard",
+    "hazards": []
+  },
+  {
+    "symbol": "N",
+    "atomic_number": 7,
+    "container": "pressurized_canister",
+    "handling": "standard",
+    "hazards": ["inert"]
+  },
+  {
+    "symbol": "O",
+    "atomic_number": 8,
+    "container": "pressurized_canister",
+    "handling": "nitrile_gloves",
+    "hazards": ["oxidizer"]
+  },
+  {
+    "symbol": "F",
+    "atomic_number": 9,
+    "container": "pressurized_canister",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic", "corrosive", "oxidizer"]
+  },
+  {
+    "symbol": "Ne",
+    "atomic_number": 10,
+    "container": "pressurized_canister",
+    "handling": "standard",
+    "hazards": ["inert"]
+  },
+  {
+    "symbol": "Na",
+    "atomic_number": 11,
+    "container": "inert_container",
+    "handling": "glove_box",
+    "hazards": ["pyrophoric", "corrosive", "flammable"]
+  },
+  {
+    "symbol": "Mg",
+    "atomic_number": 12,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["flammable"]
+  },
+  {
+    "symbol": "Al",
+    "atomic_number": 13,
+    "container": "standard_vial",
+    "handling": "standard",
+    "hazards": []
+  },
+  {
+    "symbol": "Si",
+    "atomic_number": 14,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "P",
+    "atomic_number": 15,
+    "container": "inert_container",
+    "handling": "glove_box",
+    "hazards": ["pyrophoric", "toxic", "flammable"]
+  },
+  {
+    "symbol": "S",
+    "atomic_number": 16,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["flammable"]
+  },
+  {
+    "symbol": "Cl",
+    "atomic_number": 17,
+    "container": "pressurized_canister",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic", "corrosive", "oxidizer"]
+  },
+  {
+    "symbol": "Ar",
+    "atomic_number": 18,
+    "container": "pressurized_canister",
+    "handling": "standard",
+    "hazards": ["inert"]
+  },
+  {
+    "symbol": "K",
+    "atomic_number": 19,
+    "container": "inert_container",
+    "handling": "glove_box",
+    "hazards": ["pyrophoric", "corrosive", "flammable"]
+  },
+  {
+    "symbol": "Ca",
+    "atomic_number": 20,
+    "container": "inert_container",
+    "handling": "nitrile_gloves",
+    "hazards": ["flammable", "corrosive"]
+  },
+  {
+    "symbol": "Sc",
+    "atomic_number": 21,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Ti",
+    "atomic_number": 22,
+    "container": "standard_vial",
+    "handling": "standard",
+    "hazards": []
+  },
+  {
+    "symbol": "V",
+    "atomic_number": 23,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Cr",
+    "atomic_number": 24,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Mn",
+    "atomic_number": 25,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Fe",
+    "atomic_number": 26,
+    "container": "standard_vial",
+    "handling": "standard",
+    "hazards": []
+  },
+  {
+    "symbol": "Co",
+    "atomic_number": 27,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Ni",
+    "atomic_number": 28,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Cu",
+    "atomic_number": 29,
+    "container": "standard_vial",
+    "handling": "standard",
+    "hazards": []
+  },
+  {
+    "symbol": "Zn",
+    "atomic_number": 30,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Ga",
+    "atomic_number": 31,
+    "container": "glass_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Ge",
+    "atomic_number": 32,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "As",
+    "atomic_number": 33,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Se",
+    "atomic_number": 34,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Br",
+    "atomic_number": 35,
+    "container": "glass_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic", "corrosive"]
+  },
+  {
+    "symbol": "Kr",
+    "atomic_number": 36,
+    "container": "pressurized_canister",
+    "handling": "standard",
+    "hazards": ["inert"]
+  },
+  {
+    "symbol": "Rb",
+    "atomic_number": 37,
+    "container": "inert_container",
+    "handling": "glove_box",
+    "hazards": ["pyrophoric", "corrosive", "flammable"]
+  },
+  {
+    "symbol": "Sr",
+    "atomic_number": 38,
+    "container": "inert_container",
+    "handling": "nitrile_gloves",
+    "hazards": ["flammable", "corrosive"]
+  },
+  {
+    "symbol": "Y",
+    "atomic_number": 39,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Zr",
+    "atomic_number": 40,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["flammable"]
+  },
+  {
+    "symbol": "Nb",
+    "atomic_number": 41,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Mo",
+    "atomic_number": 42,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Tc",
+    "atomic_number": 43,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Ru",
+    "atomic_number": 44,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Rh",
+    "atomic_number": 45,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Pd",
+    "atomic_number": 46,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Ag",
+    "atomic_number": 47,
+    "container": "standard_vial",
+    "handling": "standard",
+    "hazards": []
+  },
+  {
+    "symbol": "Cd",
+    "atomic_number": 48,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "In",
+    "atomic_number": 49,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Sn",
+    "atomic_number": 50,
+    "container": "standard_vial",
+    "handling": "standard",
+    "hazards": []
+  },
+  {
+    "symbol": "Sb",
+    "atomic_number": 51,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Te",
+    "atomic_number": 52,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "I",
+    "atomic_number": 53,
+    "container": "sealed_ampule",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic", "corrosive"]
+  },
+  {
+    "symbol": "Xe",
+    "atomic_number": 54,
+    "container": "pressurized_canister",
+    "handling": "standard",
+    "hazards": ["inert"]
+  },
+  {
+    "symbol": "Cs",
+    "atomic_number": 55,
+    "container": "inert_container",
+    "handling": "glove_box",
+    "hazards": ["pyrophoric", "corrosive", "flammable"]
+  },
+  {
+    "symbol": "Ba",
+    "atomic_number": 56,
+    "container": "inert_container",
+    "handling": "nitrile_gloves",
+    "hazards": ["toxic", "flammable"]
+  },
+  {
+    "symbol": "La",
+    "atomic_number": 57,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Ce",
+    "atomic_number": 58,
+    "container": "inert_container",
+    "handling": "nitrile_gloves",
+    "hazards": ["flammable", "pyrophoric"]
+  },
+  {
+    "symbol": "Pr",
+    "atomic_number": 59,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Nd",
+    "atomic_number": 60,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Pm",
+    "atomic_number": 61,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Sm",
+    "atomic_number": 62,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Eu",
+    "atomic_number": 63,
+    "container": "inert_container",
+    "handling": "nitrile_gloves",
+    "hazards": ["flammable", "pyrophoric"]
+  },
+  {
+    "symbol": "Gd",
+    "atomic_number": 64,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Tb",
+    "atomic_number": 65,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Dy",
+    "atomic_number": 66,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Ho",
+    "atomic_number": 67,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Er",
+    "atomic_number": 68,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Tm",
+    "atomic_number": 69,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Yb",
+    "atomic_number": 70,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Lu",
+    "atomic_number": 71,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Hf",
+    "atomic_number": 72,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": ["flammable"]
+  },
+  {
+    "symbol": "Ta",
+    "atomic_number": 73,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "W",
+    "atomic_number": 74,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Re",
+    "atomic_number": 75,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Os",
+    "atomic_number": 76,
+    "container": "sealed_ampule",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Ir",
+    "atomic_number": 77,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Pt",
+    "atomic_number": 78,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Au",
+    "atomic_number": 79,
+    "container": "standard_vial",
+    "handling": "standard",
+    "hazards": []
+  },
+  {
+    "symbol": "Hg",
+    "atomic_number": 80,
+    "container": "glass_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Tl",
+    "atomic_number": 81,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Pb",
+    "atomic_number": 82,
+    "container": "standard_vial",
+    "handling": "heavy_gloves",
+    "hazards": ["toxic"]
+  },
+  {
+    "symbol": "Bi",
+    "atomic_number": 83,
+    "container": "standard_vial",
+    "handling": "nitrile_gloves",
+    "hazards": []
+  },
+  {
+    "symbol": "Po",
+    "atomic_number": 84,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "At",
+    "atomic_number": 85,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic", "corrosive"]
+  },
+  {
+    "symbol": "Rn",
+    "atomic_number": 86,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive"]
+  },
+  {
+    "symbol": "Fr",
+    "atomic_number": 87,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "pyrophoric", "corrosive"]
+  },
+  {
+    "symbol": "Ra",
+    "atomic_number": 88,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Ac",
+    "atomic_number": 89,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Th",
+    "atomic_number": 90,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Pa",
+    "atomic_number": 91,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "U",
+    "atomic_number": 92,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Np",
+    "atomic_number": 93,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Pu",
+    "atomic_number": 94,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic", "pyrophoric"]
+  },
+  {
+    "symbol": "Am",
+    "atomic_number": 95,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Cm",
+    "atomic_number": 96,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Bk",
+    "atomic_number": 97,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Cf",
+    "atomic_number": 98,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Es",
+    "atomic_number": 99,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Fm",
+    "atomic_number": 100,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Md",
+    "atomic_number": 101,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "No",
+    "atomic_number": 102,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Lr",
+    "atomic_number": 103,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Rf",
+    "atomic_number": 104,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Db",
+    "atomic_number": 105,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Sg",
+    "atomic_number": 106,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Bh",
+    "atomic_number": 107,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Hs",
+    "atomic_number": 108,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Mt",
+    "atomic_number": 109,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Ds",
+    "atomic_number": 110,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Rg",
+    "atomic_number": 111,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Cn",
+    "atomic_number": 112,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Nh",
+    "atomic_number": 113,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Fl",
+    "atomic_number": 114,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Mc",
+    "atomic_number": 115,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Lv",
+    "atomic_number": 116,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Ts",
+    "atomic_number": 117,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  },
+  {
+    "symbol": "Og",
+    "atomic_number": 118,
+    "container": "lead_container",
+    "handling": "radiation_suit",
+    "hazards": ["radioactive", "toxic"]
+  }
+]
