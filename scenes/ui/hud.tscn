@@ -4,13 +4,10 @@
 [ext_resource type="Script" path="res://scripts/ui/minimap.gd" id="2_minimap"]
 [ext_resource type="Script" path="res://scripts/ui/dialogue_ui.gd" id="3_dialogue"]
 
-; HUD CanvasLayer — root of all in-game UI.
-; Instanced into world.tscn. Call hud.init(player, world) from World._ready().
-
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hud")
 
-; ── Minimap (top-right corner) ───────────────────────────────────────────────
+; ── Minimap (top-right) ───────────────────────────────────────────────────────
 [node name="Minimap" type="Control" parent="."]
 script = ExtResource("2_minimap")
 anchor_left = 1.0
@@ -20,27 +17,50 @@ offset_right = -4.0
 offset_top = 4.0
 offset_bottom = 128.0
 
-; ── Inventory bar (bottom-centre, hidden by default) ─────────────────────────
+; ── Health bar (top-left) ─────────────────────────────────────────────────────
+[node name="HealthBar" type="Control" parent="."]
+offset_left = 8.0
+offset_right = 108.0
+offset_top = 8.0
+offset_bottom = 24.0
+
+[node name="BG" type="ColorRect" parent="HealthBar"]
+color = Color(0.15, 0.0, 0.0, 0.8)
+size = Vector2(100, 10)
+
+[node name="Fill" type="ColorRect" parent="HealthBar"]
+color = Color(0.8, 0.1, 0.1, 1)
+size = Vector2(80, 10)
+
+[node name="HPLabel" type="Label" parent="HealthBar"]
+text = "100/100 HP"
+position = Vector2(0, -1)
+theme_override_font_sizes/font_size = 8
+
+; ── Inventory bar (bottom, full width) ───────────────────────────────────────
 [node name="InventoryBar" type="Control" parent="."]
-anchor_left = 0.5
-anchor_right = 0.5
-anchor_bottom = 1.0
+anchor_left = 0.0
+anchor_right = 1.0
 anchor_top = 1.0
-offset_left = -160.0
-offset_right = 160.0
-offset_top = -48.0
+anchor_bottom = 1.0
+offset_top = -32.0
 offset_bottom = -4.0
 visible = true
 
 [node name="BG" type="ColorRect" parent="InventoryBar"]
-color = Color(0, 0, 0, 0.6)
-size = Vector2(320, 44)
-z_index = -1
+color = Color(0, 0, 0, 0.65)
+anchor_right = 1.0
+size_flags_horizontal = 3
+offset_bottom = 28.0
 
 [node name="Label" type="Label" parent="InventoryBar"]
-text = "Inventory (E)"
-position = Vector2(4, 2)
-theme_override_font_sizes/font_size = 9
+anchor_right = 1.0
+offset_top = 4.0
+offset_bottom = 24.0
+text = "Inventory empty  |  E to toggle"
+theme_override_font_sizes/font_size = 10
+vertical_alignment = 1
+clip_text = true
 
 ; ── Biome label (top-centre) ──────────────────────────────────────────────────
 [node name="BiomeLabel" type="Label" parent="."]

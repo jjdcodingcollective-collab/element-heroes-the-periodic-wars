@@ -12,13 +12,26 @@ extends CharacterBody2D
 
 const SPEED: float = 120.0
 const TILE_SIZE: int = 16
-const DIG_RANGE: float = 48.0  # max pixel distance to dig
+const DIG_RANGE: float = 48.0
+const DIG_MIN: float = 0.25   # minimum grams/mL yielded per dig
+const DIG_MAX: float = 2.5    # maximum grams/mL yielded per dig
+const MAX_HP: float = 100.0
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var inventory: Node = $Inventory
 
 var facing: Vector2 = Vector2.DOWN
+var hp: float = MAX_HP
 var _placeholder: ColorRect = null
+
+func get_health() -> float:
+	return hp
+
+func get_max_health() -> float:
+	return MAX_HP
+
+func take_damage(amount: float) -> void:
+	hp = maxf(hp - amount, 0.0)
 
 func _ready() -> void:
 	add_to_group("player")
@@ -75,6 +88,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_tree().call_group("ui", "toggle_compendium")
 	elif event.is_action_pressed("interact"):
 		get_tree().call_group("npc", "try_interact", global_position)
+	elif event.is_action_pressed("save_game"):
+		SaveSystem.save_game(self)
 
 func _try_dig() -> void:
 	var mouse_pos := get_global_mouse_position()
@@ -87,11 +102,21 @@ func _try_dig() -> void:
 	var tile_coords: Vector2i = world_node.world_to_tile(mouse_pos)
 	var element: String = world_node.dig_tile(tile_coords)
 	if element != "":
-		inventory.add_element(element, 1)
-		_show_pickup_label(element)
+		var amount: float = snappedf(randf_range(DIG_MIN, DIG_MAX), 0.01)
+		inventory.add_element(element, amount)
+		_spawn_pickup_label(element, amount, mouse_pos)
 
-func _show_pickup_label(symbol: String) -> void:
-	var el := ElementDB.get_element(symbol)
-	var name_str: String = el.get("name", symbol)
-	print("+1 %s (%s)" % [name_str, symbol])
-	# TODO: replace print with floating label node in Phase 2
+func _spawn_pickup_label(symbol: String, amount: float, world_pos: Vector2) -> void:
+	var unit: String = inventory.unit_for(symbol)
+	var label := Label.new()
+	label.text = "+%.2f%s %s" % [amount, unit, symbol]
+	label.add_theme_font_size_override("font_size", 9)
+	label.modulate = Color(1.0, 1.0, 0.4)
+	label.position = world_pos + Vector2(-20, -16)
+	label.z_index = 100
+	get_parent().add_child(label)
+	var tween: Tween = get_tree().create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 28, 1.2)
+	tween.tween_property(label, "modulate:a", 0.0, 1.2)
+	tween.tween_callback(label.queue_free).set_delay(1.2)

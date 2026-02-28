@@ -1,16 +1,21 @@
 extends CanvasLayer
 
-# HUD — top-level in-game UI. Manages minimap, inventory bar, and biome label.
-# All sub-UIs (crafting, compendium, dialogue) are children of this node.
+# HUD — top-level in-game UI. Manages minimap, inventory bar, biome label,
+# health bar, and dialogue box.
 
 @onready var minimap: Control         = $Minimap
 @onready var inventory_bar: Control   = $InventoryBar
+@onready var inv_label: Label         = $InventoryBar/Label
 @onready var biome_label: Label       = $BiomeLabel
 @onready var dialogue_ui: CanvasLayer = $DialogueUI
+@onready var health_bar: Control      = $HealthBar
+@onready var health_fill: ColorRect   = $HealthBar/Fill
+@onready var health_label: Label      = $HealthBar/HPLabel
 
 var _player: Node = null
 var _world: Node = null
 var _biome_timer: float = 0.0
+var _inv_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("ui")
@@ -20,16 +25,47 @@ func init(player: Node, world: Node) -> void:
 	_player = player
 	_world = world
 	minimap.player_ref = player
+	# Connect inventory signal for live updates
+	var inv := player.get_node_or_null("Inventory")
+	if inv:
+		inv.inventory_changed.connect(_on_inventory_changed)
+	_refresh_inventory_bar()
 
 func _process(delta: float) -> void:
 	if _world == null or _player == null:
 		return
-	# Update biome label every 0.5s
+	# Biome label — update every 0.5s
 	_biome_timer += delta
 	if _biome_timer >= 0.5:
 		_biome_timer = 0.0
-		var biome: String = _world.get_biome_at(_player.global_position)
+		var biome: String = _world.get_biome_at((_player as Node2D).global_position)
 		biome_label.text = biome.replace("_", " ").capitalize()
+	# Health bar
+	if _player.has_method("get_health"):
+		var hp: float = float(_player.get_health())
+		var max_hp: float = float(_player.get_max_health())
+		health_fill.size.x = 80.0 * (hp / max_hp)
+		health_label.text = "%d/%d HP" % [int(hp), int(max_hp)]
+
+func _on_inventory_changed(_symbol: String, _amount: float) -> void:
+	_refresh_inventory_bar()
+
+func _refresh_inventory_bar() -> void:
+	if _player == null:
+		return
+	var inv := _player.get_node_or_null("Inventory")
+	if inv == null:
+		return
+	var all: Dictionary = inv.get_all()
+	if all.is_empty():
+		inv_label.text = "Inventory empty  |  E to toggle"
+		return
+	var parts: Array = []
+	for symbol: String in all:
+		var amount: float = float(all[symbol])
+		var unit: String = inv.unit_for(symbol)
+		parts.append("%s: %.2f%s" % [symbol, amount, unit])
+	inv_label.text = "  ".join(parts)
 
 func toggle_inventory() -> void:
 	inventory_bar.visible = not inventory_bar.visible

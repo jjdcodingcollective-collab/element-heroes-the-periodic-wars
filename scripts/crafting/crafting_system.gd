@@ -29,10 +29,10 @@ func try_craft(grid_contents: Array, inventory: Node) -> Dictionary:
 		return {}
 
 	var required: Dictionary = compound.get("elements", {}) as Dictionary
-	# Convert keys to strings in case JSON parsed them as ints
+	# Convert keys to strings and values to floats (JSON may parse as int)
 	var required_str: Dictionary = {}
 	for k: Variant in required:
-		required_str[str(k)] = required[k]
+		required_str[str(k)] = float(required[k])
 
 	if inventory.remove_elements(required_str):
 		return compound
