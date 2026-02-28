@@ -6,8 +6,10 @@ extends Node
 const SAVE_PATH: String = "user://savegame.json"
 
 func save_game(player: Node) -> void:
+	var equip_node := player.get_node_or_null("Equipment")
 	var data: Dictionary = {
 		"inventory": player.get_node("Inventory").serialize(),
+		"equipment": equip_node.serialize() if equip_node else {},
 		"position": {
 			"x": player.global_position.x,
 			"y": player.global_position.y
@@ -38,6 +40,9 @@ func load_game(player: Node) -> bool:
 
 	var data: Dictionary = json.data as Dictionary
 	player.get_node("Inventory").deserialize(data.get("inventory", {}) as Dictionary)
+	var equip_node := player.get_node_or_null("Equipment")
+	if equip_node:
+		equip_node.deserialize(data.get("equipment", {}) as Dictionary)
 	var pos: Dictionary = data.get("position", {"x": 0, "y": 0}) as Dictionary
 	player.global_position = Vector2(float(pos.get("x", 0)), float(pos.get("y", 0)))
 	return true

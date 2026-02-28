@@ -69,6 +69,11 @@ func _init_ui() -> void:
 			if panel:
 				panel.player_inventory = player.get_node_or_null("Inventory")
 			crafting.add_to_group("crafting_ui")
+		# Give player starter equipment so surface biome is immediately playable
+		var equip := player.get_node_or_null("Equipment")
+		if equip:
+			equip.add_item("Standard Vial", 20)
+			equip.add_item("Nitrile Gloves", 1)
 
 	# Set Aldric's dialogue via exported property override in code
 	# (avoids needing to open the editor to set the Inspector fields)

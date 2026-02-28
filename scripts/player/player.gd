@@ -19,6 +19,7 @@ const MAX_HP: float = 100.0
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var inventory: Node = $Inventory
+@onready var equipment: Node = $Equipment
 
 var facing: Vector2 = Vector2.DOWN
 var hp: float = MAX_HP
@@ -102,9 +103,29 @@ func _try_dig() -> void:
 	var tile_coords: Vector2i = world_node.world_to_tile(mouse_pos)
 	var element: String = world_node.dig_tile(tile_coords)
 	if element != "":
+		# Check player has correct container and handling equipment
+		var missing: String = equipment.can_collect(element)
+		if missing != "":
+			_spawn_warning_label(missing, mouse_pos)
+			return
 		var amount: float = snappedf(randf_range(DIG_MIN, DIG_MAX), 0.01)
+		equipment.consume_container_for(element)
 		inventory.add_element(element, amount)
 		_spawn_pickup_label(element, amount, mouse_pos)
+
+func _spawn_warning_label(message: String, world_pos: Vector2) -> void:
+	var label := Label.new()
+	label.text = message
+	label.add_theme_font_size_override("font_size", 9)
+	label.modulate = Color(1.0, 0.3, 0.3)
+	label.position = world_pos + Vector2(-40, -16)
+	label.z_index = 100
+	get_parent().add_child(label)
+	var tween: Tween = get_tree().create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 20, 1.5)
+	tween.tween_property(label, "modulate:a", 0.0, 1.5)
+	tween.tween_callback(label.queue_free).set_delay(1.5)
 
 func _spawn_pickup_label(symbol: String, amount: float, world_pos: Vector2) -> void:
 	var unit: String = inventory.unit_for(symbol)

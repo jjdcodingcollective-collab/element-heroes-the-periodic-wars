@@ -25,10 +25,12 @@ func init(player: Node, world: Node) -> void:
 	_player = player
 	_world = world
 	minimap.player_ref = player
-	# Connect inventory signal for live updates
 	var inv := player.get_node_or_null("Inventory")
 	if inv:
 		inv.inventory_changed.connect(_on_inventory_changed)
+	var equip := player.get_node_or_null("Equipment")
+	if equip:
+		equip.equipment_changed.connect(_on_inventory_changed.bind("", 0.0))
 	_refresh_inventory_bar()
 
 func _process(delta: float) -> void:
@@ -57,15 +59,26 @@ func _refresh_inventory_bar() -> void:
 	if inv == null:
 		return
 	var all: Dictionary = inv.get_all()
-	if all.is_empty():
-		inv_label.text = "Inventory empty  |  E to toggle"
-		return
 	var parts: Array = []
+	# Elements
 	for symbol: String in all:
 		var amount: float = float(all[symbol])
 		var unit: String = inv.unit_for(symbol)
-		parts.append("%s: %.2f%s" % [symbol, amount, unit])
-	inv_label.text = "  ".join(parts)
+		parts.append("%s:%.2f%s" % [symbol, amount, unit])
+	# Equipment (show containers count + worn items)
+	var equip := _player.get_node_or_null("Equipment")
+	if equip:
+		var eq_all: Dictionary = equip.get_all()
+		for item: String in eq_all:
+			var count: int = int(eq_all[item])
+			if item in equip.REUSABLE:
+				parts.append("[%s]" % item)
+			else:
+				parts.append("%s×%d" % [item.left(4), count])
+	if parts.is_empty():
+		inv_label.text = "Inventory empty  |  E to toggle"
+	else:
+		inv_label.text = "  ".join(parts)
 
 func toggle_inventory() -> void:
 	inventory_bar.visible = not inventory_bar.visible
