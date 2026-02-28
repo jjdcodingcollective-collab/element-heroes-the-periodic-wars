@@ -1,7 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://world_main"]
+[gd_scene load_steps=7 format=3 uid="uid://world_main"]
 
 [ext_resource type="Script" path="res://scripts/world/world.gd" id="1_world"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/crafting_ui.tscn" id="4_crafting"]
+[ext_resource type="PackedScene" path="res://scenes/world/npc.tscn" id="5_npc"]
+[ext_resource type="Script" path="res://scripts/world/game_camera.gd" id="6_camera"]
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_world")
@@ -15,10 +19,20 @@ grow_horizontal = 2
 grow_vertical = 2
 z_index = -10
 
+; Player spawns near Ashenveil village (tile 12,12 = px 192,192)
 [node name="Player" parent="." instance=ExtResource("2_player")]
-position = Vector2(400, 500)
+position = Vector2(192, 192)
 
+; Camera: uses game_camera.gd for world-bounds clamping
 [node name="Camera2D" type="Camera2D" parent="Player"]
-zoom = Vector2(3, 3)
-position_smoothing_enabled = true
-position_smoothing_speed = 8.0
+script = ExtResource("6_camera")
+
+; HUD: minimap, biome label, inventory bar, dialogue box
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+
+; Crafting UI: toggled with C key, hidden by default
+[node name="CraftingUI" parent="." instance=ExtResource("4_crafting")]
+
+; Aldric NPC: positioned outside his workshop (~tile 11,11)
+[node name="Aldric" parent="." instance=ExtResource("5_npc")]
+position = Vector2(176, 176)

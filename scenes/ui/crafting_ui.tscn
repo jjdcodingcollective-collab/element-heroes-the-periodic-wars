@@ -1,0 +1,87 @@
+[gd_scene load_steps=2 format=3 uid="uid://crafting_ui"]
+
+[ext_resource type="Script" path="res://scripts/ui/crafting_ui.gd" id="1_crafting"]
+
+; CraftingUI — 3×3 grid + output + craft button.
+; Press C to toggle. Script auto-discovers grid slots from GridContainer children.
+
+[node name="CraftingUI" type="CanvasLayer"]
+
+[node name="Panel" type="PanelContainer" parent="."]
+script = ExtResource("1_crafting")
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_right = 120.0
+offset_top = -130.0
+offset_bottom = 130.0
+visible = false
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TitleLabel" type="Label" parent="Panel/VBox"]
+text = "Crafting Table"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 12
+
+[node name="GridContainer" type="GridContainer" parent="Panel/VBox"]
+columns = 3
+size_flags_horizontal = 4
+
+[node name="Slot0" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot1" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot2" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot3" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot4" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot5" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot6" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot7" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot8" type="Button" parent="Panel/VBox/GridContainer"]
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="HBox" type="HBoxContainer" parent="Panel/VBox"]
+size_flags_horizontal = 4
+
+[node name="OutputSlot" type="Button" parent="Panel/VBox/HBox"]
+custom_minimum_size = Vector2(48, 48)
+text = "?"
+disabled = true
+
+[node name="ResultLabel" type="Label" parent="Panel/VBox/HBox"]
+size_flags_horizontal = 3
+text = ""
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 3
+
+[node name="CraftButton" type="Button" parent="Panel/VBox"]
+text = "CRAFT"
+disabled = true

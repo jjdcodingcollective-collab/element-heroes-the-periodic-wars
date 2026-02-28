@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://npc_base"]
+
+[ext_resource type="Script" path="res://scripts/world/npc.gd" id="1_npc"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(12, 16)
+
+; NPC base scene — instance this in world.tscn, set exports in the Inspector:
+;   npc_name, portrait_color, dialogue[] lines, interact_radius
+;
+; SPRITE SWAP: assign portrait_texture (Texture2D) in the Inspector.
+;   The script will swap the ColorRect placeholder for a Sprite2D automatically.
+
+[node name="NPC" type="StaticBody2D"]
+script = ExtResource("1_npc")
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
