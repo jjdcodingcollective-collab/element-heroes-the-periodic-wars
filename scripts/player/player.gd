@@ -12,6 +12,14 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 var is_on_floor_last: bool = false
 var facing_right: bool = true
 
+func _ready() -> void:
+	# Draw a placeholder magenta rectangle so the player is visible without sprites
+	var rect = ColorRect.new()
+	rect.color = Color(0.9, 0.2, 0.6)
+	rect.size = Vector2(12, 24)
+	rect.position = Vector2(-6, -24)
+	add_child(rect)
+
 func _physics_process(delta: float) -> void:
 	_apply_gravity(delta)
 	_handle_jump()
@@ -37,6 +45,9 @@ func _handle_movement() -> void:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 
 func _update_animation() -> void:
+	# AnimatedSprite2D animations are optional for now — skip if no frames loaded
+	if animated_sprite.sprite_frames == null:
+		return
 	if not is_on_floor():
 		animated_sprite.play("jump")
 	elif abs(velocity.x) > 1:

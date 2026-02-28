@@ -1,0 +1,14 @@
+[gd_resource type="TileSet" load_steps=8 format=3]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_1"]
+
+texture = null
+texture_region_size = Vector2i(16, 16)
+
+0:0/0 = {}
+1:0/0 = {}
+2:0/0 = {}
+
+[resource]
+tile_size = Vector2i(16, 16)
+sources/0 = SubResource("TileSetAtlasSource_1")

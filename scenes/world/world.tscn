@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://world_main"]
+
+[ext_resource type="Script" path="res://scripts/world/world.gd" id="1_world"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_player"]
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_world")
+
+[node name="Background" type="ColorRect" parent="."]
+color = Color(0.53, 0.81, 0.98, 1)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = -10
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(400, 500)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+zoom = Vector2(3, 3)
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
