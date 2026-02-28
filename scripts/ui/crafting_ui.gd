@@ -43,6 +43,7 @@ func _ready() -> void:
 
 func _on_slot_pressed(idx: int) -> void:
 	# TODO Phase 2: open element-picker popup instead of click-to-clear
+	@warning_ignore("integer_division")
 	var row: int = idx / GRID_SIZE
 	var col: int = idx % GRID_SIZE
 	var current: String = grid_contents[row][col]

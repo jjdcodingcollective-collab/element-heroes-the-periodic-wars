@@ -77,7 +77,7 @@ func _init_ui() -> void:
 		aldric.npc_name = "Prof. Aldric Voss"
 		aldric.portrait_color = Color(0.25, 0.45, 0.65)
 		aldric.interact_radius = 40.0
-		aldric.dialogue = [
+		aldric.dialogue = ([
 			"Kael! Just the person I needed. Come closer — these old ears aren't what they used to be.",
 			"You've seen it too, haven't you? The water. Three wells have gone black this week alone.",
 			"I've been running analyses. The contamination has an elemental signature — something is disrupting the hydrogen-oxygen bonds at a molecular level.",
@@ -86,7 +86,7 @@ func _init_ui() -> void:
 			"You'll find the elements scattered around the plains. Use your hands — they're closer to the ground than mine these days.",
 			"And Kael... be careful. The plains haven't felt right lately. I've noticed things moving at the edge of the fog.",
 			"Go on then. The village is counting on us — even if they don't know it yet.",
-		]
+		] as Array[String])
 
 # ── Generation ────────────────────────────────────────────────────────────────
 

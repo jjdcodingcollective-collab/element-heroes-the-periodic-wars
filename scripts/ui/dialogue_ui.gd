@@ -44,7 +44,7 @@ func show_dialogue(speaker: String, lines: Array[String], portrait_color: Color 
 
 	_show_line(_current_line)
 
-func _show_line(idx: int) -> void:
+func _show_line(_idx: int) -> void:
 	text_label.text = ""
 	_displayed_chars = 0
 	_char_timer = 0.0
