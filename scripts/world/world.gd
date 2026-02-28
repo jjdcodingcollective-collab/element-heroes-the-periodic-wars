@@ -141,8 +141,8 @@ func _spawn_village() -> void:
 # ── Tile helpers ──────────────────────────────────────────────────────────────
 
 func _get_biome(x: int) -> Dictionary:
-	for b in BIOMES:
-		if x >= b.x_start and x <= b.x_end:
+	for b: Dictionary in BIOMES:
+		if x >= int(b.x_start) and x <= int(b.x_end):
 			return b
 	return BIOMES[0]
 
