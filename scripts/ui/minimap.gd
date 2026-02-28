@@ -77,13 +77,14 @@ func _draw() -> void:
 	if player_ref == null:
 		return
 	# Player dot on minimap
-	var px := (player_ref.global_position.x / (WORLD_W * 16.0)) * MAP_W + 2
-	var py := (player_ref.global_position.y / (WORLD_H * 16.0)) * MAP_H + 18
+	var pos: Vector2 = (player_ref as Node2D).global_position
+	var px: float = (pos.x / (WORLD_W * 16.0)) * MAP_W + 2
+	var py: float = (pos.y / (WORLD_H * 16.0)) * MAP_H + 18
 	draw_circle(Vector2(px, py), 2.0, Color.WHITE)
 	draw_circle(Vector2(px, py), 1.0, Color(0.9, 0.2, 0.6))
 
 	# Biome label at player position
-	var tile_x: int = int(player_ref.global_position.x / 16.0)
+	var tile_x: int = int(pos.x / 16.0)
 	var biome: String = _biome_for_x(tile_x).replace("_", " ").capitalize()
 	draw_string(ThemeDB.fallback_font, Vector2(2, MAP_H + 16), biome, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color.WHITE)
 
