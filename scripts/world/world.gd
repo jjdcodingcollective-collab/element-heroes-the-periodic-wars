@@ -51,11 +51,16 @@ const BIOMES := [
 var tile_data: Dictionary = {}
 var tile_nodes: Dictionary = {}  # Vector2i -> ColorRect
 
+const ENEMY_SCENE: String = "res://scenes/world/enemy.tscn"
+# Enemies per biome spawned at world start (in addition to hand-placed scene instances)
+const ENEMIES_PER_BIOME: int = 3
+
 func _ready() -> void:
 	_generate_world()
 	_spawn_village()
 	# Wire HUD and CraftingUI after the full scene tree is loaded
 	call_deferred("_init_ui")
+	call_deferred("_spawn_enemies")
 
 func _init_ui() -> void:
 	var player := get_node_or_null("Player")
@@ -206,3 +211,42 @@ func dig_tile(tile_coords: Vector2i) -> String:
 	var biome := _get_biome(tile_coords.x)
 	_create_tile(tile_coords, _base_color(biome.base), biome.base, "", true)
 	return element
+
+func _spawn_enemies() -> void:
+	var enemy_scene: PackedScene = load(ENEMY_SCENE)
+	if enemy_scene == null:
+		return
+	# Village safe zone: tiles 8–24, skip spawning there
+	const SAFE_X_MIN: int = 8
+	const SAFE_X_MAX: int = 24
+	const SAFE_Y_MIN: int = 8
+	const SAFE_Y_MAX: int = 24
+
+	for biome: Dictionary in BIOMES:
+		var bx_start: int = int(biome.x_start)
+		var bx_end:   int = int(biome.x_end)
+		var elements: Array = biome.elements
+		if elements.is_empty():
+			continue
+		for _i: int in range(ENEMIES_PER_BIOME):
+			# Pick a random passable tile in this biome
+			var attempts: int = 0
+			while attempts < 20:
+				attempts += 1
+				var tx: int = randi_range(bx_start, bx_end)
+				var ty: int = randi_range(0, WORLD_HEIGHT - 1)
+				# Skip village safe zone
+				if tx >= SAFE_X_MIN and tx <= SAFE_X_MAX and ty >= SAFE_Y_MIN and ty <= SAFE_Y_MAX:
+					continue
+				var td: Dictionary = tile_data.get(Vector2i(tx, ty), {})
+				if not td.get("passable", false):
+					continue
+				var enemy: CharacterBody2D = enemy_scene.instantiate()
+				enemy.position = Vector2(tx * TILE_SIZE + TILE_SIZE / 2, ty * TILE_SIZE + TILE_SIZE / 2)
+				# Assign drop elements from this biome
+				var drops: Array[String] = []
+				for sym: String in elements:
+					drops.append(sym)
+				enemy.drop_elements = drops
+				add_child(enemy)
+				break

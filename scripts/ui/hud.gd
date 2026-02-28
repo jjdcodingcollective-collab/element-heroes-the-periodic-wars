@@ -20,6 +20,9 @@ var _inv_timer: float = 0.0
 func _ready() -> void:
 	add_to_group("ui")
 	dialogue_ui.add_to_group("dialogue_ui")
+	var compendium := get_node_or_null("Compendium")
+	if compendium:
+		compendium.add_to_group("compendium")
 
 func init(player: Node, world: Node) -> void:
 	_player = player

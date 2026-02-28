@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://enemy_base"]
+
+[ext_resource type="Script" path="res://scripts/world/enemy.gd" id="1_enemy"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
+radius = 5.0
+height = 10.0
+
+[node name="Enemy" type="CharacterBody2D"]
+script = ExtResource("1_enemy")
+collision_layer = 4
+collision_mask = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_1")
