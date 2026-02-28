@@ -28,7 +28,7 @@ func _process(delta: float) -> void:
 	_biome_timer += delta
 	if _biome_timer >= 0.5:
 		_biome_timer = 0.0
-		var biome := _world.get_biome_at(_player.global_position)
+		var biome: String = _world.get_biome_at(_player.global_position)
 		biome_label.text = biome.replace("_", " ").capitalize()
 
 func toggle_inventory() -> void:
