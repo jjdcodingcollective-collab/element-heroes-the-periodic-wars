@@ -84,7 +84,7 @@ func _try_dig() -> void:
 	var world_node := get_parent()
 	if not world_node.has_method("dig_tile"):
 		return
-	var tile_coords := world_node.world_to_tile(mouse_pos)
+	var tile_coords: Vector2i = world_node.world_to_tile(mouse_pos)
 	var element: String = world_node.dig_tile(tile_coords)
 	if element != "":
 		inventory.add_element(element, 1)
