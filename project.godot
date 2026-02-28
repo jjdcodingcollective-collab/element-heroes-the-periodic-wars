@@ -83,6 +83,12 @@ interact={
 
 2d/default_gravity=980.0
 
+[autoload]
+
+ElementDB="*res://scripts/data/element_database.gd"
+CraftingSystem="*res://scripts/crafting/crafting_system.gd"
+SaveSystem="*res://scripts/data/save_system.gd"
+
 [layer_names]
 
 2d_physics/layer_1="world"

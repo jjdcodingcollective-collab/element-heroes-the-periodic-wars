@@ -75,7 +75,6 @@ func _try_dig() -> void:
 			_show_pickup_label(element)
 
 func _show_pickup_label(symbol: String) -> void:
-	# Instantiate a floating pickup label above the player
 	var el = ElementDB.get_element(symbol)
 	var name_str = el.get("name", symbol)
 	print("+1 %s (%s)" % [name_str, symbol])
