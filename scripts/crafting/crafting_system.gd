@@ -5,18 +5,18 @@ extends Node
 
 const GRID_SIZE: int = 3
 
-# grid_contents: Array[Array] of element symbols (or "" for empty)
+# grid_contents: 3x3 Array of element symbols (or "" for empty)
 # Returns the matched compound dict, or {} if no match.
 func evaluate_grid(grid_contents: Array) -> Dictionary:
-	var ingredient_map = _grid_to_ingredient_map(grid_contents)
+	var ingredient_map: Dictionary = _grid_to_ingredient_map(grid_contents)
 	if ingredient_map.is_empty():
 		return {}
 	return ElementDB.match_recipe(ingredient_map)
 
 func _grid_to_ingredient_map(grid: Array) -> Dictionary:
 	var counts: Dictionary = {}
-	for row in grid:
-		for cell in row:
+	for row: Array in grid:
+		for cell: String in row:
 			if cell != "":
 				counts[cell] = counts.get(cell, 0) + 1
 	return counts
@@ -24,14 +24,14 @@ func _grid_to_ingredient_map(grid: Array) -> Dictionary:
 # Attempt to craft using the player's inventory.
 # Returns the compound dict on success, {} on failure.
 func try_craft(grid_contents: Array, inventory: Node) -> Dictionary:
-	var compound = evaluate_grid(grid_contents)
+	var compound: Dictionary = evaluate_grid(grid_contents)
 	if compound.is_empty():
 		return {}
 
-	var required = compound.get("elements", {})
-	# Convert int keys from JSON (they may parse as ints) to strings
+	var required: Dictionary = compound.get("elements", {}) as Dictionary
+	# Convert keys to strings in case JSON parsed them as ints
 	var required_str: Dictionary = {}
-	for k in required:
+	for k: Variant in required:
 		required_str[str(k)] = required[k]
 
 	if inventory.remove_elements(required_str):

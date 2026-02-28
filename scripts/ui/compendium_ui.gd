@@ -23,38 +23,44 @@ func _build_grid() -> void:
 		child.queue_free()
 
 	# Sort elements by atomic number
-	var all_elements = ElementDB.elements.values()
-	all_elements.sort_custom(func(a, b): return a["atomic_number"] < b["atomic_number"])
+	var all_elements: Array = ElementDB.elements.values()
+	all_elements.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("atomic_number", 0)) < int(b.get("atomic_number", 0))
+	)
 
-	for el in all_elements:
-		var btn = Button.new()
-		btn.text = el["symbol"]
+	for el: Dictionary in all_elements:
+		var btn := Button.new()
+		btn.text = str(el.get("symbol", ""))
 		btn.custom_minimum_size = Vector2(32, 32)
-		btn.tooltip_text = el["name"]
+		btn.tooltip_text = str(el.get("name", ""))
 
-		if discovered.get(el["symbol"], false):
-			btn.modulate = _category_color(el.get("category", ""))
+		var symbol: String = str(el.get("symbol", ""))
+		if discovered.get(symbol, false):
+			btn.modulate = _category_color(str(el.get("category", "")))
 		else:
 			btn.modulate = Color(0.2, 0.2, 0.2)  # undiscovered = dark
 
-		btn.pressed.connect(_on_element_pressed.bind(el["symbol"]))
+		btn.pressed.connect(_on_element_pressed.bind(symbol))
 		element_grid.add_child(btn)
 
 func _on_element_pressed(symbol: String) -> void:
-	var el = ElementDB.get_element(symbol)
+	var el: Dictionary = ElementDB.get_element(symbol)
 	if el.is_empty():
 		return
-	detail_name.text = el.get("name", "")
-	detail_symbol.text = el.get("symbol", "")
-	detail_mass.text = "Atomic Mass: %.2f" % el.get("mass", 0.0)
-	detail_category.text = el.get("category", "").replace("_", " ").capitalize()
-	detail_biome.text = "Found in: %s" % el.get("biome", "unknown").replace("_", " ").capitalize()
-	detail_fact.text = el.get("fun_fact", "")
+	detail_name.text = str(el.get("name", ""))
+	detail_symbol.text = str(el.get("symbol", ""))
+	detail_mass.text = "Atomic Mass: %.2f" % float(el.get("mass", 0.0))
+	detail_category.text = str(el.get("category", "")).replace("_", " ").capitalize()
+	detail_biome.text = "Found in: %s" % str(el.get("biome", "unknown")).replace("_", " ").capitalize()
+	detail_fact.text = str(el.get("fun_fact", ""))
 	detail_panel.show()
 
 func mark_discovered(symbol: String) -> void:
 	discovered[symbol] = true
 	_build_grid()  # rebuild to update colors
+
+func serialize_discovered() -> Dictionary:
+	return discovered.duplicate()
 
 func _category_color(category: String) -> Color:
 	match category:

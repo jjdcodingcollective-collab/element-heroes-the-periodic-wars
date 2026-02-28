@@ -33,21 +33,20 @@ func _ready() -> void:
 
 	# Initialise empty 3×3 grid
 	grid_contents = []
-	for _r in range(GRID_SIZE):
-		var row = []
-		for _c in range(GRID_SIZE):
+	for _r: int in range(GRID_SIZE):
+		var row: Array = []
+		for _c: int in range(GRID_SIZE):
 			row.append("")
 		grid_contents.append(row)
 
 	_refresh_output()
 
 func _on_slot_pressed(idx: int) -> void:
-	# Cycle through a tiny demo set for now; real version uses drag-from-inventory
-	# TODO Phase 2: open element-picker popup instead
+	# TODO Phase 2: open element-picker popup instead of click-to-clear
 	var row: int = idx / GRID_SIZE
 	var col: int = idx % GRID_SIZE
 	var current: String = grid_contents[row][col]
-	# Clear slot on second click
+	# Clear slot on click
 	if current != "":
 		grid_contents[row][col] = ""
 		grid_slots[idx].text = ""
@@ -59,8 +58,8 @@ func set_slot(row: int, col: int, symbol: String) -> void:
 	_refresh_output()
 
 func clear_grid() -> void:
-	for r in range(GRID_SIZE):
-		for c in range(GRID_SIZE):
+	for r: int in range(GRID_SIZE):
+		for c: int in range(GRID_SIZE):
 			grid_contents[r][c] = ""
 			grid_slots[r * GRID_SIZE + c].text = ""
 	_refresh_output()
@@ -73,7 +72,7 @@ func _refresh_output() -> void:
 		craft_button.disabled = true
 	else:
 		result_label.text = "%s\n%s" % [compound.get("name", ""), compound.get("formula", "")]
-		output_slot.text = compound.get("formula", "?")
+		output_slot.text = str(compound.get("formula", "?"))
 		craft_button.disabled = false
 
 func _on_craft_pressed() -> void:
@@ -84,5 +83,5 @@ func _on_craft_pressed() -> void:
 	if compound.is_empty():
 		result_label.text = "Not enough elements!"
 	else:
-		result_label.text = "Crafted: %s!" % compound.get("name", "")
+		result_label.text = "Crafted: %s!" % str(compound.get("name", ""))
 		clear_grid()

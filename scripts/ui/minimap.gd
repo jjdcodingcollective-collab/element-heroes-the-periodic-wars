@@ -60,11 +60,11 @@ func _ready() -> void:
 
 func _build_map_image() -> void:
 	_map_image = Image.create(MAP_W, MAP_H, false, Image.FORMAT_RGB8)
-	for bx in range(MAP_W):
-		var world_x := int(float(bx) / MAP_W * WORLD_W)
-		var biome_name := _biome_for_x(world_x)
+	for bx: int in range(MAP_W):
+		var world_x: int = int(float(bx) / MAP_W * WORLD_W)
+		var biome_name: String = _biome_for_x(world_x)
 		var col: Color = BIOME_COLORS.get(biome_name, Color.GRAY)
-		for by in range(MAP_H):
+		for by: int in range(MAP_H):
 			_map_image.set_pixel(bx, by, col)
 	_map_texture = ImageTexture.create_from_image(_map_image)
 
@@ -83,12 +83,12 @@ func _draw() -> void:
 	draw_circle(Vector2(px, py), 1.0, Color(0.9, 0.2, 0.6))
 
 	# Biome label at player position
-	var tile_x := int(player_ref.global_position.x / 16.0)
-	var biome := _biome_for_x(tile_x).replace("_", " ").capitalize()
+	var tile_x: int = int(player_ref.global_position.x / 16.0)
+	var biome: String = _biome_for_x(tile_x).replace("_", " ").capitalize()
 	draw_string(ThemeDB.fallback_font, Vector2(2, MAP_H + 16), biome, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color.WHITE)
 
 func _biome_for_x(x: int) -> String:
-	for b in BIOMES:
-		if x >= b.x_start and x <= b.x_end:
-			return b.name
+	for b: Dictionary in BIOMES:
+		if x >= int(b.x_start) and x <= int(b.x_end):
+			return str(b.name)
 	return "surface_plains"

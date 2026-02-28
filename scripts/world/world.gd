@@ -95,9 +95,9 @@ func _generate_world() -> void:
 	noise.seed = randi()
 	noise.frequency = 0.05
 
-	for x in range(WORLD_WIDTH):
+	for x: int in range(WORLD_WIDTH):
 		var biome := _get_biome(x)
-		for y in range(WORLD_HEIGHT):
+		for y: int in range(WORLD_HEIGHT):
 			var coords := Vector2i(x, y)
 			var n: float = noise.get_noise_2d(x, y)
 
@@ -132,7 +132,7 @@ func _spawn_village() -> void:
 		{ "x": 20, "y": 15, "w": 3, "h": 3, "label": "Market Stall",       "color": Color(0.70, 0.60, 0.20) },
 		{ "x": 13, "y": 13, "w": 2, "h": 2, "label": "Well",               "color": Color(0.35, 0.55, 0.75) },
 	]
-	for b in buildings:
+	for b: Dictionary in buildings:
 		for bx: int in range(int(b.w)):
 			for by: int in range(int(b.h)):
 				var coords := Vector2i(int(b.x) + bx, int(b.y) + by)
