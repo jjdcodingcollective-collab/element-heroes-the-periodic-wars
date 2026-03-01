@@ -52,8 +52,19 @@ var tile_data: Dictionary = {}
 var tile_nodes: Dictionary = {}  # Vector2i -> ColorRect
 
 const ENEMY_SCENE: String = "res://scenes/world/enemy.tscn"
+const BOSS_SCENE:  String = "res://scenes/world/boss.tscn"
 const SYNTH_SCENE: String = "res://scenes/world/synthesizer.tscn"
 const SYNTH_UI_SCENE: String = "res://scenes/ui/synthesizer_ui.tscn"
+
+# One boss per biome — placed near the far end of each biome zone
+const BIOME_BOSSES: Dictionary = {
+	"surface_plains":    "peroxis",
+	"underground_mines": "chalcor",
+	"crystal_caverns":   "aurium",
+	"sky_islands":       "azrael",
+	"ocean_floor":       "atacama",
+	"magma_layer":       "uranox",
+}
 
 # How many enemies to spawn per biome at world start
 const ENEMIES_PER_BIOME: int = 6
@@ -85,6 +96,7 @@ func _ready() -> void:
 	# Wire HUD and CraftingUI after the full scene tree is loaded
 	call_deferred("_init_ui")
 	call_deferred("_spawn_enemies")
+	call_deferred("_spawn_bosses")
 
 func _init_ui() -> void:
 	var player := get_node_or_null("Player")
@@ -291,6 +303,50 @@ func _pick_tier(weights: Array) -> String:
 	elif r < float(weights[0]) + float(weights[1]):
 		return "intermediate"
 	return "expert"
+
+func _spawn_bosses() -> void:
+	var boss_scene: PackedScene = load(BOSS_SCENE)
+	if boss_scene == null:
+		return
+
+	for biome: Dictionary in BIOMES:
+		var biome_name: String = biome.get("name", "")
+		var boss_id: String = BIOME_BOSSES.get(biome_name, "")
+		if boss_id == "":
+			continue
+
+		var bx_start: int = int(biome.x_start)
+		var bx_end:   int = int(biome.x_end)
+
+		# Place boss in the far two-thirds of the biome (away from the entrance)
+		var boss_x_min: int = bx_start + (bx_end - bx_start) * 2 / 3
+		var boss_x_max: int = bx_end - 2
+
+		var placed: bool = false
+		var attempts: int = 0
+		while not placed and attempts < 50:
+			attempts += 1
+			var tx: int = randi_range(boss_x_min, boss_x_max)
+			var ty: int = randi_range(10, WORLD_HEIGHT - 10)
+			var td: Dictionary = tile_data.get(Vector2i(tx, ty), {})
+			if not td.get("passable", false):
+				continue
+
+			var boss: CharacterBody2D = boss_scene.instantiate()
+			boss.boss_id  = boss_id
+			boss.position = Vector2(tx * TILE_SIZE + TILE_SIZE / 2.0, ty * TILE_SIZE + TILE_SIZE / 2.0)
+
+			# Create and wire the arena node
+			var arena := Node2D.new()
+			arena.set_script(load("res://scripts/world/boss_arena.gd"))
+			arena.name = "Arena_%s" % boss_id
+			add_child(arena)
+			if arena.has_method("init"):
+				arena.init(boss.position, 160.0)
+			boss._arena = arena
+
+			add_child(boss)
+			placed = true
 
 func _spawn_synthesizer_ui(player: Node) -> void:
 	# Spawn Synthesizer world object near village (tile 22,12 — east of workshop)

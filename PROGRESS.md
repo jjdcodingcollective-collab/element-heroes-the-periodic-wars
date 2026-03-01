@@ -46,7 +46,7 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Pixel art sprites | ⬜ Pending | All visuals are ColorRect placeholders |
 | Sound / music | ⬜ Pending | No audio yet |
 | Enemy variety | ✅ Done | 18 CHIMERA creatures, 3 tiers, biome-weighted spawning |
-| Boss encounters | ⬜ Pending | Phase 4 |
+| Boss encounters | ✅ Done | 6 compound titans, 3 phases each, arena hazards, lore drops |
 | Building system | ⬜ Pending | Phase 5 |
 | Quiz / achievement system | ⬜ Pending | Phase 6 |
 
@@ -205,7 +205,7 @@ Player starts with 20x Standard Vials + Nitrile Gloves. Higher-tier containers s
 - [x] Enemy variants — 18 CHIMERA creatures × 3 tiers, specials, auras, resistances
 - [ ] Pixel art sprites
 - [ ] Enemy variety (Alkali Golem, Wraith, Toxic Sludge)
-- [ ] Boss encounters
+- [x] Boss encounters — 6 compound titans, 3-phase fights, arena hazards
 - [ ] Sound and music
 - [ ] 30-60 min of story content
 
@@ -223,6 +223,63 @@ Player starts with 20x Standard Vials + Nitrile Gloves. Higher-tier containers s
 | `4ac8a91` | Add lab equipment system: containers, gloves, radiation suits |
 | `206bd52` | Add grams/mL units, floating labels, inventory bar, health bar, save |
 | `308629a` | Fix window size and disable gravity for top-down gameplay |
+
+---
+
+## Boss System — Compound Titans
+
+**Lore:** Six Compound Titans were the Voss Institute's greatest achievement and greatest catastrophe. Each fused from multiple elements into a stable compound entity. They are not animals. They are chemistry made sovereign.
+
+**Architecture:** `data/boss_data.json` defines all bosses. `boss.gd` reads JSON at runtime. `boss_arena.gd` manages arena-wide hazards per phase. Fully data-driven — new bosses need only a JSON entry.
+
+**Boss roster:**
+
+| Boss | Title | Biome | Compound | Formula | Min Weapon Tier |
+|------|-------|-------|----------|---------|-----------------|
+| PEROXIS | The Caustic Sovereign | Surface Plains | Sodium Peroxide | Na₂O₂ | Tier 2 |
+| CHALCOR | The Fool's Gold Titan | Underground Mines | Chalcopyrite | CuFeS₂ | Tier 2 |
+| AURIUM | The Gilded Phantom | Crystal Caverns | Chloroauric Acid | HAuCl₄ | Tier 3 |
+| AZRAEL | The Detonation Saint | Sky Islands | Sodium Azide | NaN₃ | Tier 3 |
+| ATACAMA | The Emerald Leviathan | Ocean Floor | Atacamite | Cu₂Cl(OH)₃ | Tier 3 |
+| URANOX | The Radiant Dread | Magma Layer | Uraninite | UO₂ | Tier 4 |
+
+**Phase system (3 phases per boss):**
+- Phase triggers at HP thresholds (100% → 55% → 25%)
+- Each phase changes: color, aura radius/dps, arena hazard spawn rate, special ability
+- Phase transition flashes white and announces the new phase name
+
+**Special abilities implemented:**
+`caustic_spray`, `oxygen_burst`, `caustic_nova` (PEROXIS) · `shockwave`, `flake_burst` (CHALCOR) · `ranged_acid_bolt`, `gold_prison`, `ruby_cloud` (AURIUM) · `reactive_detonation`, `nitrogen_lance`, `chain_detonation` (AZRAEL) · `corrosive_spit`, `tide_surge`, `copper_implosion` (ATACAMA) · `gamma_burst`, `fission_beam`, `meltdown` (URANOX)
+
+**Arena hazards:**
+| Hazard | Boss | Effect |
+|--------|------|--------|
+| water_puddles | PEROXIS | Explode with caustic spray's O₂ burst |
+| sulfur_vents | CHALCOR | Poison DoT zones |
+| acid_pools | AURIUM | Damage + armor DR corrode |
+| wind_columns | AZRAEL | Knockback burst columns |
+| brine_tide | ATACAMA | Slow + poison puddles |
+| radiation_zones | URANOX | Long-duration irradiate zones |
+
+**Drops (on death):**
+| Boss | Item Drop | Element Drops |
+|------|-----------|---------------|
+| PEROXIS | Peroxide Crystal | Na, O |
+| CHALCOR | Chalcopyrite Shard | Cu, Fe |
+| AURIUM | Auric Crystal | Au, Ag |
+| AZRAEL | Azide Capsule | Na, N |
+| ATACAMA | Atacamite Plate | Cu, Cl |
+| URANOX | Uranium Core Fragment | U, Th |
+
+Each kill also unlocks a real-science lore entry in the HUD.
+
+**New files:**
+- `data/boss_data.json` — all boss definitions + phase configs
+- `scripts/world/boss.gd` — multi-phase boss controller
+- `scripts/world/boss_arena.gd` — arena hazard spawner
+- `scripts/world/hazard_zone_corrode.gd` — acid pool with DR corrode
+- `scripts/world/hazard_zone_knockback.gd` — wind column knockback
+- `scenes/world/boss.tscn` — boss scene (CharacterBody2D + collision)
 
 ---
 
@@ -286,8 +343,7 @@ Player starts with 20x Standard Vials + Nitrile Gloves. Higher-tier containers s
 
 ## Next Steps
 
-1. **Enemy variety** — Alkali Golems (explode near water/brine), Noble Gas Wraiths (immune to DoT), Toxic Sludges (poison aura). Typed resistances per enemy class.
-2. **Boss encounters** — One per biome. Endgame bosses require Pu weapons + Graphene Nanosuit.
+1. **Pixel art sprites** — Replace ColorRect placeholders (Aseprite pipeline).
 3. **Pixel art sprites** — Replace all ColorRect placeholders (Aseprite pipeline).
 4. **Sound and music** — Biome ambient tracks, dig SFX, combat hits, Synthesizer hum.
 5. **Story / quest system** — Extend Aldric quest line, add NPCs per biome.
