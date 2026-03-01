@@ -79,6 +79,9 @@ func _init_ui() -> void:
 		if equip:
 			equip.add_item("Standard Vial", 20)
 			equip.add_item("Nitrile Gloves", 1)
+		# Equip starter Bronze Sword (Tier 1) — craftable later via Cu+Sn
+		if player.has_method("equip_weapon"):
+			player.equip_weapon("bronze_sword")
 
 	# Set Aldric's dialogue via exported property override in code
 	# (avoids needing to open the editor to set the Inspector fields)

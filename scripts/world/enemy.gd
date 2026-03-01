@@ -43,6 +43,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_attack_timer = maxf(_attack_timer - delta, 0.0)
+	_tick_burn(delta)
 	_find_player()
 
 	match _state:
@@ -50,6 +51,19 @@ func _physics_process(delta: float) -> void:
 		"chase":   _do_chase(delta)
 
 	move_and_slide()
+
+func _tick_burn(delta: float) -> void:
+	if not has_meta("burn_timer"):
+		return
+	var t: float = float(get_meta("burn_timer")) - delta
+	if t <= 0.0:
+		remove_meta("burn_timer")
+		if has_meta("burn_dps"):
+			remove_meta("burn_dps")
+		return
+	set_meta("burn_timer", t)
+	var dps: float = float(get_meta("burn_dps", 0.0))
+	take_damage(dps * delta)
 
 func _find_player() -> void:
 	if _player == null:

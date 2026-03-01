@@ -7,9 +7,11 @@ const SAVE_PATH: String = "user://savegame.json"
 
 func save_game(player: Node) -> void:
 	var equip_node := player.get_node_or_null("Equipment")
+	var weapon_node := player.get_node_or_null("Weapon")
 	var data: Dictionary = {
 		"inventory": player.get_node("Inventory").serialize(),
 		"equipment": equip_node.serialize() if equip_node else {},
+		"weapon": weapon_node.get_weapon_name() if weapon_node and weapon_node.has_method("get_weapon_name") else "",
 		"position": {
 			"x": player.global_position.x,
 			"y": player.global_position.y
@@ -43,6 +45,10 @@ func load_game(player: Node) -> bool:
 	var equip_node := player.get_node_or_null("Equipment")
 	if equip_node:
 		equip_node.deserialize(data.get("equipment", {}) as Dictionary)
+	var weapon_node := player.get_node_or_null("Weapon")
+	var saved_weapon: String = str(data.get("weapon", ""))
+	if weapon_node and saved_weapon != "" and weapon_node.has_method("equip"):
+		weapon_node.equip(saved_weapon)
 	var pos: Dictionary = data.get("position", {"x": 0, "y": 0}) as Dictionary
 	player.global_position = Vector2(float(pos.get("x", 0)), float(pos.get("y", 0)))
 	return true

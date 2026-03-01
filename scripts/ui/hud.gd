@@ -31,9 +31,14 @@ func init(player: Node, world: Node) -> void:
 	var inv := player.get_node_or_null("Inventory")
 	if inv:
 		inv.inventory_changed.connect(_on_inventory_changed)
+		# Compendium discovery hook: mark element when first collected
+		inv.inventory_changed.connect(_on_element_discovered)
 	var equip := player.get_node_or_null("Equipment")
 	if equip:
 		equip.equipment_changed.connect(_on_inventory_changed.bind("", 0.0))
+	var wpn := player.get_node_or_null("Weapon")
+	if wpn:
+		wpn.weapon_changed.connect(_on_weapon_changed)
 	_refresh_inventory_bar()
 
 func _process(delta: float) -> void:
@@ -53,6 +58,14 @@ func _process(delta: float) -> void:
 		health_label.text = "%d/%d HP" % [int(hp), int(max_hp)]
 
 func _on_inventory_changed(_symbol: String, _amount: float) -> void:
+	_refresh_inventory_bar()
+
+func _on_element_discovered(symbol: String, _amount: float) -> void:
+	var compendium := get_node_or_null("Compendium")
+	if compendium and compendium.has_method("mark_discovered"):
+		compendium.mark_discovered(symbol)
+
+func _on_weapon_changed(_weapon_name: String) -> void:
 	_refresh_inventory_bar()
 
 func _refresh_inventory_bar() -> void:
@@ -78,6 +91,11 @@ func _refresh_inventory_bar() -> void:
 				parts.append("[%s]" % item)
 			else:
 				parts.append("%s×%d" % [item.left(4), count])
+	# Equipped weapon
+	var wpn := _player.get_node_or_null("Weapon")
+	if wpn and wpn.has_method("has_weapon") and wpn.has_weapon():
+		parts.append("⚔ %s" % wpn.get_weapon_name().replace("_", " "))
+
 	if parts.is_empty():
 		inv_label.text = "Inventory empty  |  E to toggle"
 	else:

@@ -20,10 +20,13 @@ const MAX_HP: float = 100.0
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var inventory: Node = $Inventory
 @onready var equipment: Node = $Equipment
+@onready var weapon: Node = $Weapon
 
 var facing: Vector2 = Vector2.DOWN
 var hp: float = MAX_HP
 var _placeholder: ColorRect = null
+var _invincible_timer: float = 0.0   # brief i-frames after taking a hit
+const I_FRAME_DURATION: float = 0.5
 
 func get_health() -> float:
 	return hp
@@ -32,7 +35,16 @@ func get_max_health() -> float:
 	return MAX_HP
 
 func take_damage(amount: float) -> void:
+	if _invincible_timer > 0.0:
+		return
 	hp = maxf(hp - amount, 0.0)
+	_invincible_timer = I_FRAME_DURATION
+
+func equip_weapon(item_name: String) -> void:
+	weapon.equip(item_name)
+
+func get_equipped_weapon() -> String:
+	return weapon.get_weapon_name()
 
 func _ready() -> void:
 	add_to_group("player")
@@ -46,7 +58,8 @@ func _spawn_placeholder() -> void:
 	_placeholder.name = "Placeholder"
 	add_child(_placeholder)
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	_invincible_timer = maxf(_invincible_timer - delta, 0.0)
 	_handle_movement()
 	_update_animation()
 	move_and_slide()
@@ -83,6 +96,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			_try_dig()
 			get_viewport().set_input_as_handled()
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			_try_attack()
+			get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("attack"):
+		_try_attack()
 	elif event.is_action_pressed("open_inventory"):
 		get_tree().call_group("ui", "toggle_inventory")
 	elif event.is_action_pressed("open_compendium"):
@@ -91,6 +109,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_tree().call_group("npc", "try_interact", global_position)
 	elif event.is_action_pressed("save_game"):
 		SaveSystem.save_game(self)
+
+func _try_attack() -> void:
+	weapon.try_attack(facing)
 
 func _try_dig() -> void:
 	var mouse_pos := get_global_mouse_position()

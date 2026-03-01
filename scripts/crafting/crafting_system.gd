@@ -21,6 +21,17 @@ func _grid_to_ingredient_map(grid: Array) -> Dictionary:
 				counts[cell] = counts.get(cell, 0) + 1
 	return counts
 
+# Look up a compound by its game_item key.
+func get_compound_by_item(item_name: String) -> Dictionary:
+	for c: Dictionary in ElementDB.compounds.values():
+		if str(c.get("game_item", "")) == item_name:
+			return c
+	return {}
+
+# Return all compounds as an Array (for iteration).
+func get_all_compounds() -> Array:
+	return ElementDB.compounds.values()
+
 # Attempt to craft using the player's inventory.
 # Returns the compound dict on success, {} on failure.
 func try_craft(grid_contents: Array, inventory: Node) -> Dictionary:

@@ -482,5 +482,225 @@
     "game_use": "Antibacterial coating for weapons; photography development; lore clue revealer",
     "reaction_type": "ionic_bond",
     "act": 2
+  },
+
+  {
+    "name": "Bronze Sword",
+    "formula": "Cu·Sn",
+    "elements": { "Cu": 3, "Sn": 1 },
+    "category": "weapon_melee",
+    "game_item": "bronze_sword",
+    "real_world_use": "Bronze was the first widely used metal alloy for tools and weapons",
+    "game_use": "Tier 1 melee weapon. 12 damage, 48px range, 0.6s swing cooldown.",
+    "reaction_type": "alloy",
+    "act": 1,
+    "weapon": {
+      "type": "melee",
+      "damage": 12.0,
+      "range": 48.0,
+      "cooldown": 0.6,
+      "knockback": 60.0,
+      "color": [0.8, 0.5, 0.2],
+      "tier": 1
+    }
+  },
+  {
+    "name": "Steel Sword",
+    "formula": "Fe·C",
+    "elements": { "Fe": 4, "C": 1 },
+    "category": "weapon_melee",
+    "game_item": "steel_sword",
+    "real_world_use": "Iron-carbon alloy used to forge swords since the Iron Age",
+    "game_use": "Tier 2 melee weapon. 20 damage, 52px range, 0.5s cooldown.",
+    "reaction_type": "alloy",
+    "act": 1,
+    "weapon": {
+      "type": "melee",
+      "damage": 20.0,
+      "range": 52.0,
+      "cooldown": 0.5,
+      "knockback": 80.0,
+      "color": [0.7, 0.7, 0.75],
+      "tier": 2
+    }
+  },
+  {
+    "name": "Titanium Blade",
+    "formula": "TiN",
+    "elements": { "Ti": 2, "N": 1 },
+    "category": "weapon_melee",
+    "game_item": "titanium_blade",
+    "real_world_use": "Titanium nitride coating makes blades extremely hard and corrosion resistant",
+    "game_use": "Tier 3 melee weapon. 30 damage, 56px range, 0.4s cooldown. Ignores 25% armor.",
+    "reaction_type": "nitride",
+    "act": 2,
+    "weapon": {
+      "type": "melee",
+      "damage": 30.0,
+      "range": 56.0,
+      "cooldown": 0.4,
+      "knockback": 100.0,
+      "color": [0.4, 0.8, 1.0],
+      "tier": 3
+    }
+  },
+  {
+    "name": "Thermite Blade",
+    "formula": "Fe2O3·Al",
+    "elements": { "Fe": 2, "O": 3, "Al": 2 },
+    "category": "weapon_melee",
+    "game_item": "thermite_blade",
+    "real_world_use": "Thermite (iron oxide + aluminium) burns at 2500°C, used in welding",
+    "game_use": "Tier 4 melee weapon. 45 damage, 56px range, 0.45s cooldown. Burns enemies (DoT 5/s for 3s).",
+    "reaction_type": "thermite",
+    "act": 2,
+    "weapon": {
+      "type": "melee",
+      "damage": 45.0,
+      "range": 56.0,
+      "cooldown": 0.45,
+      "knockback": 90.0,
+      "color": [1.0, 0.4, 0.0],
+      "tier": 4,
+      "burn_dps": 5.0,
+      "burn_duration": 3.0
+    }
+  },
+  {
+    "name": "Plutonium Edge",
+    "formula": "PuO2",
+    "elements": { "Pu": 1, "O": 2 },
+    "category": "weapon_melee",
+    "game_item": "plutonium_edge",
+    "real_world_use": "Plutonium dioxide is an extremely radioactive ceramic used in nuclear fuel",
+    "game_use": "Tier 5 ENDGAME melee. 80 damage, 60px range, 0.35s cooldown. Irradiates (15 DoT/s, 4s). Required to damage Radioactive Elemental bosses.",
+    "reaction_type": "nuclear_oxide",
+    "act": 3,
+    "weapon": {
+      "type": "melee",
+      "damage": 80.0,
+      "range": 60.0,
+      "cooldown": 0.35,
+      "knockback": 120.0,
+      "color": [0.3, 1.0, 0.3],
+      "tier": 5,
+      "burn_dps": 15.0,
+      "burn_duration": 4.0
+    }
+  },
+
+  {
+    "name": "Flint Arrow",
+    "formula": "SiO2·C",
+    "elements": { "Si": 1, "C": 1 },
+    "category": "weapon_ranged",
+    "game_item": "flint_arrow",
+    "real_world_use": "Flint (silica) knapped into arrowheads — the first ranged weapons",
+    "game_use": "Tier 1 ranged weapon. 10 damage, 200px range, 0.8s cooldown. Projectile speed 180.",
+    "reaction_type": "mineral",
+    "act": 1,
+    "weapon": {
+      "type": "ranged",
+      "damage": 10.0,
+      "range": 200.0,
+      "cooldown": 0.8,
+      "knockback": 40.0,
+      "projectile_speed": 180.0,
+      "color": [0.8, 0.7, 0.5],
+      "tier": 1
+    }
+  },
+  {
+    "name": "Phosphorus Bolt",
+    "formula": "P4",
+    "elements": { "P": 4 },
+    "category": "weapon_ranged",
+    "game_item": "phosphorus_bolt",
+    "real_world_use": "White phosphorus ignites spontaneously in air and was used in incendiary weapons",
+    "game_use": "Tier 2 ranged. 18 damage, 220px range, 0.7s cooldown. Burns on hit (4 DoT/s, 2s). Lights up dark areas.",
+    "reaction_type": "allotrope",
+    "act": 1,
+    "weapon": {
+      "type": "ranged",
+      "damage": 18.0,
+      "range": 220.0,
+      "cooldown": 0.7,
+      "knockback": 50.0,
+      "projectile_speed": 200.0,
+      "color": [1.0, 0.85, 0.1],
+      "tier": 2,
+      "burn_dps": 4.0,
+      "burn_duration": 2.0
+    }
+  },
+  {
+    "name": "Chlorine Bomb",
+    "formula": "Cl2",
+    "elements": { "Cl": 2 },
+    "category": "weapon_ranged",
+    "game_item": "chlorine_bomb",
+    "real_world_use": "Chlorine gas is a toxic oxidiser; historically used as a chemical weapon",
+    "game_use": "Tier 3 ranged. 25 direct + 8/s poison (3s) in AoE splash (32px). 240px range, 0.9s cooldown.",
+    "reaction_type": "diatomic",
+    "act": 2,
+    "weapon": {
+      "type": "ranged",
+      "damage": 25.0,
+      "range": 240.0,
+      "cooldown": 0.9,
+      "knockback": 30.0,
+      "projectile_speed": 160.0,
+      "splash_radius": 32.0,
+      "color": [0.6, 1.0, 0.3],
+      "tier": 3,
+      "burn_dps": 8.0,
+      "burn_duration": 3.0
+    }
+  },
+  {
+    "name": "Uranium Shell",
+    "formula": "UO2",
+    "elements": { "U": 1, "O": 2 },
+    "category": "weapon_ranged",
+    "game_item": "uranium_shell",
+    "real_world_use": "Depleted uranium is extremely dense; used in armour-piercing projectiles",
+    "game_use": "Tier 4 ranged. 50 damage, pierces through multiple enemies, 260px range, 0.65s cooldown.",
+    "reaction_type": "nuclear_oxide",
+    "act": 2,
+    "weapon": {
+      "type": "ranged",
+      "damage": 50.0,
+      "range": 260.0,
+      "cooldown": 0.65,
+      "knockback": 110.0,
+      "projectile_speed": 280.0,
+      "piercing": true,
+      "color": [0.5, 0.8, 0.2],
+      "tier": 4
+    }
+  },
+  {
+    "name": "Plutonium Cannon",
+    "formula": "PuF6",
+    "elements": { "Pu": 1, "F": 6 },
+    "category": "weapon_ranged",
+    "game_item": "plutonium_cannon",
+    "real_world_use": "Plutonium hexafluoride is used in nuclear fuel processing — extremely radioactive",
+    "game_use": "Tier 5 ENDGAME ranged. 90 damage, 280px range, 1.1s cooldown. Splash 40px. Irradiates all in blast (20 DoT/s, 5s). Required to beat Radioactive Elemental boss.",
+    "reaction_type": "nuclear_fluoride",
+    "act": 3,
+    "weapon": {
+      "type": "ranged",
+      "damage": 90.0,
+      "range": 280.0,
+      "cooldown": 1.1,
+      "knockback": 140.0,
+      "projectile_speed": 240.0,
+      "splash_radius": 40.0,
+      "color": [0.2, 1.0, 0.4],
+      "tier": 5,
+      "burn_dps": 20.0,
+      "burn_duration": 5.0
+    }
   }
 ]

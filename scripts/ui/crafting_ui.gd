@@ -85,4 +85,12 @@ func _on_craft_pressed() -> void:
 		result_label.text = "Not enough elements!"
 	else:
 		result_label.text = "Crafted: %s!" % str(compound.get("name", ""))
+		# Auto-equip weapons when crafted
+		var category: String = str(compound.get("category", ""))
+		if category in ["weapon_melee", "weapon_ranged"]:
+			var item: String = str(compound.get("game_item", ""))
+			var players := get_tree().get_nodes_in_group("player")
+			if players.size() > 0 and players[0].has_method("equip_weapon"):
+				players[0].equip_weapon(item)
+				result_label.text = "Equipped: %s!" % str(compound.get("name", ""))
 		clear_grid()
