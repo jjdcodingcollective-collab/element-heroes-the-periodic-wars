@@ -21,6 +21,7 @@ const MAX_HP: float = 100.0
 @onready var inventory: Node = $Inventory
 @onready var equipment: Node = $Equipment
 @onready var weapon: Node = $Weapon
+@onready var armor: Node = $Armor
 
 var facing: Vector2 = Vector2.DOWN
 var hp: float = MAX_HP
@@ -37,7 +38,11 @@ func get_max_health() -> float:
 func take_damage(amount: float) -> void:
 	if _invincible_timer > 0.0:
 		return
-	hp = maxf(hp - amount, 0.0)
+	var dr: float = 0.0
+	if armor and armor.has_method("get_damage_reduction"):
+		dr = armor.get_damage_reduction()
+	var final_damage: float = amount * (1.0 - dr)
+	hp = maxf(hp - final_damage, 0.0)
 	_invincible_timer = I_FRAME_DURATION
 
 func equip_weapon(item_name: String) -> void:
@@ -45,6 +50,12 @@ func equip_weapon(item_name: String) -> void:
 
 func get_equipped_weapon() -> String:
 	return weapon.get_weapon_name()
+
+func equip_armor(item_name: String) -> void:
+	armor.equip(item_name)
+
+func get_equipped_armor() -> String:
+	return armor.get_armor_name()
 
 func _ready() -> void:
 	add_to_group("player")
@@ -107,6 +118,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_tree().call_group("ui", "toggle_compendium")
 	elif event.is_action_pressed("interact"):
 		get_tree().call_group("npc", "try_interact", global_position)
+		get_tree().call_group("synthesizer", "try_interact", global_position)
 	elif event.is_action_pressed("save_game"):
 		SaveSystem.save_game(self)
 

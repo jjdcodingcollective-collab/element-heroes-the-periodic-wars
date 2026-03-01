@@ -702,5 +702,130 @@
       "burn_dps": 20.0,
       "burn_duration": 5.0
     }
+  },
+
+  {
+    "name": "Polyethylene",
+    "formula": "(C2H4)n",
+    "elements": { "C": 2, "H": 4 },
+    "category": "polymer",
+    "game_item": "polyethylene_sheet",
+    "synthesizer_only": true,
+    "real_world_use": "Most produced plastic on Earth — used in packaging, pipes, and bulletproof vest padding",
+    "game_use": "Polymer intermediate — padding layer in Kevlar Vest",
+    "reaction_type": "polymerization",
+    "act": 2
+  },
+  {
+    "name": "PVC Sheet",
+    "formula": "(C2H3Cl)n",
+    "elements": { "C": 2, "H": 3, "Cl": 1 },
+    "category": "polymer",
+    "game_item": "pvc_sheet",
+    "synthesizer_only": true,
+    "real_world_use": "Polyvinyl chloride — one of the most widely produced synthetic polymers; rigid outer casing",
+    "game_use": "Polymer intermediate — outer shell layer in Kevlar Vest",
+    "reaction_type": "polymerization",
+    "act": 2
+  },
+  {
+    "name": "PPTA Fiber",
+    "formula": "(C14H10N2O2)n",
+    "elements": { "C": 6, "H": 4, "N": 1, "O": 1 },
+    "category": "polymer",
+    "game_item": "ppta_fiber",
+    "synthesizer_only": true,
+    "real_world_use": "Poly-paraphenylene terephthalamide (Kevlar) — 5x stronger than steel by weight; used in ballistic vests",
+    "game_use": "Polymer intermediate — structural core of Kevlar Vest",
+    "reaction_type": "condensation_polymerization",
+    "act": 2
+  },
+  {
+    "name": "Polycarbonate Panel",
+    "formula": "(C15H16O2)n",
+    "elements": { "C": 3, "H": 4, "O": 1 },
+    "category": "polymer",
+    "game_item": "polycarbonate_panel",
+    "synthesizer_only": true,
+    "real_world_use": "Polycarbonate — used in bulletproof glass, riot shields, and aircraft canopies",
+    "game_use": "Polymer intermediate — visor plate in Titanium Composite armor",
+    "reaction_type": "polymerization",
+    "act": 2
+  },
+  {
+    "name": "Boron Nitride Sheet",
+    "formula": "BN",
+    "elements": { "B": 1, "N": 1 },
+    "category": "polymer",
+    "game_item": "boron_nitride_sheet",
+    "synthesizer_only": true,
+    "real_world_use": "Hexagonal boron nitride — structural twin of graphene; used in NASA heat shields and extreme armour",
+    "game_use": "Polymer intermediate — outer shell of Graphene Nanosuit",
+    "reaction_type": "ceramic_synthesis",
+    "act": 3
+  },
+
+  {
+    "name": "Limestone Jerkin",
+    "formula": "CaCO3armor",
+    "elements": { "Ca": 2, "C": 1, "O": 3 },
+    "category": "armor",
+    "game_item": "limestone_jerkin",
+    "real_world_use": "Calcium carbonate forms shells, bones, and ancient armour — nature's original protection",
+    "game_use": "Tier 1 armor. 10% damage reduction. Craftable at basic table.",
+    "reaction_type": "ionic_bond",
+    "act": 1,
+    "armor": { "tier": 1, "damage_reduction": 0.10, "color": [0.87, 0.82, 0.70] }
+  },
+  {
+    "name": "Iron Plate",
+    "formula": "Fe6C2armor",
+    "elements": { "Fe": 6, "C": 2 },
+    "category": "armor",
+    "game_item": "iron_plate_armor",
+    "real_world_use": "Medieval plate armour was wrought iron hardened with carbon — the first mass-produced body armour",
+    "game_use": "Tier 2 armor. 20% damage reduction.",
+    "reaction_type": "alloy",
+    "act": 1,
+    "armor": { "tier": 2, "damage_reduction": 0.20, "color": [0.60, 0.60, 0.65] }
+  },
+  {
+    "name": "Kevlar Vest",
+    "formula": "PPTA_PE_PVC",
+    "elements": { "ppta_fiber": 2, "polyethylene_sheet": 1, "pvc_sheet": 1 },
+    "category": "armor",
+    "game_item": "kevlar_vest",
+    "synthesizer_required": true,
+    "real_world_use": "Modern ballistic vest: Kevlar fiber woven into polyethylene backing with PVC outer shell",
+    "game_use": "Tier 3 armor. 35% damage reduction. Requires polymer intermediates from Synthesizer.",
+    "reaction_type": "composite_assembly",
+    "act": 2,
+    "armor": { "tier": 3, "damage_reduction": 0.35, "color": [0.25, 0.45, 0.20] }
+  },
+  {
+    "name": "Titanium Composite",
+    "formula": "Ti_Al_PC_armor",
+    "elements": { "Ti": 3, "Al": 2, "polycarbonate_panel": 2 },
+    "category": "armor",
+    "game_item": "titanium_composite_armor",
+    "synthesizer_required": true,
+    "real_world_use": "Ti-6Al-4V plates over polycarbonate backing — used in modern military body armour and spacecraft",
+    "game_use": "Tier 4 armor. 50% damage reduction. Requires Ti, Al + Synthesizer polymer.",
+    "reaction_type": "composite_assembly",
+    "act": 2,
+    "armor": { "tier": 4, "damage_reduction": 0.50, "color": [0.45, 0.65, 0.90] }
+  },
+  {
+    "name": "Graphene Nanosuit",
+    "formula": "C_BN_armor",
+    "elements": { "C": 4, "boron_nitride_sheet": 3 },
+    "category": "armor",
+    "game_item": "graphene_nanosuit",
+    "synthesizer_required": true,
+    "real_world_use": "Graphene + hexagonal boron nitride multilayer — strongest known material at atomic thickness",
+    "game_use": "Tier 5 ENDGAME armor. 70% damage reduction. Required to survive Radioactive Elemental boss attacks.",
+    "reaction_type": "nanocomposite_synthesis",
+    "act": 3,
+    "armor": { "tier": 5, "damage_reduction": 0.70, "color": [0.15, 0.85, 0.95] }
   }
 ]

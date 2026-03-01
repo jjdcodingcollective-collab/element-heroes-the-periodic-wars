@@ -1,0 +1,110 @@
+[gd_scene load_steps=2 format=3 uid="uid://synthesizer_ui"]
+
+[ext_resource type="Script" path="res://scripts/ui/synthesizer_ui.gd" id="1_synthui"]
+
+; Synthesizer UI — polymer/plastic crafting station overlay.
+; Toggled by interacting with the Synthesizer world object (F key when nearby).
+
+[node name="SynthesizerUI" type="PanelContainer"]
+script = ExtResource("1_synthui")
+visible = false
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -200.0
+offset_right = 160.0
+offset_bottom = 200.0
+z_index = 40
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="VBox"]
+layout_mode = 2
+text = "⚗ SYNTHESIZER — Polymer Lab"
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="VBox"]
+layout_mode = 2
+text = "Combine elements to produce plastics and polymers"
+theme_override_font_sizes/font_size = 9
+horizontal_alignment = 1
+modulate = Color(0.7, 0.9, 1.0, 1.0)
+
+[node name="GridContainer" type="GridContainer" parent="VBox"]
+layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+
+[node name="Slot0" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot1" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot2" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot3" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot4" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot5" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot6" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot7" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="Slot8" type="Button" parent="VBox/GridContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(48, 48)
+text = ""
+
+[node name="HBox" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="OutputSlot" type="Button" parent="VBox/HBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(56, 56)
+text = "?"
+disabled = true
+
+[node name="ResultLabel" type="Label" parent="VBox/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+theme_override_font_sizes/font_size = 10
+autowrap_mode = 3
+
+[node name="CraftButton" type="Button" parent="VBox"]
+layout_mode = 2
+text = "Synthesize"
+disabled = true

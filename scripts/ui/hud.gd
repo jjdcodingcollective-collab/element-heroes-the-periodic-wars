@@ -39,6 +39,9 @@ func init(player: Node, world: Node) -> void:
 	var wpn := player.get_node_or_null("Weapon")
 	if wpn:
 		wpn.weapon_changed.connect(_on_weapon_changed)
+	var arm := player.get_node_or_null("Armor")
+	if arm:
+		arm.armor_changed.connect(_on_armor_changed)
 	_refresh_inventory_bar()
 
 func _process(delta: float) -> void:
@@ -68,6 +71,9 @@ func _on_element_discovered(symbol: String, _amount: float) -> void:
 func _on_weapon_changed(_weapon_name: String) -> void:
 	_refresh_inventory_bar()
 
+func _on_armor_changed(_armor_name: String) -> void:
+	_refresh_inventory_bar()
+
 func _refresh_inventory_bar() -> void:
 	if _player == null:
 		return
@@ -95,6 +101,12 @@ func _refresh_inventory_bar() -> void:
 	var wpn := _player.get_node_or_null("Weapon")
 	if wpn and wpn.has_method("has_weapon") and wpn.has_weapon():
 		parts.append("⚔ %s" % wpn.get_weapon_name().replace("_", " "))
+
+	# Equipped armor
+	var arm := _player.get_node_or_null("Armor")
+	if arm and arm.has_method("has_armor") and arm.has_armor():
+		var dr_pct: int = int(arm.get_damage_reduction() * 100.0)
+		parts.append("🛡 %s (%d%%)" % [arm.get_armor_name().replace("_", " "), dr_pct])
 
 	if parts.is_empty():
 		inv_label.text = "Inventory empty  |  E to toggle"

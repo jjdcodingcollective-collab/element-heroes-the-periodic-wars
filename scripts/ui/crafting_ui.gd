@@ -67,6 +67,9 @@ func clear_grid() -> void:
 
 func _refresh_output() -> void:
 	var compound: Dictionary = CraftingSystem.evaluate_grid(grid_contents)
+	# Block synthesizer-only polymers from the basic crafting table
+	if not compound.is_empty() and bool(compound.get("synthesizer_only", false)):
+		compound = {}
 	if compound.is_empty():
 		result_label.text = ""
 		output_slot.text = "?"
@@ -80,17 +83,37 @@ func _on_craft_pressed() -> void:
 	if player_inventory == null:
 		result_label.text = "No inventory linked!"
 		return
-	var compound: Dictionary = CraftingSystem.try_craft(grid_contents, player_inventory)
+
+	# Tier 3-5 armor uses polymer items from equipment — needs item-aware craft
+	var preview: Dictionary = CraftingSystem.evaluate_grid(grid_contents)
+	var compound: Dictionary = {}
+	if bool(preview.get("synthesizer_required", false)):
+		var players2 := get_tree().get_nodes_in_group("player")
+		if players2.size() > 0:
+			var equip := players2[0].get_node_or_null("Equipment")
+			if equip:
+				compound = CraftingSystem.try_craft_with_items(grid_contents, player_inventory, equip)
+		if compound.is_empty():
+			result_label.text = "Need polymer intermediates from Synthesizer!"
+			return
+	else:
+		compound = CraftingSystem.try_craft(grid_contents, player_inventory)
+
 	if compound.is_empty():
 		result_label.text = "Not enough elements!"
 	else:
 		result_label.text = "Crafted: %s!" % str(compound.get("name", ""))
-		# Auto-equip weapons when crafted
+		# Auto-equip weapons and armor when crafted
 		var category: String = str(compound.get("category", ""))
+		var players := get_tree().get_nodes_in_group("player")
 		if category in ["weapon_melee", "weapon_ranged"]:
 			var item: String = str(compound.get("game_item", ""))
-			var players := get_tree().get_nodes_in_group("player")
 			if players.size() > 0 and players[0].has_method("equip_weapon"):
 				players[0].equip_weapon(item)
+				result_label.text = "Equipped: %s!" % str(compound.get("name", ""))
+		elif category == "armor":
+			var item: String = str(compound.get("game_item", ""))
+			if players.size() > 0 and players[0].has_method("equip_armor"):
+				players[0].equip_armor(item)
 				result_label.text = "Equipped: %s!" % str(compound.get("name", ""))
 		clear_grid()

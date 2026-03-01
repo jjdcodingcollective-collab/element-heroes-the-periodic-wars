@@ -52,6 +52,8 @@ var tile_data: Dictionary = {}
 var tile_nodes: Dictionary = {}  # Vector2i -> ColorRect
 
 const ENEMY_SCENE: String = "res://scenes/world/enemy.tscn"
+const SYNTH_SCENE: String = "res://scenes/world/synthesizer.tscn"
+const SYNTH_UI_SCENE: String = "res://scenes/ui/synthesizer_ui.tscn"
 # Enemies per biome spawned at world start (in addition to hand-placed scene instances)
 const ENEMIES_PER_BIOME: int = 3
 
@@ -82,6 +84,8 @@ func _init_ui() -> void:
 		# Equip starter Bronze Sword (Tier 1) — craftable later via Cu+Sn
 		if player.has_method("equip_weapon"):
 			player.equip_weapon("bronze_sword")
+		# Wire SynthesizerUI
+		_spawn_synthesizer_ui(player)
 
 	# Set Aldric's dialogue via exported property override in code
 	# (avoids needing to open the editor to set the Inspector fields)
@@ -253,3 +257,22 @@ func _spawn_enemies() -> void:
 				enemy.drop_elements = drops
 				add_child(enemy)
 				break
+
+func _spawn_synthesizer_ui(player: Node) -> void:
+	# Spawn Synthesizer world object near village (tile 22,12 — east of workshop)
+	var synth_scene: PackedScene = load(SYNTH_SCENE)
+	if synth_scene:
+		var synth: Node2D = synth_scene.instantiate()
+		synth.position = Vector2(22 * TILE_SIZE + TILE_SIZE / 2.0, 12 * TILE_SIZE + TILE_SIZE / 2.0)
+		add_child(synth)
+		_create_tile(Vector2i(22, 12), Color(0.15, 0.65, 0.85), "building", "", false)
+
+	# Spawn SynthesizerUI as CanvasLayer child of world
+	var synth_ui_scene: PackedScene = load(SYNTH_UI_SCENE)
+	if synth_ui_scene == null:
+		return
+	var synth_ui: Node = synth_ui_scene.instantiate()
+	add_child(synth_ui)
+	# Wire player inventory and equipment
+	synth_ui.player_inventory = player.get_node_or_null("Inventory")
+	synth_ui.player_equipment = player.get_node_or_null("Equipment")
