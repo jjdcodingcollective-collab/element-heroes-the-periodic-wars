@@ -27,6 +27,9 @@ var facing: Vector2 = Vector2.DOWN
 var hp: float = MAX_HP
 var _placeholder: ColorRect = null
 var _invincible_timer: float = 0.0   # brief i-frames after taking a hit
+var _stun_timer: float = 0.0         # enemy stun/blind duration
+var _corrode_timer: float = 0.0      # armor corrode debuff
+var _corrode_amount: float = 0.0     # DR reduction while corroded
 const I_FRAME_DURATION: float = 0.5
 
 func get_health() -> float:
@@ -41,9 +44,20 @@ func take_damage(amount: float) -> void:
 	var dr: float = 0.0
 	if armor and armor.has_method("get_damage_reduction"):
 		dr = armor.get_damage_reduction()
+	dr = maxf(dr - _corrode_amount, 0.0)  # corrode reduces effective DR
 	var final_damage: float = amount * (1.0 - dr)
 	hp = maxf(hp - final_damage, 0.0)
 	_invincible_timer = I_FRAME_DURATION
+
+func apply_stun(duration: float) -> void:
+	_stun_timer = maxf(_stun_timer, duration)
+
+func apply_knockback(impulse: Vector2) -> void:
+	velocity += impulse
+
+func apply_armor_corrode(dr_reduction: float, duration: float) -> void:
+	_corrode_amount = maxf(_corrode_amount, dr_reduction)
+	_corrode_timer  = maxf(_corrode_timer, duration)
 
 func equip_weapon(item_name: String) -> void:
 	weapon.equip(item_name)
@@ -71,7 +85,12 @@ func _spawn_placeholder() -> void:
 
 func _physics_process(delta: float) -> void:
 	_invincible_timer = maxf(_invincible_timer - delta, 0.0)
-	_handle_movement()
+	_stun_timer       = maxf(_stun_timer       - delta, 0.0)
+	_corrode_timer    = maxf(_corrode_timer    - delta, 0.0)
+	if _corrode_timer <= 0.0:
+		_corrode_amount = 0.0
+	if _stun_timer <= 0.0:
+		_handle_movement()
 	_update_animation()
 	move_and_slide()
 

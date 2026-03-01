@@ -38,13 +38,14 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Camera | ✅ Done | World-bounds clamping |
 | Save/load system | ✅ Done | Inventory, equipment, weapon, armor, compendium |
 | Enemy system | ✅ Done | Patrol/chase AI, contact damage, element drops, burn DoT |
+| Enemy variants | ✅ Done | 18 CHIMERA creatures × 3 tiers, specials, auras, resistances |
 | Compendium UI | ✅ Done | 118-element grid, auto-discovers on first collect |
 | Weapon system | ✅ Done | 10 weapons tier 1-5, melee arc + ranged projectile, DoT |
 | Armor system | ✅ Done | 5 armors tier 1-5, flat DR%, single Zelda-style slot |
 | Synthesizer machine | ✅ Done | World object + UI, 5 polymer intermediates |
 | Pixel art sprites | ⬜ Pending | All visuals are ColorRect placeholders |
 | Sound / music | ⬜ Pending | No audio yet |
-| Enemy variety | ⬜ Pending | Only 1 base type — need typed variants |
+| Enemy variety | ✅ Done | 18 CHIMERA creatures, 3 tiers, biome-weighted spawning |
 | Boss encounters | ⬜ Pending | Phase 4 |
 | Building system | ⬜ Pending | Phase 5 |
 | Quiz / achievement system | ⬜ Pending | Phase 6 |
@@ -201,6 +202,7 @@ Player starts with 20x Standard Vials + Nitrile Gloves. Higher-tier containers s
 - [x] Lab equipment system (containers + PPE)
 - [x] Save/load (inventory, weapon, armor, compendium)
 - [x] In-game element Compendium (auto-discovers on collect)
+- [x] Enemy variants — 18 CHIMERA creatures × 3 tiers, specials, auras, resistances
 - [ ] Pixel art sprites
 - [ ] Enemy variety (Alkali Golem, Wraith, Toxic Sludge)
 - [ ] Boss encounters
@@ -221,6 +223,64 @@ Player starts with 20x Standard Vials + Nitrile Gloves. Higher-tier containers s
 | `4ac8a91` | Add lab equipment system: containers, gloves, radiation suits |
 | `206bd52` | Add grams/mL units, floating labels, inventory bar, health bar, save |
 | `308629a` | Fix window size and disable gravity for top-down gameplay |
+
+---
+
+## Enemy Variant System — Project CHIMERA
+
+**Lore:** Before the Calamity, the Voss Institute ran Project CHIMERA — a classified programme fusing unstable elemental compounds into living constructs. When the Institute fell, 18 types escaped containment.
+
+**Architecture:** `data/enemy_data.json` defines all creatures. `enemy.gd` reads the JSON at runtime — fully data-driven. New creatures need only a JSON entry.
+
+**Tier Scaling:**
+| Tier | HP | Damage | Speed | Sight | XP |
+|------|----|--------|-------|-------|----|
+| Basic | 1× | 1× | 1× | 1× | 10 |
+| Intermediate | 1.8× | 1.6× | 1.25× | 1.15× | 25 |
+| Expert | 3.5× | 2.8× | 1.5× | 1.35× | 60 |
+
+**Creatures by Biome:**
+
+| Biome | Creature | Elements | Special |
+|-------|----------|----------|---------|
+| Surface Plains | Ashburn Shambler | Na, K, C | Explodes on death (AoE) |
+| Surface Plains | Carbon Crawler | C, Na, K | 15% passive DR, weak to burn |
+| Surface Plains | Potash Poltergeist | K, Na, C | Leaves slowing caustic puddle |
+| Underground Mines | Iron Hulk | Fe, Cu, Zn | Periodic shockwave, 25% DR |
+| Underground Mines | Copper Coil | Cu, Zn, Fe | 35% stun chance on contact |
+| Underground Mines | Zinc Phantom | Zn, Cu, Fe | Corrodes player armor DR |
+| Crystal Caverns | Silver Specter | Ag, Au | Fires silver bolts at range |
+| Crystal Caverns | Gold Golem | Au, Ag | Ground slam, 40% DR, 150 base HP |
+| Crystal Caverns | Prismatic Hound | Ag, Au | Flash-blind before lunge |
+| Sky Islands | Alkali Hawk | K, Na | Dive bomb with splash damage |
+| Sky Islands | Static Djinn | Na, K | Lightning aura (proximity DoT) |
+| Sky Islands | Stormwing | K, Na | Knockback slam |
+| Ocean Floor | Brine Crawler | Cu, Zn | 20% DR, armored crab |
+| Ocean Floor | Verdigris Lurker | Zn, Cu | Poison aura, immune to poison |
+| Ocean Floor | Deep Shocker | Cu, Zn | AoE stun burst |
+| Magma Layer | Uranium Wraith | U, Th, Pt | Irradiate aura, immune to radiation |
+| Magma Layer | Thorium Scorcher | Th, U, Pt | Fire trail, immune to burn |
+| Magma Layer | Platinum Sentinel | Pt, U, Th | Shield pulse, 50% DR, 200 base HP |
+
+**Spawn Distribution (tier weights per biome):**
+| Biome | Basic | Intermediate | Expert |
+|-------|-------|--------------|--------|
+| Surface Plains | 70% | 25% | 5% |
+| Underground Mines | 50% | 35% | 15% |
+| Crystal Caverns | 35% | 45% | 20% |
+| Sky Islands | 40% | 40% | 20% |
+| Ocean Floor | 30% | 45% | 25% |
+| Magma Layer | 10% | 35% | 55% |
+
+**Player status effects added:**
+- `apply_stun(duration)` — freezes player movement
+- `apply_knockback(impulse)` — burst velocity change
+- `apply_armor_corrode(dr_reduction, duration)` — reduces effective DR
+
+**New files:**
+- `data/enemy_data.json` — all creature definitions
+- `scripts/world/enemy_projectile.gd` — Silver Specter ranged bolt
+- `scripts/world/hazard_zone.gd` — puddle/fire trail hazard
 
 ---
 

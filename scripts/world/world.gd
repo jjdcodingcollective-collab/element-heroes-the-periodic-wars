@@ -54,8 +54,30 @@ var tile_nodes: Dictionary = {}  # Vector2i -> ColorRect
 const ENEMY_SCENE: String = "res://scenes/world/enemy.tscn"
 const SYNTH_SCENE: String = "res://scenes/world/synthesizer.tscn"
 const SYNTH_UI_SCENE: String = "res://scenes/ui/synthesizer_ui.tscn"
-# Enemies per biome spawned at world start (in addition to hand-placed scene instances)
-const ENEMIES_PER_BIOME: int = 3
+
+# How many enemies to spawn per biome at world start
+const ENEMIES_PER_BIOME: int = 6
+
+# Creature IDs per biome (order: basic preferred → expert preferred)
+const BIOME_CREATURES: Dictionary = {
+	"surface_plains":    ["ashburn_shambler", "carbon_crawler", "potash_poltergeist"],
+	"underground_mines": ["iron_hulk", "copper_coil", "zinc_phantom"],
+	"crystal_caverns":   ["silver_specter", "gold_golem", "prismatic_hound"],
+	"sky_islands":       ["alkali_hawk", "static_djinn", "stormwing"],
+	"ocean_floor":       ["brine_crawler", "verdigris_lurker", "deep_shocker"],
+	"magma_layer":       ["uranium_wraith", "thorium_scorcher", "platinum_sentinel"],
+}
+
+# Tier weights per biome — surface is mostly basic, magma is mostly expert
+# [basic_weight, intermediate_weight, expert_weight]
+const BIOME_TIER_WEIGHTS: Dictionary = {
+	"surface_plains":    [0.70, 0.25, 0.05],
+	"underground_mines": [0.50, 0.35, 0.15],
+	"crystal_caverns":   [0.35, 0.45, 0.20],
+	"sky_islands":       [0.40, 0.40, 0.20],
+	"ocean_floor":       [0.30, 0.45, 0.25],
+	"magma_layer":       [0.10, 0.35, 0.55],
+}
 
 func _ready() -> void:
 	_generate_world()
@@ -223,40 +245,52 @@ func _spawn_enemies() -> void:
 	var enemy_scene: PackedScene = load(ENEMY_SCENE)
 	if enemy_scene == null:
 		return
-	# Village safe zone: tiles 8–24, skip spawning there
+	# Village safe zone
 	const SAFE_X_MIN: int = 8
 	const SAFE_X_MAX: int = 24
 	const SAFE_Y_MIN: int = 8
 	const SAFE_Y_MAX: int = 24
 
 	for biome: Dictionary in BIOMES:
+		var biome_name: String = biome.get("name", "")
 		var bx_start: int = int(biome.x_start)
 		var bx_end:   int = int(biome.x_end)
-		var elements: Array = biome.elements
-		if elements.is_empty():
+		var creature_ids: Array = BIOME_CREATURES.get(biome_name, [])
+		if creature_ids.is_empty():
 			continue
+		var tier_weights: Array = BIOME_TIER_WEIGHTS.get(biome_name, [0.6, 0.3, 0.1])
+
 		for _i: int in range(ENEMIES_PER_BIOME):
-			# Pick a random passable tile in this biome
 			var attempts: int = 0
-			while attempts < 20:
+			while attempts < 30:
 				attempts += 1
 				var tx: int = randi_range(bx_start, bx_end)
 				var ty: int = randi_range(0, WORLD_HEIGHT - 1)
-				# Skip village safe zone
 				if tx >= SAFE_X_MIN and tx <= SAFE_X_MAX and ty >= SAFE_Y_MIN and ty <= SAFE_Y_MAX:
 					continue
 				var td: Dictionary = tile_data.get(Vector2i(tx, ty), {})
 				if not td.get("passable", false):
 					continue
+
 				var enemy: CharacterBody2D = enemy_scene.instantiate()
-				enemy.position = Vector2(tx * TILE_SIZE + TILE_SIZE / 2, ty * TILE_SIZE + TILE_SIZE / 2)
-				# Assign drop elements from this biome
-				var drops: Array[String] = []
-				for sym: String in elements:
-					drops.append(sym)
-				enemy.drop_elements = drops
+				enemy.position = Vector2(tx * TILE_SIZE + TILE_SIZE / 2.0, ty * TILE_SIZE + TILE_SIZE / 2.0)
+
+				# Pick creature type — cycle through all three for variety
+				enemy.creature_id = creature_ids[_i % creature_ids.size()]
+
+				# Pick tier via weighted random
+				enemy.tier = _pick_tier(tier_weights)
+
 				add_child(enemy)
 				break
+
+func _pick_tier(weights: Array) -> String:
+	var r: float = randf()
+	if r < float(weights[0]):
+		return "basic"
+	elif r < float(weights[0]) + float(weights[1]):
+		return "intermediate"
+	return "expert"
 
 func _spawn_synthesizer_ui(player: Node) -> void:
 	# Spawn Synthesizer world object near village (tile 22,12 — east of workshop)

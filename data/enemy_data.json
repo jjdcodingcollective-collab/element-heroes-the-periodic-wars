@@ -1,0 +1,422 @@
+{
+  "lore": "Before the Calamity, the Voss Institute ran Project CHIMERA — a classified programme fusing unstable elemental compounds into living constructs. They called them Elementals. When the Institute fell, the creatures escaped containment. They roam the world now, drawn to the elemental concentrations that birthed them.",
+
+  "tier_multipliers": {
+    "basic":        { "hp": 1.0,  "damage": 1.0,  "speed": 1.0,  "sight": 1.0,  "xp": 10  },
+    "intermediate": { "hp": 1.8,  "damage": 1.6,  "speed": 1.25, "sight": 1.15, "xp": 25  },
+    "expert":       { "hp": 3.5,  "damage": 2.8,  "speed": 1.5,  "sight": 1.35, "xp": 60  }
+  },
+
+  "creatures": [
+    {
+      "id": "ashburn_shambler",
+      "name": "Ashburn Shambler",
+      "biome": "surface_plains",
+      "elements": ["Na", "K", "C"],
+      "lore": "CHIMERA File #001 — Subject fused with sodium and potassium alkali salts in a carbon-matrix binder. Violently reactive to moisture. DO NOT approach with water.",
+      "base_hp": 30,
+      "base_damage": 10,
+      "base_speed": 50,
+      "sight_range": 90,
+      "color": "#E8C840",
+      "size": 14,
+      "special": "explode_on_death",
+      "special_params": { "radius": 40, "damage": 8 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["Na", "K"],       "min": 1, "max": 1 },
+        "intermediate": { "elements": ["Na", "K", "C"],  "min": 1, "max": 2 },
+        "expert":       { "elements": ["K", "C"],        "min": 2, "max": 3, "bonus_item": "Standard Vial" }
+      },
+      "resistances": { "burn": 0.0, "poison": 0.5, "irradiate": 1.0 }
+    },
+    {
+      "id": "carbon_crawler",
+      "name": "Carbon Crawler",
+      "biome": "surface_plains",
+      "elements": ["C", "Na", "K"],
+      "lore": "CHIMERA File #002 — A graphite-armored insectoid. Carbon lattice exoskeleton absorbs blunt trauma. Weak to sustained fire.",
+      "base_hp": 45,
+      "base_damage": 8,
+      "base_speed": 65,
+      "sight_range": 80,
+      "color": "#303030",
+      "size": 12,
+      "special": null,
+      "aura": null,
+      "passive": "damage_reduction",
+      "passive_params": { "dr": 0.15 },
+      "drops": {
+        "basic":        { "elements": ["C"],             "min": 1, "max": 2 },
+        "intermediate": { "elements": ["C", "Na"],       "min": 2, "max": 3 },
+        "expert":       { "elements": ["C", "K"],        "min": 2, "max": 4 }
+      },
+      "resistances": { "burn": -0.5, "poison": 0.8, "irradiate": 1.0 }
+    },
+    {
+      "id": "potash_poltergeist",
+      "name": "Potash Poltergeist",
+      "biome": "surface_plains",
+      "elements": ["K", "Na", "C"],
+      "lore": "CHIMERA File #003 — Vaporous construct. Potassium salts dissolved into a semi-gaseous suspension. Leaves caustic residue on contact.",
+      "base_hp": 22,
+      "base_damage": 12,
+      "base_speed": 90,
+      "sight_range": 110,
+      "color": "#B06CCF",
+      "size": 10,
+      "special": "leave_puddle",
+      "special_params": { "duration": 3.0, "dps": 4, "slow": 0.5 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["K"],             "min": 1, "max": 1 },
+        "intermediate": { "elements": ["K", "Na"],       "min": 1, "max": 2 },
+        "expert":       { "elements": ["K", "C"],        "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.3, "poison": 0.0, "irradiate": 1.0 }
+    },
+
+    {
+      "id": "iron_hulk",
+      "name": "Iron Hulk",
+      "biome": "underground_mines",
+      "elements": ["Fe", "Cu", "Zn"],
+      "lore": "CHIMERA File #004 — Iron-core golem reinforced with zinc plating. Slow-moving but nearly impervious to melee strikes. Developed for tunnel security.",
+      "base_hp": 80,
+      "base_damage": 18,
+      "base_speed": 30,
+      "sight_range": 70,
+      "color": "#7A4520",
+      "size": 18,
+      "special": "shockwave",
+      "special_params": { "radius": 48, "damage": 12, "cooldown": 4.0 },
+      "aura": null,
+      "passive": "damage_reduction",
+      "passive_params": { "dr": 0.25 },
+      "drops": {
+        "basic":        { "elements": ["Fe"],            "min": 1, "max": 2 },
+        "intermediate": { "elements": ["Fe", "Cu"],      "min": 2, "max": 3 },
+        "expert":       { "elements": ["Fe", "Cu", "Zn"],"min": 3, "max": 4 }
+      },
+      "resistances": { "burn": 0.5, "poison": 1.0, "irradiate": 0.5 }
+    },
+    {
+      "id": "copper_coil",
+      "name": "Copper Coil",
+      "biome": "underground_mines",
+      "elements": ["Cu", "Zn", "Fe"],
+      "lore": "CHIMERA File #005 — Serpentine electro-magnetic construct. Copper winding generates a low-voltage field that stuns on contact. Highly agile in tunnels.",
+      "base_hp": 35,
+      "base_damage": 14,
+      "base_speed": 100,
+      "sight_range": 100,
+      "color": "#B87333",
+      "size": 10,
+      "special": "stun_on_hit",
+      "special_params": { "stun_duration": 0.8, "chance": 0.35 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["Cu"],            "min": 1, "max": 2 },
+        "intermediate": { "elements": ["Cu", "Zn"],      "min": 1, "max": 3 },
+        "expert":       { "elements": ["Cu", "Fe"],      "min": 2, "max": 4 }
+      },
+      "resistances": { "burn": 0.5, "poison": 0.8, "irradiate": 0.5 }
+    },
+    {
+      "id": "zinc_phantom",
+      "name": "Zinc Phantom",
+      "biome": "underground_mines",
+      "elements": ["Zn", "Cu", "Fe"],
+      "lore": "CHIMERA File #006 — Zinc-oxide fog entity. Releases oxidising vapour that corrodes equipment on contact, reducing armour effectiveness temporarily.",
+      "base_hp": 28,
+      "base_damage": 10,
+      "base_speed": 75,
+      "sight_range": 95,
+      "color": "#A0C0C0",
+      "size": 12,
+      "special": "corrode_armor",
+      "special_params": { "dr_reduction": 0.10, "duration": 5.0 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["Zn"],            "min": 1, "max": 1 },
+        "intermediate": { "elements": ["Zn", "Cu"],      "min": 1, "max": 2 },
+        "expert":       { "elements": ["Zn", "Cu", "Fe"],"min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.5, "poison": 0.3, "irradiate": 0.7 }
+    },
+
+    {
+      "id": "silver_specter",
+      "name": "Silver Specter",
+      "biome": "crystal_caverns",
+      "elements": ["Ag", "Au"],
+      "lore": "CHIMERA File #007 — Silver nanoparticle cloud given sentience. Reflects photon-based attacks. Fires condensed silver bolts at range.",
+      "base_hp": 40,
+      "base_damage": 16,
+      "base_speed": 60,
+      "sight_range": 130,
+      "color": "#C8C8D8",
+      "size": 12,
+      "special": "ranged_attack",
+      "special_params": { "projectile_damage": 12, "projectile_speed": 150, "cooldown": 2.5 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["Ag"],            "min": 1, "max": 1 },
+        "intermediate": { "elements": ["Ag", "Au"],      "min": 1, "max": 2 },
+        "expert":       { "elements": ["Ag", "Au"],      "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.8, "poison": 1.0, "irradiate": 0.5 }
+    },
+    {
+      "id": "gold_golem",
+      "name": "Gold Golem",
+      "biome": "crystal_caverns",
+      "elements": ["Au", "Ag"],
+      "lore": "CHIMERA File #008 — Dense gold-alloy construct. Almost impervious to physical damage. Moves slowly but one strike is devastating. The scientists nicknamed it 'The Vault'.",
+      "base_hp": 150,
+      "base_damage": 35,
+      "base_speed": 20,
+      "sight_range": 60,
+      "color": "#FFD700",
+      "size": 22,
+      "special": "ground_slam",
+      "special_params": { "radius": 56, "damage": 20, "cooldown": 5.0 },
+      "aura": null,
+      "passive": "damage_reduction",
+      "passive_params": { "dr": 0.40 },
+      "drops": {
+        "basic":        { "elements": ["Au"],            "min": 1, "max": 2 },
+        "intermediate": { "elements": ["Au", "Ag"],      "min": 2, "max": 3 },
+        "expert":       { "elements": ["Au", "Ag"],      "min": 3, "max": 4 }
+      },
+      "resistances": { "burn": 1.0, "poison": 1.0, "irradiate": 0.8 }
+    },
+    {
+      "id": "prismatic_hound",
+      "name": "Prismatic Hound",
+      "biome": "crystal_caverns",
+      "elements": ["Ag", "Au"],
+      "lore": "CHIMERA File #009 — Gold-silver bimetallic alloy in a quadruped frame. Pack hunter. Flashes prismatic light to disorient prey before lunging.",
+      "base_hp": 50,
+      "base_damage": 20,
+      "base_speed": 110,
+      "sight_range": 120,
+      "color": "#E8D080",
+      "size": 14,
+      "special": "flash_blind",
+      "special_params": { "blind_duration": 1.5, "cooldown": 6.0 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["Ag"],            "min": 1, "max": 1 },
+        "intermediate": { "elements": ["Ag", "Au"],      "min": 1, "max": 2 },
+        "expert":       { "elements": ["Au", "Ag"],      "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.8, "poison": 0.8, "irradiate": 0.6 }
+    },
+
+    {
+      "id": "alkali_hawk",
+      "name": "Alkali Hawk",
+      "biome": "sky_islands",
+      "elements": ["K", "Na"],
+      "lore": "CHIMERA File #010 — Avian frame with alkali-metal feather-tips that ignite on impact. Dive-bombs from height with explosive force.",
+      "base_hp": 30,
+      "base_damage": 20,
+      "base_speed": 140,
+      "sight_range": 160,
+      "color": "#F0A040",
+      "size": 12,
+      "special": "dive_bomb",
+      "special_params": { "dive_multiplier": 2.5, "splash_radius": 32, "splash_damage": 10, "cooldown": 4.0 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["K"],             "min": 1, "max": 1 },
+        "intermediate": { "elements": ["K", "Na"],       "min": 1, "max": 2 },
+        "expert":       { "elements": ["K", "Na"],       "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.2, "poison": 0.5, "irradiate": 1.0 }
+    },
+    {
+      "id": "static_djinn",
+      "name": "Static Djinn",
+      "biome": "sky_islands",
+      "elements": ["Na", "K"],
+      "lore": "CHIMERA File #011 — Potassium-sodium plasma vortex. Generates continuous electrostatic discharge. Proximity alone causes damage — touching it is ill-advised.",
+      "base_hp": 25,
+      "base_damage": 8,
+      "base_speed": 80,
+      "sight_range": 100,
+      "color": "#80C8FF",
+      "size": 14,
+      "special": null,
+      "aura": "lightning",
+      "aura_params": { "radius": 40, "dps": 6 },
+      "drops": {
+        "basic":        { "elements": ["Na"],            "min": 1, "max": 1 },
+        "intermediate": { "elements": ["Na", "K"],       "min": 1, "max": 2 },
+        "expert":       { "elements": ["K", "Na"],       "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.0, "poison": 0.5, "irradiate": 1.0 }
+    },
+    {
+      "id": "stormwing",
+      "name": "Stormwing",
+      "biome": "sky_islands",
+      "elements": ["K", "Na"],
+      "lore": "CHIMERA File #012 — Largest aerial Elemental. Compressed-gas wings generate knockback on flap. Expert tier can pin the player against terrain.",
+      "base_hp": 60,
+      "base_damage": 15,
+      "base_speed": 95,
+      "sight_range": 140,
+      "color": "#A8E8FF",
+      "size": 20,
+      "special": "knockback_slam",
+      "special_params": { "knockback_force": 200, "damage": 12, "cooldown": 3.0 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["K"],             "min": 1, "max": 2 },
+        "intermediate": { "elements": ["K", "Na"],       "min": 2, "max": 3 },
+        "expert":       { "elements": ["Na", "K"],       "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.0, "poison": 0.4, "irradiate": 1.0 }
+    },
+
+    {
+      "id": "brine_crawler",
+      "name": "Brine Crawler",
+      "biome": "ocean_floor",
+      "elements": ["Cu", "Zn"],
+      "lore": "CHIMERA File #013 — Crab-like construct forged for deep-sea pressure. Copper-zinc alloy shell is highly corrosion-resistant. Adapted to saline extremes.",
+      "base_hp": 50,
+      "base_damage": 12,
+      "base_speed": 55,
+      "sight_range": 80,
+      "color": "#406080",
+      "size": 16,
+      "special": null,
+      "aura": null,
+      "passive": "damage_reduction",
+      "passive_params": { "dr": 0.20 },
+      "drops": {
+        "basic":        { "elements": ["Cu"],            "min": 1, "max": 2 },
+        "intermediate": { "elements": ["Cu", "Zn"],      "min": 2, "max": 3 },
+        "expert":       { "elements": ["Zn", "Cu"],      "min": 2, "max": 4 }
+      },
+      "resistances": { "burn": 0.7, "poison": 0.3, "irradiate": 0.7 }
+    },
+    {
+      "id": "verdigris_lurker",
+      "name": "Verdigris Lurker",
+      "biome": "ocean_floor",
+      "elements": ["Zn", "Cu"],
+      "lore": "CHIMERA File #014 — Copper-oxide ooze, permanently corroded. Secretes zinc-oxide cloud that poisons and slows targets. Disguises itself as sea-floor rock.",
+      "base_hp": 38,
+      "base_damage": 9,
+      "base_speed": 45,
+      "sight_range": 70,
+      "color": "#4A8060",
+      "size": 14,
+      "special": null,
+      "aura": "poison",
+      "aura_params": { "radius": 48, "dps": 5 },
+      "drops": {
+        "basic":        { "elements": ["Zn"],            "min": 1, "max": 1 },
+        "intermediate": { "elements": ["Zn", "Cu"],      "min": 1, "max": 2 },
+        "expert":       { "elements": ["Cu", "Zn"],      "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.8, "poison": 999, "irradiate": 0.7 }
+    },
+    {
+      "id": "deep_shocker",
+      "name": "Deep Shocker",
+      "biome": "ocean_floor",
+      "elements": ["Cu", "Zn"],
+      "lore": "CHIMERA File #015 — Jellyfish-inspired construct. Copper-filament tentacles discharge high-voltage pulses that temporarily lock the player in place.",
+      "base_hp": 32,
+      "base_damage": 16,
+      "base_speed": 50,
+      "sight_range": 90,
+      "color": "#2080C0",
+      "size": 14,
+      "special": "aoe_stun",
+      "special_params": { "radius": 44, "stun_duration": 1.2, "cooldown": 5.0 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["Cu"],            "min": 1, "max": 1 },
+        "intermediate": { "elements": ["Cu", "Zn"],      "min": 1, "max": 2 },
+        "expert":       { "elements": ["Zn", "Cu"],      "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 0.7, "poison": 0.4, "irradiate": 0.6 }
+    },
+
+    {
+      "id": "uranium_wraith",
+      "name": "Uranium Wraith",
+      "biome": "magma_layer",
+      "elements": ["U", "Th", "Pt"],
+      "lore": "CHIMERA File #016 — Uranium-235 plasma given physical form. Emits continuous gamma radiation in a wide field. Tier 1 containment gear is wholly insufficient.",
+      "base_hp": 60,
+      "base_damage": 22,
+      "base_speed": 70,
+      "sight_range": 110,
+      "color": "#40C040",
+      "size": 14,
+      "special": null,
+      "aura": "irradiate",
+      "aura_params": { "radius": 64, "dps": 10 },
+      "drops": {
+        "basic":        { "elements": ["U"],             "min": 1, "max": 1 },
+        "intermediate": { "elements": ["U", "Th"],       "min": 1, "max": 2 },
+        "expert":       { "elements": ["U", "Th", "Pt"], "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 1.0, "poison": 1.0, "irradiate": 999 }
+    },
+    {
+      "id": "thorium_scorcher",
+      "name": "Thorium Scorcher",
+      "biome": "magma_layer",
+      "elements": ["Th", "U", "Pt"],
+      "lore": "CHIMERA File #017 — Thorium-decay heat-beast. Body temperature exceeds 1,500°C. Leaves a scorched trail that burns anything passing through it for 8 seconds.",
+      "base_hp": 75,
+      "base_damage": 28,
+      "base_speed": 85,
+      "sight_range": 95,
+      "color": "#FF6010",
+      "size": 16,
+      "special": "leave_fire_trail",
+      "special_params": { "trail_dps": 12, "trail_duration": 8.0, "trail_width": 8 },
+      "aura": null,
+      "drops": {
+        "basic":        { "elements": ["Th"],            "min": 1, "max": 1 },
+        "intermediate": { "elements": ["Th", "U"],       "min": 1, "max": 2 },
+        "expert":       { "elements": ["Th", "U", "Pt"], "min": 2, "max": 3 }
+      },
+      "resistances": { "burn": 999, "poison": 1.0, "irradiate": 0.8 }
+    },
+    {
+      "id": "platinum_sentinel",
+      "name": "Platinum Sentinel",
+      "biome": "magma_layer",
+      "elements": ["Pt", "U", "Th"],
+      "lore": "CHIMERA File #018 — The apex CHIMERA construct. Platinum-iridium exoskeleton, virtually indestructible. Designed as the final failsafe of the Voss Institute. It was never meant to escape.",
+      "base_hp": 200,
+      "base_damage": 40,
+      "base_speed": 40,
+      "sight_range": 120,
+      "color": "#D0E8F0",
+      "size": 24,
+      "special": "shield_pulse",
+      "special_params": { "immunity_duration": 2.0, "cooldown": 8.0 },
+      "aura": "irradiate",
+      "aura_params": { "radius": 56, "dps": 8 },
+      "passive": "damage_reduction",
+      "passive_params": { "dr": 0.50 },
+      "drops": {
+        "basic":        { "elements": ["Pt"],            "min": 1, "max": 2 },
+        "intermediate": { "elements": ["Pt", "Th"],      "min": 2, "max": 3 },
+        "expert":       { "elements": ["Pt", "U", "Th"], "min": 3, "max": 4, "bonus_item": "Lead Container" }
+      },
+      "resistances": { "burn": 1.0, "poison": 1.0, "irradiate": 999 }
+    }
+  ]
+}
