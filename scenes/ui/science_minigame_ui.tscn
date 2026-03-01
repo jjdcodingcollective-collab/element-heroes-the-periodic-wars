@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://science_minigame_ui"]
+
+[ext_resource type="Script" path="res://scripts/ui/science_minigame_ui.gd" id="1_sciminigame"]
+
+[node name="ScienceMinigameUI" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_sciminigame")

@@ -51,10 +51,12 @@ const BIOMES := [
 var tile_data: Dictionary = {}
 var tile_nodes: Dictionary = {}  # Vector2i -> ColorRect
 
-const ENEMY_SCENE: String = "res://scenes/world/enemy.tscn"
-const BOSS_SCENE:  String = "res://scenes/world/boss.tscn"
-const SYNTH_SCENE: String = "res://scenes/world/synthesizer.tscn"
-const SYNTH_UI_SCENE: String = "res://scenes/ui/synthesizer_ui.tscn"
+const ENEMY_SCENE:      String = "res://scenes/world/enemy.tscn"
+const BOSS_SCENE:       String = "res://scenes/world/boss.tscn"
+const SYNTH_SCENE:      String = "res://scenes/world/synthesizer.tscn"
+const SYNTH_UI_SCENE:   String = "res://scenes/ui/synthesizer_ui.tscn"
+const LAB_DESK_SCENE:   String = "res://scenes/world/lab_desk.tscn"
+const MINIGAME_UI_SCENE: String = "res://scenes/ui/science_minigame_ui.tscn"
 
 # One boss per biome — placed near the far end of each biome zone
 const BIOME_BOSSES: Dictionary = {
@@ -120,6 +122,9 @@ func _init_ui() -> void:
 			player.equip_weapon("bronze_sword")
 		# Wire SynthesizerUI
 		_spawn_synthesizer_ui(player)
+		# Phase 6 — Science mini-game desk in Aldric's workshop
+		_spawn_lab_desk()
+		_spawn_minigame_ui()
 
 	# Set Aldric's dialogue via exported property override in code
 	# (avoids needing to open the editor to set the Inspector fields)
@@ -135,6 +140,8 @@ func _init_ui() -> void:
 			"It's not natural erosion. Something — or someone — is introducing a foreign compound into the aquifer.",
 			"I have a theory, but I need your help to test it. Bring me two Hydrogen samples and one Oxygen sample. We'll synthesize a pure control batch and compare.",
 			"You'll find the elements scattered around the plains. Use your hands — they're closer to the ground than mine these days.",
+			"And Kael... before you go — there's a stack of research notes on my desk. Worth reading. Knowledge is as important as any weapon out there.",
+			"Press [F] near the desk to study. Get enough right and you'll earn some element samples from my reserves. Don't worry, I have plenty.",
 			"And Kael... be careful. The plains haven't felt right lately. I've noticed things moving at the edge of the fog.",
 			"Go on then. The village is counting on us — even if they don't know it yet.",
 		] as Array[String])
@@ -366,3 +373,20 @@ func _spawn_synthesizer_ui(player: Node) -> void:
 	# Wire player inventory and equipment
 	synth_ui.player_inventory = player.get_node_or_null("Inventory")
 	synth_ui.player_equipment = player.get_node_or_null("Equipment")
+
+func _spawn_lab_desk() -> void:
+	# Place Aldric's research desk inside his workshop (tile 12, 11)
+	# Workshop occupies tiles (10,10)→(14,13); desk sits one tile inside.
+	var desk_scene: PackedScene = load(LAB_DESK_SCENE)
+	if desk_scene == null:
+		return
+	var desk: Node2D = desk_scene.instantiate()
+	desk.position = Vector2(12 * TILE_SIZE + TILE_SIZE / 2.0, 11 * TILE_SIZE + TILE_SIZE / 2.0)
+	add_child(desk)
+
+func _spawn_minigame_ui() -> void:
+	var ui_scene: PackedScene = load(MINIGAME_UI_SCENE)
+	if ui_scene == null:
+		return
+	var ui: Node = ui_scene.instantiate()
+	add_child(ui)

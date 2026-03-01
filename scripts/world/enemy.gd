@@ -389,6 +389,7 @@ func _die() -> void:
 		_do_shockwave(float(sp.get("radius", 40)), float(sp.get("damage", 8)))
 		_spawn_shockwave_vfx(global_position, float(sp.get("radius", 40)), Color(1.0, 0.6, 0.0, 0.7))
 
+	AudioManager.on_enemy_die()
 	_drop_elements()
 	queue_free()
 

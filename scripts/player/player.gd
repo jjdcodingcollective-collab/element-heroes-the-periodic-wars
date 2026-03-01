@@ -48,6 +48,7 @@ func take_damage(amount: float) -> void:
 	var final_damage: float = amount * (1.0 - dr)
 	hp = maxf(hp - final_damage, 0.0)
 	_invincible_timer = I_FRAME_DURATION
+	AudioManager.on_player_hit()
 
 func apply_stun(duration: float) -> void:
 	_stun_timer = maxf(_stun_timer, duration)
@@ -136,13 +137,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("open_compendium"):
 		get_tree().call_group("ui", "toggle_compendium")
 	elif event.is_action_pressed("interact"):
-		get_tree().call_group("npc", "try_interact", global_position)
-		get_tree().call_group("synthesizer", "try_interact", global_position)
+		get_tree().call_group("npc",       "try_interact", global_position)
+		get_tree().call_group("synthesizer","try_interact", global_position)
+		get_tree().call_group("lab_desk",  "try_interact", global_position)
 	elif event.is_action_pressed("save_game"):
 		SaveSystem.save_game(self)
 
 func _try_attack() -> void:
 	weapon.try_attack(facing)
+	AudioManager.on_attack_melee()
 
 func _try_dig() -> void:
 	var mouse_pos := get_global_mouse_position()
@@ -154,6 +157,7 @@ func _try_dig() -> void:
 		return
 	var tile_coords: Vector2i = world_node.world_to_tile(mouse_pos)
 	var element: String = world_node.dig_tile(tile_coords)
+	AudioManager.on_dig()
 	if element != "":
 		# Check player has correct container and handling equipment
 		var missing: String = equipment.can_collect(element)
@@ -164,6 +168,7 @@ func _try_dig() -> void:
 		equipment.consume_container_for(element)
 		inventory.add_element(element, amount)
 		_spawn_pickup_label(element, amount, mouse_pos)
+		AudioManager.on_pickup()
 
 func _spawn_warning_label(message: String, world_pos: Vector2) -> void:
 	var label := Label.new()

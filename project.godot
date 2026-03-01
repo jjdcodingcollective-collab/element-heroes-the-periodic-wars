@@ -104,6 +104,7 @@ attack={
 ElementDB="*res://scripts/data/element_database.gd"
 CraftingSystem="*res://scripts/crafting/crafting_system.gd"
 SaveSystem="*res://scripts/data/save_system.gd"
+AudioManager="*res://scripts/audio/audio_manager.gd"
 
 [layer_names]
 

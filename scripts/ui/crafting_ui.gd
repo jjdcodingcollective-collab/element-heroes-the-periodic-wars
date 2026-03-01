@@ -102,6 +102,7 @@ func _on_craft_pressed() -> void:
 	if compound.is_empty():
 		result_label.text = "Not enough elements!"
 	else:
+		AudioManager.on_craft()
 		result_label.text = "Crafted: %s!" % str(compound.get("name", ""))
 		# Auto-equip weapons and armor when crafted
 		var category: String = str(compound.get("category", ""))

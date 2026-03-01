@@ -1,37 +1,60 @@
 # Element Heroes — The Periodic Wars
 
-> A pixel-based 2D top-down adventure game with Minecraft-style crafting built around all 118 elements of the periodic table.
+> *"Learn the elements. Master the reactions. Win the Periodic Wars."*
+
+A pixel-art 2D top-down adventure game built in **Godot 4** around all 118 elements of the periodic table. Collect real elements, craft real chemical compounds, and battle element-themed enemies across six biomes — all grounded in actual chemistry.
+
+**Target audience:** Grades 6–12 · **Engine:** Godot 4 (GDScript) · **Status:** Active development
 
 ---
 
-## About the Game
+## Features
 
-**Element Heroes** is an educational adventure game where players explore a procedurally generated top-down pixel world, collect raw elements, and combine them into real chemical compounds to craft tools, weapons, structures, and more. Every mechanic is grounded in real chemistry — making science fun for grades 6–12.
+### Exploration & World
+- **Procedurally generated top-down world** — 200×200 tile map across 6 distinct biomes
+- **6 element-themed biomes** — each with unique ore deposits, enemies, and a Compound Titan boss
+- **Ashenveil village** — NPC hub with Prof. Aldric Voss, the Synthesizer machine, and the research lab
 
----
+### Chemistry Crafting
+- **All 118 elements** collectible with realistic lab equipment constraints (containers, PPE tiers)
+- **65+ compound recipes** matching real chemical formulas in a 3×3 crafting grid
+- **Synthesizer machine** — polymer lab for advanced plastic/composite intermediates
+- **Real lab handling data** — every element requires the correct container tier and PPE
 
-## Core Features
+### Combat
+- **Real-time Zelda-style combat** — melee arc attacks + ranged projectiles
+- **10 weapons (Tiers 1–5)** — melee and ranged, with DoT effects (burn, irradiate, poison)
+- **5 armors (Tiers 1–5)** — flat damage reduction, single equipment slot
+- **I-frames, stun, knockback, armor corrode** — full status effect system
 
-- **Top-down exploration** — Bird's-eye pixel world with distinct biome regions spread across the map
-- **Minecraft-style crafting** — 3×3 crafting grid where element arrangements follow real chemical formulas
-- **All 118 elements** — Collect, combine, and discover every element on the periodic table
-- **Chemistry-driven mechanics** — Alkali metals explode in water, noble gases are chemically inert, metals conduct electricity
-- **Educational layer** — In-game element compendium, reaction log, and periodic table HUD
+### Enemies & Bosses
+- **18 CHIMERA creature types × 3 tiers** = 54 total variants, fully data-driven
+- **6 Compound Titan bosses** — 3-phase fights with arena hazards and element drops
+- **Special abilities** — explosions, auras, ranged attacks, phase transitions, drain effects
+
+### Education — Phase 6
+- **In-game Compendium** — 118-element periodic table, auto-unlocks on discovery
+- **Science Mini-Game** — chemistry quiz at Aldric's desk, 26 questions across 6 topics
+- Element rewards for correct answers · HP penalty + explanation for wrong ones
+- S/A/B/C graded sessions with Prof. Aldric quotes
+
+### Audio & Art (in progress)
+- **AudioManager** autoload — crossfading biome music, 12-slot SFX pool, volume control
+- Full **sprite animation spec** written (`assets/sprites/SPRITE_SPEC.md`)
+- Folders and wiring ready — drop `.ogg` files and sprite sheets in to activate
 
 ---
 
 ## Biomes
 
-| Biome | Elements | Theme |
-|-------|----------|-------|
-| Surface Plains | Na, K, C, N, O | Starting area — alkali metals & nonmetals |
-| Underground Mines | Fe, Cu, Zn, Ni | Rocky cavern region — transition metals |
-| Crystal Caverns | He, Ne, Ar, F, Cl | Glowing cave region — noble gases & halogens |
-| Sky Islands | Al, Mg, Li, Be | Elevated rocky platforms — lightweight metals |
-| Ocean Floor | Hg, Br, I | Flooded region — lanthanides & aquatic elements |
-| Magma Layer | U, Th, Ra, Pu | Dangerous southern region — radioactive elements |
-
-Biomes are arranged as distinct horizontal regions on the top-down map. Players travel between them on foot, unlocking new elements and story content as they explore.
+| Biome | Elements | Boss Titan |
+|-------|----------|-----------|
+| Surface Plains | Na, K, C | PEROXIS — Na₂O₂ |
+| Underground Mines | Fe, Cu, Zn, Ni | CHALCOR — CuFeS₂ |
+| Crystal Caverns | Ag, Au | AURIUM — HAuCl₄ |
+| Sky Islands | K, Na | AZRAEL — NaN₃ |
+| Ocean Floor | Cu, Zn | ATACAMA — Cu₂Cl(OH)₃ |
+| Magma Layer | U, Th, Pt | URANOX — UO₂ |
 
 ---
 
@@ -39,40 +62,47 @@ Biomes are arranged as distinct horizontal regions on the top-down map. Players 
 
 | Key | Action |
 |-----|--------|
-| W / A / S / D | Move (8-directional) |
-| Left Click | Dig / collect element node |
-| Right Click | Place block |
-| E | Open inventory |
-| C | Open element compendium |
-| F | Interact |
-| X | Open crafting bench |
+| WASD | Move (8-directional) |
+| Left Click | Dig / collect element |
+| Right Click / Space | Attack |
+| E | Toggle inventory |
+| C | Toggle crafting / Compendium |
+| F | Interact — NPC / Synthesizer / Lab desk |
+| X | Save game |
+| ESC | Close UI |
 
 ---
 
-## Crafting System
-
-Players arrange element "atoms" in a 3×3 grid matching real chemical formulas:
+## Crafting Examples
 
 ```
-[ Na ] [ Cl ] [    ]     →   NaCl (Table Salt)
-[    ] [    ] [    ]         Preserves food, crafts buffs
+[ Na ] [ Cl ] [    ]   →   NaCl  (Table Salt)
+[    ] [    ] [    ]
+[    ] [    ] [    ]
+
+[ Fe ] [ Fe ] [ Fe ]   →   Fe₂O₃  (Iron Oxide / Rust)
+[ O  ] [ O  ] [ O  ]
+[    ] [    ] [    ]
+
+[ H  ] [ O  ] [ H  ]   →   H₂O  (Water)
+[    ] [    ] [    ]
 [    ] [    ] [    ]
 ```
 
-**Modes:**
-- **Explorer Mode** — Suggests valid compounds (beginner-friendly)
-- **Scientist Mode** — Exact stoichiometry required (real chemistry)
+---
 
-### Example Compounds
+## Science Quiz Topics
 
-| Compound | Formula | Game Use |
-|----------|---------|----------|
-| Steel | Fe + C | Strong building blocks |
-| Glass | SiO₂ | Transparent walls/windows |
-| Gunpowder | K + N + S + C | Mining, explosives |
-| Aspirin | C₉H₈O₄ | Health potion |
-| Neon Sign | Ne | Glowing decorations |
-| Chlorine Gas | Cl₂ | Toxic weapon/trap |
+Questions in Aldric's lab span 6 chemistry categories:
+
+| Category | Examples |
+|----------|----------|
+| Atomic structure | Proton counts, ions, isotopes |
+| Periodic table | Groups, periods, electronegativity |
+| Compounds | NaCl, H₂O, CO₂, Na₂O₂ formulas |
+| Reactivity | Alkali metals, combustion, displacement |
+| States of matter | Boiling points, sublimation |
+| Lab safety | PPE, acid spills, radiation shielding |
 
 ---
 
@@ -80,62 +110,64 @@ Players arrange element "atoms" in a 3×3 grid matching real chemical formulas:
 
 | Component | Technology |
 |-----------|------------|
-| Game Engine | Godot 4 (GDScript) |
-| Pixel Art | Aseprite |
-| Map Editor | Tiled |
-| Element Data | JSON (PubChem-sourced) |
-| Audio | Godot AudioStreamPlayer |
+| Engine | Godot 4 (GDScript, strict typing) |
+| Pixel Art | Aseprite / Pixelorama |
+| Element Data | JSON (118 elements, 65+ recipes) |
+| Audio | Godot AudioStreamPlayer + custom AudioManager |
 | Version Control | Git + GitHub |
-| Platforms | Web (HTML5), Windows, macOS, Linux |
+| Target Platforms | Web (HTML5), Windows, macOS, Linux |
+
+---
+
+## Project Structure
+
+```
+├── data/                   # JSON game data (elements, compounds, enemies, bosses, quiz)
+├── scripts/
+│   ├── player/             # Movement, inventory, equipment, weapons, armor
+│   ├── world/              # World gen, enemies, bosses, NPCs, hazards, lab desk
+│   ├── ui/                 # HUD, crafting, compendium, synthesizer, quiz mini-game
+│   ├── audio/              # AudioManager autoload
+│   ├── crafting/           # CraftingSystem autoload
+│   └── data/               # ElementDB + SaveSystem autoloads
+├── scenes/                 # Godot .tscn scene files
+├── assets/
+│   ├── sprites/            # Pixel art (SPRITE_SPEC.md has full animation spec)
+│   └── audio/
+│       ├── music/          # Biome + boss music (.ogg loops)
+│       └── sfx/            # Sound effects (.ogg one-shots)
+└── .claude/plans/          # Development plan and session notes
+```
 
 ---
 
 ## Development Roadmap
 
-| Phase | Focus | Timeline |
-|-------|-------|----------|
-| 1 | Foundation & Prototype | Weeks 1–4 |
-| 2 | World Generation & Biomes | Weeks 5–8 |
-| 3 | Chemistry Crafting System | Weeks 9–12 |
-| 4 | Combat & Enemies | Weeks 13–16 |
-| 5 | Structures & Building | Weeks 17–20 |
-| 6 | Education & UI Layer | Weeks 21–24 |
-| 7 | Polish & Beta Release | Weeks 25–28 |
+| Phase | Focus | Status |
+|-------|-------|--------|
+| 1 — Foundation | Engine setup, element data, prototype | ✅ Complete |
+| 2 — World Gen | Procedural biomes, ore spawning | ✅ Complete |
+| 3 — Crafting | 3×3 grid, 65+ recipes, Synthesizer | ✅ Complete |
+| 4 — Combat | Enemies, bosses, weapons, armor | ✅ Complete |
+| 5 — Building | Compound-based block placement | ⬜ Planned |
+| 6 — Education | Science mini-game, compendium, quiz | ✅ Complete |
+| 7 — Polish | Pixel art sprites, music, SFX, story | 🔄 In Progress |
 
 Full plan: [`.claude/plans/game-development-plan.md`](.claude/plans/game-development-plan.md)
 
 ---
 
-## MVP Checklist
-
-- [ ] Procedural top-down world generation (2 biomes)
-- [ ] 20 collectible elements
-- [ ] 3×3 crafting grid with 30+ compound recipes
-- [ ] Basic combat (5 enemy types)
-- [ ] Player progression (health, inventory, tools)
-- [ ] Save/load system
-- [ ] In-game periodic table reference UI
-- [ ] 30–60 minutes of gameplay
-
----
-
 ## Educational Goals
 
-- Teach element symbols, properties, and groups through gameplay
-- Reinforce compound formulas via crafting mechanics
-- Introduce real chemistry concepts: reactivity, conductivity, states of matter, bonding
-- Target audience: **Grades 6–12**
+- Teach element symbols, atomic numbers, and group properties through gameplay
+- Reinforce real compound formulas via crafting mechanics
+- Introduce chemistry concepts — reactivity, conductivity, states of matter, lab safety
+- Quiz system rewards learning with in-game element drops
+- Compendium auto-discovery encourages exploration and retention
 
 ---
 
-## Enemy Types
+## Contributing
 
-- **Alkali Golems** — Explode on contact with water attacks
-- **Noble Gas Wraiths** — Chemically inert, immune to compound effects
-- **Iron Constructs** — Weaken with acid/oxidation
-- **Toxic Sludges** — Heavy metal compounds, poison damage
-- **Radioactive Elementals** — Magma region bosses
-
----
-
-*"Learn the elements. Master the reactions. Win the Periodic Wars."*
+See `PROGRESS.md` for full build status, system documentation, and next steps.
+See `assets/sprites/SPRITE_SPEC.md` for the pixel art animation specification.

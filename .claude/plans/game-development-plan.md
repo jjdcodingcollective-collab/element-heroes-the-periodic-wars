@@ -1,289 +1,213 @@
 # Plan: Element Heroes — The Periodic Wars
-## A Pixel-Based Science Adventure Game
+## Game Development Roadmap
+
+Last updated: 2026-03-01
 
 ---
 
 ## Summary
 
-A 2D pixel-art top-down adventure game with Minecraft-style crafting built entirely around the 118 elements of the periodic table. Players explore a procedurally generated top-down world viewed from above, collect elements, combine them into compounds, and use chemistry-based mechanics to progress.
+A 2D pixel-art top-down adventure game built in Godot 4 around all 118 elements of the periodic table. Players explore a procedurally generated world, collect elements with realistic lab equipment, combine them into real chemical compounds, craft weapons and armor, battle element-themed enemies across 6 biomes, and learn real science through an embedded quiz system.
 
 ---
 
-## Core Concept
+## Phase 1: Foundation & Prototype ✅ COMPLETE
 
-- **World:** Procedurally generated top-down pixel world with biomes arranged as distinct regions spread across the map
-- **Progression:** Collect raw elements → craft compounds → unlock tools/weapons/structures
-- **Learning:** Every interaction teaches real chemistry (element properties, compound formulas, reactions)
-- **Theme:** Top-down adventure with combat, exploration, and survival elements — viewed from above like classic Zelda or Stardew Valley
+**Delivered:**
+- Godot 4 project with strict GDScript typing
+- All 118 elements in `data/elements.json` (atomic number, mass, group, reactivity, biome, rarity)
+- 65+ compound recipes in `data/compounds.json` with real chemical formulas
+- Autoloads: `ElementDB`, `CraftingSystem`, `SaveSystem`, `AudioManager`
+- Tilemap renderer (ColorRect tiles — sprite-ready swap points)
+- Input map: WASD, left-click dig, right-click/space attack, E/C/F/X
 
 ---
 
-## Phase 1: Foundation & Prototype (Weeks 1–4)
+## Phase 2: World Generation & Biomes ✅ COMPLETE
 
-### Goals
-- Set up project structure and tech stack
-- Implement core engine systems
-- Basic playable prototype
+**Delivered:**
+- 200×200 tile procedural world with FastNoiseLite
+- 6 biomes arranged as horizontal regions on the map
+- Biome-specific tile colors, ore spawning, and enemy weights
+- Ashenveil village (6 buildings, well, market stall) at tile cluster (10–22, 10–18)
+- Camera with world-bounds clamping
+
+| Biome | X Range | Base Tile | Key Elements |
+|-------|---------|-----------|-------------|
+| Surface Plains | 0–39 | Grass/Dirt | Na, K, C |
+| Underground Mines | 40–79 | Stone | Fe, Cu, Zn, Ni |
+| Crystal Caverns | 80–109 | Stone | Ag, Au |
+| Sky Islands | 110–139 | Dirt | K, Na |
+| Ocean Floor | 140–169 | Sand | Cu, Zn |
+| Magma Layer | 170–199 | Volcanic Rock | U, Th, Pt |
+
+---
+
+## Phase 3: Chemistry Crafting System ✅ COMPLETE
+
+**Delivered:**
+- 3×3 crafting grid with real chemical formula matching
+- `CraftingSystem` autoload (`try_craft`, `try_craft_with_items`, `evaluate_grid`)
+- Polymer/plastic intermediate system via Synthesizer machine (tile 22,12)
+- Weapons and armor auto-equip on craft
+- Equipment tier hierarchy (5 container tiers, 3 glove tiers, radiation suits)
+- Lab handling constraints enforced on element collection
+
+**Compound categories:** base materials, weapon recipes (melee + ranged T1–T5), armor recipes (T1–T5), polymer intermediates (5 types), healing, quest items
+
+---
+
+## Phase 4: Combat & Enemies ✅ COMPLETE
+
+**Delivered:**
+
+### Combat System
+- Zelda-style real-time combat — melee arc (facing direction) + ranged projectile
+- I-frames (0.5s), stun, knockback, armor corrode status effects
+- 10 weapons: Bronze Sword → Plutonium Edge (melee T1–T5), Flint Arrow → Plutonium Cannon (ranged T1–T5)
+- 5 armors: Limestone Jerkin (10% DR) → Graphene Nanosuit (70% DR)
+- DoT effects: burn, irradiate, poison
+
+### Enemy System — Project CHIMERA
+- 18 creature types × 3 tiers = 54 variants (fully data-driven via `enemy_data.json`)
+- AI: patrol → chase loop with sight radius, biome-weighted spawning
+- 12+ special abilities: explosions, auras, ranged bolts, stun, knockback, armor corrode, shields
+- Aura types: lightning, poison, irradiate (continuous proximity damage)
+
+### Boss System — Compound Titans
+- 6 bosses, one per biome (fully data-driven via `boss_data.json`)
+- 3-phase architecture (triggers at 55% and 25% HP)
+- Per-phase: color change, aura scaling, arena hazard rate, new special abilities
+- Arena hazard types: water puddles, sulfur vents, acid pools, wind columns, brine tide, radiation zones
+- Element + lore-item drops on death
+
+---
+
+## Phase 5: Structures & Building ⬜ PLANNED (Weeks 17–20)
+
+**Goal:** Let players place compound-based blocks to build structures and crafting stations.
 
 ### Tasks
-1. **Tech Stack Selection**
-   - Engine: Godot 4 (GDScript/C#) — ideal for 2D pixel games, free, open source
-   - Alternatively: Phaser.js (web-based, easier for rapid prototyping)
-   - Asset pipeline: Aseprite for pixel art, Tiled for map editing
-   - Database: SQLite or JSON for element/compound data
-
-2. **Element Data System**
-   - Import all 118 elements with properties: atomic number, mass, group, period, electronegativity, reactivity
-   - Build compound/reaction database (common compounds: H₂O, NaCl, Fe₂O₃, etc.)
-   - Design "crafting recipe" system where element ratios = real chemical formulas
-
-3. **Core Engine Systems**
-   - Tilemap renderer (top-down pixel grid world)
-   - Player controller (8-directional movement, dig, place blocks)
-   - Top-down collision (no gravity — overhead view)
-   - Camera follows player with smooth tracking
-
-4. **Prototype Deliverable**
-   - Open test world with 10 elements to collect
-   - Basic crafting bench UI
-   - 2–3 craftable compounds
-   - Player can walk in all 8 directions, dig, and place blocks
+1. Block placement system (right-click place, left-click break)
+2. Compound block library — Glass (SiO₂), Steel (Fe+C), Concrete (CaO+SiO₂+H₂O), Ceramic (Al₂O₃), Copper Wire (Cu), Rubber (C₅H₈)
+3. Advanced crafting stations — Furnace (smelting), Electrolysis Chamber (break compounds), Chemistry Lab (complex synthesis)
+4. Player base: persistent placed blocks saved with `SaveSystem`
+5. Structure blueprints for common builds
 
 ---
 
-## Phase 2: World Generation & Biomes (Weeks 5–8)
+## Phase 6: Education & UI Layer ✅ COMPLETE
 
-### Goals
-- Procedurally generated world with element-themed biomes
-- Element ore spawning system
+**Delivered:**
 
-### Biome Designs
-| Biome | Theme | Elements Found |
-|-------|-------|----------------|
-| Surface Plains | Alkali metals & common nonmetals | Na, K, C, N, O |
-| Underground Mines | Transition metals | Fe, Cu, Zn, Ni, Mn |
-| Crystal Caverns | Noble gases & halogens | He, Ne, Ar, F, Cl |
-| Deep Magma Layer | Radioactive elements | U, Th, Ra, Pu |
-| Sky Islands | Lightweight metals | Al, Mg, Li, Be |
-| Ocean Floor | Lanthanides & aquatic elements | Hg, Br, I |
+### Compendium
+- 118-element periodic table grid in-game, grouped by category
+- Auto-discovers on first element collection
+- Category colour-coding: Alkali, Transition Metals, Halogens, Noble Gases, etc.
 
-### Tasks
-1. Procedural terrain generation (Perlin noise / cellular automata)
-2. Biome blending system
-3. Element "ore" vein spawning with rarity scaling (noble gases = rarest)
-4. Day/night cycle with atmospheric effects
-5. Background parallax layers per biome
+### Science Mini-Game — Aldric's Lab
+- Research desk world object inside Aldric's Workshop (tile 12,11)
+- Press F to start a 3-question quiz session
+- 26 questions across 6 categories (difficulty tiers 1/2/3)
+- Correct → element reward in inventory + chemistry explanation
+- Wrong → 5 HP penalty + explanation (learning moment preserved)
+- End-screen grading: S / A / B / C with Prof. Aldric quote
+- Questions balanced per session (one of each difficulty tier)
 
----
+**Categories:** Atomic structure · Periodic table · Compounds · Reactivity · States of matter · Lab safety
 
-## Phase 3: Chemistry Crafting System (Weeks 9–12)
-
-### Goals
-- Full periodic table crafting UI
-- Real-chemistry-based compound creation
-- Element property mechanics
-
-### Crafting System Design
-- **Crafting Grid:** 3×3 grid (like Minecraft) where players arrange element "atoms"
-- **Recipe Validation:** Check if arrangement matches a real chemical formula
-- **Fuzzy Mode:** For beginners — suggest valid compounds from selected elements
-- **Advanced Mode:** Exact ratio matching required (teaches stoichiometry)
-
-### Chemistry Mechanics
-- **Reactivity:** Alkali metals (Na, K) explode in water → game hazard
-- **Conductivity:** Metals allow electrical circuits in structures
-- **State of Matter:** Temperature affects element states (solid/liquid/gas blocks)
-- **Toxicity:** Some compounds are hazardous → game damage mechanic
-- **Luminescence:** Noble gases glow → lighting items
-
-### Compound Categories & Uses
-| Category | Examples | Game Use |
-|----------|----------|----------|
-| Structural | Steel (Fe+C), Concrete (Ca+Si+O) | Building blocks |
-| Tools | Bronze (Cu+Sn), Titanium alloy | Pickaxes, swords |
-| Medicine | Aspirin (C₉H₈O₄), Saltwater | Health potions |
-| Explosives | Gunpowder (K+N+S+C), TNT | Mining, combat |
-| Lighting | Neon signs, Phosphor compounds | Decoration, light |
-| Poisons | H₂S, Chlorine gas | Weapons, traps |
-| Fuel | Methane, Ethanol | Engines, torches |
+### Still Pending (Phase 6)
+- Achievement system — quiz streaks, boss kill milestones, first-collection badges
+- Reaction log — record all crafted compounds with real-world context
+- Extended glossary of chemistry terms
 
 ---
 
-## Phase 4: Combat & Enemies (Weeks 13–16)
+## Phase 7: Polish & Content Expansion 🔄 IN PROGRESS (Weeks 25–28)
 
-### Goals
-- Enemy system themed around element groups
-- Element-based weapons and spells
-- Boss encounters
+### Audio — Ready, awaiting files
+`AudioManager` autoload is complete with:
+- Crossfading music player (A/B channels, 1.5s fade)
+- 12-slot SFX pool
+- `on_biome_changed()`, `on_boss_fight_start/end()` API
+- All game events pre-wired (player hit, dig, pickup, attack, enemy die, craft, quiz)
 
-### Enemy Archetypes
-- **Alkali Golems** — Explode when hit with water attacks
-- **Noble Gas Wraiths** — Immune to chemical reactions, only physical damage
-- **Iron Constructs** — Rust mechanics (weaken with acid/water)
-- **Toxic Sludges** — Made of heavy metal compounds, poison attacks
-- **Radioactive Elementals** — Bosses from deep biomes
+**To activate:** drop `.ogg` files into `assets/audio/music/` and `assets/audio/sfx/`, uncomment preloads in `audio_manager.gd`.
 
-### Weapon System
-- Element-infused weapons with chemistry-based effects
-  - Sodium Sword: Reacts to water environments
-  - Chlorine Gas Bomb: AoE toxic cloud
-  - Magnesium Flare: Blinding bright light
-  - Thermite Arrows: Iron oxide + aluminum → extreme heat
+| Music track | Mood | BPM |
+|-------------|------|-----|
+| `surface_plains.ogg` | Bright, adventurous chiptune | 120 |
+| `underground_mines.ogg` | Tense, echo-y, dark | 90 |
+| `crystal_caverns.ogg` | Ethereal, shimmering arpeggios | 100 |
+| `sky_islands.ogg` | Floaty, light, high-register | 130 |
+| `ocean_floor.ogg` | Watery, ambient, mysterious | 80 |
+| `magma_layer.ogg` | Heavy, driving, industrial | 140 |
+| `boss_battle.ogg` | Intense, dramatic | 160 |
+| `title.ogg` | Epic, periodic table motif | 100 |
 
----
+**Recommended tools:** jsfxr (browser, instant SFX) · BeepBox (browser, chiptune music loops) · Audacity (WAV→OGG conversion)
 
-## Phase 5: Structures & Building (Weeks 17–20)
+### Pixel Art — Spec written, awaiting assets
+Full specification in `assets/sprites/SPRITE_SPEC.md` covering:
+- Player (Kael): 16×16, 8 animations (idle/walk × 4 directions), 24 frames total
+- 18 enemies: 16×16, 4-frame walk cycle per creature
+- 6 bosses: 48×48, idle + attack frames
+- World tiles: atlas PNG, 6 biome rows
+- World objects: Synthesizer (32×32), lab desk, well, market stall
+- HUD icons: hearts, inventory slots, weapon/armor slots
 
-### Goals
-- Full building system with compound-based blocks
-- Crafting stations for advanced synthesis
-- Player base/home system
+**Godot 4.3+:** Drop `.aseprite` files directly — auto-generates SpriteFrames, no manual setup.
+Tier visual variants applied via code `modulate` (Intermediate = warm gold, Expert = purple).
 
-### Building Blocks (Compound-Based)
-| Block | Formula | Properties |
-|-------|---------|------------|
-| Glass | SiO₂ | Transparent |
-| Steel | Fe + C | Strong, structural |
-| Ceramic Tile | Al₂O₃ | Heat resistant |
-| Copper Wire | Cu | Electrical |
-| Rubber Insulation | C₅H₈ (polyisoprene) | Electrical insulation |
-| Concrete | CaO + SiO₂ + H₂O | Heavy, blast resistant |
-
-### Crafting Stations
-- **Basic Workbench** — Simple element combinations
-- **Furnace** — Smelting and thermal reactions
-- **Electrolysis Chamber** — Break compounds into elements
-- **Chemistry Lab** — Complex multi-step synthesis
-- **Reactor Core** — Nuclear reactions (endgame)
+### Story & Content Expansion
+- Aldric quest line: deliver elements → unlock new dialogue and compendium entries
+- Per-biome NPC characters (1 new NPC per biome)
+- 30–60 minutes of narrative content
+- More compound recipes (target: 200+, current: 65+)
+- Balance pass on weapons, enemies, and bosses
 
 ---
 
-## Phase 6: Education & UI Layer (Weeks 21–24)
+## Milestones
 
-### Goals
-- In-game "Periodic Table" reference UI
-- Element discovery journal
-- Tooltips with real chemistry facts
-- Achievement system tied to learning
-
-### Educational Features
-1. **Element Compendium** — Unlocked entries for each discovered element with real-world info
-2. **Reaction Log** — Records all compounds crafted, shows formula and real-world use
-3. **Chemistry Tips** — Context-sensitive hints during crafting
-4. **Quiz Mode** — Optional mini-challenges for bonus rewards
-5. **Periodic Table HUD** — Interactive table showing discovered elements, highlights current crafting materials
-
-### Accessibility
-- Colorblind mode (element categories use symbols, not just color)
-- Difficulty tiers: Explorer (hints enabled), Scientist (real chemistry required)
-- In-game glossary of chemistry terms
+| Milestone | Target | Status |
+|-----------|--------|--------|
+| M1 — Prototype | Week 4 | ✅ Done |
+| M2 — World Gen | Week 8 | ✅ Done |
+| M3 — Crafting | Week 12 | ✅ Done |
+| M4 — Combat | Week 16 | ✅ Done |
+| M5 — Building | Week 20 | ⬜ Planned |
+| M6 — Education | Week 24 | ✅ Done |
+| M7 — Beta | Week 28 | 🔄 In Progress |
 
 ---
 
-## Phase 7: Polish & Content Expansion (Weeks 25–28)
+## Autoloads
 
-### Goals
-- Full sound design and music
-- Pixel art completion for all elements/compounds
-- Balancing pass
-- Save system and multiplayer groundwork
-
-### Content Targets
-- 118 elements (all collectible)
-- 200+ craftable compounds
-- 6 biomes fully generated
-- 10+ enemy types
-- 5 boss encounters
-- 50+ building blocks
-- Main story arc: "The Element Wars" narrative
+| Name | File | Role |
+|------|------|------|
+| `ElementDB` | `scripts/data/element_database.gd` | Loads all JSON data, recipe matching |
+| `CraftingSystem` | `scripts/crafting/crafting_system.gd` | Grid evaluation, item-aware crafting |
+| `SaveSystem` | `scripts/data/save_system.gd` | Persist/restore all player state |
+| `AudioManager` | `scripts/audio/audio_manager.gd` | Music crossfade, SFX pool, volume |
 
 ---
 
-## Tech Stack Recommendation
+## Open Questions
 
-| Component | Technology |
-|-----------|------------|
-| Game Engine | **Godot 4** (GDScript) |
-| Pixel Art | Aseprite |
-| Map Editor | Tiled (Godot plugin) |
-| Element Data | JSON database (PubChem API for reference) |
-| Audio | FMOD or Godot AudioStreamPlayer |
-| Version Control | Git + GitHub |
-| Build/Deploy | Godot export → Web (HTML5), Windows, Mac, Linux |
+1. **Building system scope** — Full Terraria-style placement, or simpler room-based building?
+2. **Multiplayer?** — Co-op lab sharing could be educationally powerful; deferred to post-beta
+3. **Mobile port?** — Touch UI would need redesign; out of scope for MVP
+4. **More compounds** — Currently 65+; PubChem API could auto-generate recipes to reach 200+
+5. **Monetization** — Free educational release vs. paid indie game on itch.io/Steam
+6. **Accessibility** — Colorblind mode (symbols not just color) planned for Phase 7
 
 ---
 
-## Data Architecture
+## Notes
 
-### Element Schema
-```json
-{
-  "atomic_number": 11,
-  "symbol": "Na",
-  "name": "Sodium",
-  "group": 1,
-  "period": 3,
-  "category": "alkali_metal",
-  "mass": 22.99,
-  "electronegativity": 0.93,
-  "reactivity": "very_high",
-  "state_at_room_temp": "solid",
-  "game_rarity": "common",
-  "biome": "surface",
-  "fun_fact": "Sodium explodes violently when it touches water!",
-  "real_world_uses": ["table salt", "street lights", "soap making"]
-}
-```
-
-### Compound/Recipe Schema
-```json
-{
-  "name": "Sodium Chloride",
-  "formula": "NaCl",
-  "elements": {"Na": 1, "Cl": 1},
-  "category": "salt",
-  "game_item": "salt_block",
-  "real_world_use": "Table salt, food preservation",
-  "game_use": "Preserves food items, crafts seasoning buffs",
-  "reaction_type": "ionic_bond"
-}
-```
-
----
-
-## MVP Definition (Minimum Viable Product)
-
-For a playable demo, achieve:
-- [ ] Procedural world generation with 2 biomes
-- [ ] 20 collectible elements
-- [ ] 3×3 crafting grid with 30+ compound recipes
-- [ ] Basic combat system with 5 enemy types
-- [ ] Player progression (health, inventory, basic tools)
-- [ ] Save/load system
-- [ ] In-game element reference UI
-- [ ] 30–60 minutes of gameplay content
-
----
-
-## Milestones & Deliverables
-
-| Milestone | Target | Deliverable |
-|-----------|--------|-------------|
-| M1 | Week 4 | Playable prototype (movement + basic crafting) |
-| M2 | Week 8 | World generation demo with 2 biomes |
-| M3 | Week 12 | Full chemistry crafting system |
-| M4 | Week 16 | Combat loop complete |
-| M5 | Week 20 | Building system complete |
-| M6 | Week 24 | Educational layer + UI polish |
-| M7 | Week 28 | Beta release candidate |
-
----
-
-## Notes & Open Questions
-
-1. **Multiplayer?** — Could add co-op (shared lab/crafting) in a later phase
-2. **Mobile port?** — Touch UI would need redesign for periodic table crafting
-3. **PubChem API** — Use for pulling real compound data to auto-generate recipes
-4. **Licensing** — Ensure compound database is properly sourced/attributed
-5. **Age target** — Middle school / high school level (grades 6–12)
-6. **Monetization** — Free educational release? Or indie paid game on Steam/itch.io?
+- All game systems are **data-driven** — new enemies, bosses, compounds require only JSON entries
+- **Sprite-swap ready** — all ColorRect placeholders have clear swap comments; animation code pre-wired
+- **Audio-swap ready** — AudioManager is live, calls wired; files just need dropping in
+- Physics: `default_gravity=0.0` (top-down, no gravity)
+- Rendering: `canvas_items` stretch, 1280×720 base viewport, nearest-neighbor texture filter
