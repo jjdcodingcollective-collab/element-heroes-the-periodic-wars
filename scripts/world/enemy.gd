@@ -67,31 +67,8 @@ func _ready() -> void:
 	_patrol_dir = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)).normalized()
 
 func _load_data() -> void:
-	var db: Node = get_node_or_null("/root/ElementDatabase")
-	if db and db.has_method("get_enemy_data"):
-		_data = db.get_enemy_data(creature_id)
-	if _data.is_empty():
-		# Fallback: load directly
-		var f := FileAccess.open("res://data/enemy_data.json", FileAccess.READ)
-		if f:
-			var parsed = JSON.parse_string(f.get_as_text())
-			f.close()
-			if parsed and parsed.has("tier_multipliers") and parsed.has("creatures"):
-				_tier_mult = parsed["tier_multipliers"].get(tier, {})
-				for c: Dictionary in parsed["creatures"]:
-					if c.get("id", "") == creature_id:
-						_data = c
-						break
-				if _tier_mult.is_empty():
-					_tier_mult = { "hp": 1.0, "damage": 1.0, "speed": 1.0, "sight": 1.0 }
-				return
-	# If ElementDatabase provided, still need tier_mult
-	var f2 := FileAccess.open("res://data/enemy_data.json", FileAccess.READ)
-	if f2:
-		var parsed2 = JSON.parse_string(f2.get_as_text())
-		f2.close()
-		if parsed2 and parsed2.has("tier_multipliers"):
-			_tier_mult = parsed2["tier_multipliers"].get(tier, { "hp": 1.0, "damage": 1.0, "speed": 1.0, "sight": 1.0 })
+	_data = ElementDB.get_enemy_data(creature_id)
+	_tier_mult = ElementDB.get_enemy_tier_mult(tier)
 
 func _apply_stats() -> void:
 	if _data.is_empty():

@@ -1,7 +1,7 @@
 # Element Heroes — The Periodic Wars
 ## Development Progress Log
 
-Last updated: 2026-03-01
+Last updated: 2026-05-30
 
 ---
 
@@ -23,7 +23,7 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Project scaffolding | ✅ Done | Godot 4, autoloads, input map |
 | Element data (118 elements) | ✅ Done | `data/elements.json` |
 | Compound recipes (65+) | ✅ Done | Base, weapons, polymers, armors |
-| Lab handling data (118 elements) | ✅ Done | `data/element_lab_handling.json` |
+| Lab handling data (118 elements) | ✅ Done | `data/element_handling.json` (duplicate `element_lab_handling.json` removed) |
 | World generation | ✅ Done | 6 biomes, tile-based, ore spawning |
 | Player controller | ✅ Done | 8-direction, top-down, i-frames |
 | Element collection / digging | ✅ Done | Float grams/mL, range check |
@@ -47,7 +47,14 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Science mini-game (quiz) | ✅ Done | Aldric's desk, 26 questions, element rewards, graded |
 | Audio system | ✅ Done | AudioManager autoload, crossfade music, SFX pool — awaiting .ogg files |
 | Sprite spec | ✅ Done | Full animation spec in `assets/sprites/SPRITE_SPEC.md` |
-| Pixel art sprites | ⬜ Pending | All visuals are ColorRect placeholders — spec written |
+| Pixel art sprites — player | ✅ Done | `assets/sprites/player/kael.png` — Golden Sun/NES Zelda style |
+| Pixel art sprites — tileset | ✅ Done | `assets/sprites/tiles/world_tiles.png` — 7 biome rows |
+| Pixel art sprites — enemies (6/18) | 🔄 In progress | ashburn_shambler, carbon_crawler, potash_poltergeist, iron_hulk, copper_coil, zinc_phantom — real mutated creatures |
+| Pixel art sprites — enemies (12/18) | ⬜ Pending | silver_specter through platinum_sentinel |
+| Pixel art sprites — bosses | ⬜ Pending | 6 Compound Titans (48×48) |
+| Pixel art sprites — NPCs | ⬜ Pending | Aldric Voss, villager_a, villager_b |
+| Pixel art sprites — world objects | ⬜ Pending | synthesizer, lab_desk, well, market_stall, projectile |
+| Pixel art sprites — HUD icons | ⬜ Pending | hearts, slots, weapon/armor/compendium icons |
 | Sound / music files | ⬜ Pending | Folders created, AudioManager ready — awaiting .ogg files |
 | Building system | ⬜ Pending | Phase 5 |
 | Achievement system | ⬜ Pending | Phase 6 — streak/score tracking |
@@ -65,10 +72,13 @@ element-heros---the-periodic-wars/
 │   ├── enemy_data.json                 # 18 CHIMERA creature definitions
 │   ├── boss_data.json                  # 6 Compound Titan definitions
 │   ├── quiz_questions.json             # 26 science quiz questions (6 categories)
-│   └── element_lab_handling.json       # Real lab containers/PPE per element
+│   └── element_handling.json           # Real lab containers/PPE per element
 ├── assets/
 │   ├── sprites/
-│   │   └── SPRITE_SPEC.md              # Full sprite + animation specification
+│   │   ├── SPRITE_SPEC.md              # Full sprite + animation specification
+│   │   ├── player/kael.png             # Kael — 4×8 sprite sheet (Golden Sun/NES Zelda style)
+│   │   ├── tiles/world_tiles.png       # World tileset — 7 biome rows
+│   │   └── enemies/                    # 6/18 enemy sprites — mutated real creatures
 │   └── audio/
 │       ├── music/                      # Drop biome .ogg tracks here
 │       └── sfx/                        # Drop sound effect .ogg files here
@@ -282,9 +292,14 @@ Expert tier tinted purple in-game. Intermediate tinted warm gold.
 
 | Priority | Task | Phase |
 |----------|------|-------|
-| High | Pixel art sprites — use `SPRITE_SPEC.md` as guide in Aseprite | 7 |
+| High | Remaining 12 enemy sprites (silver_specter → platinum_sentinel) — mutated real creatures | 7 |
+| High | 6 boss sprites (48×48) — PEROXIS, CHALCOR, AURIUM, AZRAEL, ATACAMA, URANOX | 7 |
+| High | NPC sprites — Aldric Voss, villager_a, villager_b | 7 |
+| High | World object sprites — synthesizer, lab_desk, well, market_stall, projectile | 7 |
+| High | HUD icons — hearts, slots, weapon/armor/compendium icons | 7 |
 | High | SFX files via jsfxr → drop into `assets/audio/sfx/` + uncomment in AudioManager | 7 |
 | High | Biome music via BeepBox → drop into `assets/audio/music/` + uncomment | 7 |
+| Medium | Export presets — configure Godot export for Windows/Linux/Mac | 8 |
 | Medium | Building system — compound-based block placement | 5 |
 | Medium | Achievement system — quiz streaks, boss kill milestones | 6 |
 | Medium | Story expansion — NPC quests, biome-specific dialogue | 7 |
@@ -297,7 +312,7 @@ Expert tier tinted purple in-game. Intermediate tinted warm gold.
 
 | Hash | Description |
 |------|-------------|
-| *(next)* | Add Phase 6 science mini-game, audio system, sprite spec |
+| *(next)* | Add pixel art sprites (player, tileset, 6 enemies), bug fixes, architecture docs |
 | `a5b17ad` | Add 6 compound titan bosses with 3-phase fights and arena hazards |
 | `a0b4731` | Add 18 CHIMERA enemy variants with 3-tier grinding system |
 | `4a3aad7` | Update PROGRESS.md — armor, weapons, Synthesizer |

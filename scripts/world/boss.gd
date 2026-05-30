@@ -172,7 +172,9 @@ func _find_player() -> void:
 	if _player == null:
 		return
 	var dist: float = global_position.distance_to(_player.global_position)
-	if dist <= sight_range:
+	if dist <= sight_range and _state != "combat":
+		if _state == "idle":
+			AudioManager.on_boss_fight_start()
 		_state = "combat"
 
 func _do_wander(delta: float) -> void:
@@ -458,10 +460,16 @@ func take_damage(amount: float, damage_type: String = "physical") -> void:
 		_spawn_hit_label(0.0)
 		return
 
-	# Minimum damage based on weapon tier gate
-	# (world.gd should not spawn bosses until player is ready — this is just a soft floor)
-	var reduced: float = amount * (1.0 - resist) * (1.0 - passive_dr)
+	# Weapon tier gate — weapons below min_weapon_tier deal only 10% damage.
+	# Discourages sequence-breaking without hard-blocking progression.
+	var player_tier: int = _get_player_weapon_tier()
+	var tier_multiplier: float = 1.0 if player_tier >= min_weapon_tier else 0.1
+
+	var reduced: float = amount * tier_multiplier * (1.0 - resist) * (1.0 - passive_dr)
 	_take_damage_raw(reduced)
+
+	if tier_multiplier < 1.0:
+		_spawn_tier_warning_label()
 
 	# AZRAEL reactive_detonation — triggers on EVERY hit
 	if not _phases.is_empty():
@@ -490,6 +498,10 @@ func _die() -> void:
 		_arena.clear_hazards()
 	_drop_loot()
 	_spawn_death_vfx()
+	var biome: String = ""
+	if get_parent().has_method("get_biome_at"):
+		biome = get_parent().get_biome_at(global_position)
+	AudioManager.on_boss_fight_end(biome)
 	queue_free()
 
 func _drop_loot() -> void:
@@ -516,10 +528,10 @@ func _drop_loot() -> void:
 
 	# Unlock lore
 	var lore: String = _data.get("unlock_lore", "")
-	if lore != "" and p.has_method("get_node"):
-		var hud: Node = get_tree().get_nodes_in_group("hud")[0] if get_tree().get_nodes_in_group("hud").size() > 0 else null
-		if hud and hud.has_method("show_lore"):
-			hud.show_lore(_data.get("name", ""), lore)
+	if lore != "":
+		var huds := get_tree().get_nodes_in_group("hud")
+		if huds.size() > 0:
+			huds[0].show_lore(_data.get("name", "Boss"), lore)
 
 func _spawn_death_vfx() -> void:
 	for i: int in range(6):
@@ -530,6 +542,36 @@ func _spawn_death_vfx() -> void:
 		tween.tween_callback(func() -> void:
 			_spawn_shockwave_vfx(pos, 40.0, Color(_data.get("color", "#FF8020")).lightened(0.3))
 		)
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+func _get_player_weapon_tier() -> int:
+	if _player == null:
+		return 0
+	var weapon: Node = _player.get_node_or_null("Weapon")
+	if weapon and weapon.has_method("get_tier"):
+		return weapon.get_tier()
+	return 0
+
+var _tier_warn_cooldown: float = 0.0
+
+func _spawn_tier_warning_label() -> void:
+	_tier_warn_cooldown -= get_process_delta_time()
+	if _tier_warn_cooldown > 0.0:
+		return
+	_tier_warn_cooldown = 2.5
+	var label := Label.new()
+	label.text = "Weapon too weak! (Need T%d)" % min_weapon_tier
+	label.add_theme_font_size_override("font_size", 10)
+	label.modulate = Color(1.0, 0.8, 0.1)
+	label.position = global_position + Vector2(-70, -50)
+	label.z_index = 200
+	get_parent().add_child(label)
+	var tween: Tween = get_tree().create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 24, 2.0)
+	tween.tween_property(label, "modulate:a", 0.0, 2.0)
+	tween.tween_callback(label.queue_free).set_delay(2.0)
 
 # ── VFX ───────────────────────────────────────────────────────────────────────
 

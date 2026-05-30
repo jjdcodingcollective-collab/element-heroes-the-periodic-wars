@@ -6,6 +6,8 @@ extends Node
 var elements: Dictionary = {}
 var compounds: Dictionary = {}
 var handling: Dictionary = {}  # { "Fe": { container, handling, hazards } }
+var enemies: Dictionary = {}   # { "ashburn_shambler": {...}, ... }
+var enemy_tier_multipliers: Dictionary = {}
 
 # Maps container/handling keys to the in-game item name the player must carry
 const CONTAINER_ITEMS := {
@@ -28,6 +30,7 @@ func _ready() -> void:
 	_load_elements()
 	_load_compounds()
 	_load_handling()
+	_load_enemies()
 
 func _load_elements() -> void:
 	var file := FileAccess.open("res://data/elements.json", FileAccess.READ)
@@ -98,6 +101,28 @@ func get_handling(symbol: String) -> Dictionary:
 		"handling_item":  handling_item,
 		"hazards":        h.get("hazards", []),
 	}
+
+func _load_enemies() -> void:
+	var file := FileAccess.open("res://data/enemy_data.json", FileAccess.READ)
+	if file == null:
+		push_error("ElementDB: could not open enemy_data.json")
+		return
+	var json := JSON.new()
+	var err := json.parse(file.get_as_text())
+	file.close()
+	if err != OK:
+		push_error("ElementDB: failed to parse enemy_data.json")
+		return
+	var data: Dictionary = json.data as Dictionary
+	enemy_tier_multipliers = data.get("tier_multipliers", {})
+	for c: Dictionary in (data.get("creatures", []) as Array):
+		enemies[str(c.get("id", ""))] = c
+
+func get_enemy_data(creature_id: String) -> Dictionary:
+	return enemies.get(creature_id, {})
+
+func get_enemy_tier_mult(tier: String) -> Dictionary:
+	return enemy_tier_multipliers.get(tier, { "hp": 1.0, "damage": 1.0, "speed": 1.0, "sight": 1.0 })
 
 func get_elements_by_biome(biome: String) -> Array:
 	var result: Array = []

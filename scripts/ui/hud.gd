@@ -19,6 +19,7 @@ var _inv_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("ui")
+	add_to_group("hud")
 	dialogue_ui.add_to_group("dialogue_ui")
 	var compendium := get_node_or_null("Compendium")
 	if compendium:
@@ -44,6 +45,8 @@ func init(player: Node, world: Node) -> void:
 		arm.armor_changed.connect(_on_armor_changed)
 	_refresh_inventory_bar()
 
+var _last_biome: String = ""
+
 func _process(delta: float) -> void:
 	if _world == null or _player == null:
 		return
@@ -53,6 +56,9 @@ func _process(delta: float) -> void:
 		_biome_timer = 0.0
 		var biome: String = _world.get_biome_at((_player as Node2D).global_position)
 		biome_label.text = biome.replace("_", " ").capitalize()
+		if biome != _last_biome:
+			_last_biome = biome
+			AudioManager.on_biome_changed(biome)
 	# Health bar
 	if _player.has_method("get_health"):
 		var hp: float = float(_player.get_health())
@@ -131,3 +137,33 @@ func set_crafting_inventory(inv: Node) -> void:
 	var crafting := get_tree().get_first_node_in_group("crafting_ui")
 	if crafting:
 		crafting.player_inventory = inv
+
+func show_lore(boss_name: String, lore_text: String) -> void:
+	var label := Label.new()
+	label.text = "[%s]\n%s" % [boss_name, lore_text]
+	label.add_theme_font_size_override("font_size", 10)
+	label.modulate = Color(0.9, 0.85, 0.5)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.custom_minimum_size = Vector2(300, 0)
+	label.z_index = 200
+
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.05, 0.1, 0.92)
+	style.border_color = Color(0.9, 0.85, 0.5, 0.8)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(4)
+	panel.add_theme_stylebox_override("panel", style)
+	panel.add_child(label)
+	panel.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	panel.anchor_bottom = 1.0
+	panel.anchor_left   = 0.0
+	panel.offset_left   = 16.0
+	panel.offset_bottom = -16.0
+	panel.z_index = 200
+	add_child(panel)
+
+	var tween := get_tree().create_tween()
+	tween.tween_interval(6.0)
+	tween.tween_property(panel, "modulate:a", 0.0, 1.5)
+	tween.tween_callback(panel.queue_free).set_delay(1.5)

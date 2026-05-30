@@ -93,8 +93,12 @@ func _spawn_zone(pos: Vector2, radius: float, dps: float, lifetime: float, col: 
 	zone.set_meta("lifetime", lifetime)
 	zone.set_script(load("res://scripts/world/hazard_zone.gd"))
 	get_parent().add_child(zone)
-	_active_zones.append(zone)
+	_track_zone(zone)
 	return zone
+
+func _track_zone(zone: Node2D) -> void:
+	_active_zones = _active_zones.filter(func(z: Node) -> bool: return is_instance_valid(z))
+	_active_zones.append(zone)
 
 func _rewire_zone_corrode(zone: Node2D) -> void:
 	# Extend hazard_zone to also apply corrode on tick
@@ -120,4 +124,4 @@ func _spawn_knockback_column(pos: Vector2) -> void:
 	zone.set_meta("knockback", 220.0)
 	zone.set_script(load("res://scripts/world/hazard_zone_knockback.gd"))
 	get_parent().add_child(zone)
-	_active_zones.append(zone)
+	_track_zone(zone)

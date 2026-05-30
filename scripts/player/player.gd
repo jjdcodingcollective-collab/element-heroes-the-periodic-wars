@@ -144,8 +144,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		SaveSystem.save_game(self)
 
 func _try_attack() -> void:
-	weapon.try_attack(facing)
-	AudioManager.on_attack_melee()
+	if not weapon.try_attack(facing):
+		return
+	if weapon.get_weapon_type() == "ranged":
+		AudioManager.on_attack_ranged()
+	else:
+		AudioManager.on_attack_melee()
 
 func _try_dig() -> void:
 	var mouse_pos := get_global_mouse_position()

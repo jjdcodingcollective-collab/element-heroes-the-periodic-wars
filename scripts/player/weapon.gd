@@ -57,6 +57,9 @@ func get_weapon_name() -> String:
 func get_tier() -> int:
 	return int(_stats.get("tier", 0))
 
+func get_weapon_type() -> String:
+	return str(_stats.get("type", "melee"))
+
 # Called by player on attack input. Returns true if attack fired.
 func try_attack(player_facing: Vector2) -> bool:
 	if _stats.is_empty() or _cooldown_timer > 0.0:

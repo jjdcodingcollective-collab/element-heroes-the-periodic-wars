@@ -3,6 +3,11 @@ extends Node2D
 # Top-down procedural world — ColorRect tiles, no TileSet asset needed.
 # Phase 2: swap ColorRects for TileMap + sprite sheet without changing any
 # game logic — just replace _create_tile() internals.
+#
+# Performance model: tile_data stores the logical world for all 200×200 tiles
+# (pure Dictionaries, no nodes). Visual ColorRect nodes and collision bodies
+# are only created for tiles within VIEW_RADIUS of the player and destroyed
+# when they scroll out of range. This keeps live node count under ~1,500.
 
 const TILE_SIZE: int = 16
 const WORLD_WIDTH: int  = 200
@@ -11,6 +16,13 @@ const WORLD_HEIGHT: int = 200
 # World pixel bounds — used by camera clamping
 const WORLD_PX_W: float = WORLD_WIDTH  * TILE_SIZE
 const WORLD_PX_H: float = WORLD_HEIGHT * TILE_SIZE
+
+# How many tiles around the player get visual + collision nodes created.
+# 1280×720 viewport at 16px tiles = 80×45 visible tiles — stream a bit beyond that.
+const VIEW_RADIUS: int = 50
+
+var _player_ref: Node2D = null     # set after player spawns
+var _last_stream_tile: Vector2i = Vector2i(-9999, -9999)
 
 # Tile colours (replace with atlas UVs when upgrading to TileMap)
 const COLOR_GRASS  := Color(0.24, 0.65, 0.24)
@@ -49,7 +61,8 @@ const BIOMES := [
 
 # tile_data[Vector2i] = { "type", "element", "passable", optionally "body" }
 var tile_data: Dictionary = {}
-var tile_nodes: Dictionary = {}  # Vector2i -> ColorRect
+var tile_nodes: Dictionary = {}        # Vector2i -> ColorRect
+var _dug_tiles: Array[Vector2i] = []   # ore tiles removed this session
 
 const ENEMY_SCENE:      String = "res://scenes/world/enemy.tscn"
 const BOSS_SCENE:       String = "res://scenes/world/boss.tscn"
@@ -105,6 +118,8 @@ func _init_ui() -> void:
 	var hud    := get_node_or_null("HUD")
 	if hud and player:
 		hud.init(player, self)
+		# Wire streaming — player position now known, do initial tile stream
+		set_player_ref(player as Node2D)
 		# Give CraftingUI a reference to the player inventory
 		var crafting := get_node_or_null("CraftingUI")
 		if crafting:
@@ -153,6 +168,7 @@ func _generate_world() -> void:
 	noise.seed = randi()
 	noise.frequency = 0.05
 
+	# Pure data pass — no nodes created here.
 	for x: int in range(WORLD_WIDTH):
 		var biome := _get_biome(x)
 		for y: int in range(WORLD_HEIGHT):
@@ -160,23 +176,93 @@ func _generate_world() -> void:
 			var n: float = noise.get_noise_2d(x, y)
 
 			if biome.name == "ocean_floor" and n > 0.3:
-				_create_tile(coords, COLOR_WATER, "water", "", false)
+				tile_data[coords] = { "type": "water",  "element": "", "passable": false, "color": COLOR_WATER }
 				continue
 			if biome.name == "magma_layer" and n > 0.4:
-				_create_tile(coords, COLOR_LAVA, "lava", "", false)
+				tile_data[coords] = { "type": "lava",   "element": "", "passable": false, "color": COLOR_LAVA }
 				continue
 			if n > 0.55:
-				_create_tile(coords, COLOR_ROCK, "rock", "", false)
+				tile_data[coords] = { "type": "rock",   "element": "", "passable": false, "color": COLOR_ROCK }
 				continue
 
 			var ore_n: float = noise.get_noise_2d(x * 4.1, y * 4.1)
 			if ore_n > 0.5 and biome.elements.size() > 0:
 				var idx: int = int(abs(ore_n * 10)) % (biome.elements.size() as int)
 				var element: String = biome.elements[idx]
-				_create_tile(coords, ORE_COLORS.get(element, Color.WHITE), "ore", element, true)
+				tile_data[coords] = { "type": "ore", "element": element, "passable": true, "color": ORE_COLORS.get(element, Color.WHITE) }
 				continue
 
-			_create_tile(coords, _base_color(biome.base), biome.base, "", true)
+			tile_data[coords] = { "type": biome.base, "element": "", "passable": true, "color": _base_color(biome.base) }
+
+# Called once after the player node is ready so streaming can start.
+func set_player_ref(player: Node2D) -> void:
+	_player_ref = player
+	_stream_tiles_around(world_to_tile(player.global_position))
+
+func _process(_delta: float) -> void:
+	if _player_ref == null:
+		return
+	var pt := world_to_tile(_player_ref.global_position)
+	# Only re-stream when the player moves to a new tile
+	if pt == _last_stream_tile:
+		return
+	_last_stream_tile = pt
+	_stream_tiles_around(pt)
+
+func _stream_tiles_around(center: Vector2i) -> void:
+	var x_min: int = maxi(center.x - VIEW_RADIUS, 0)
+	var x_max: int = mini(center.x + VIEW_RADIUS, WORLD_WIDTH  - 1)
+	var y_min: int = maxi(center.y - VIEW_RADIUS, 0)
+	var y_max: int = mini(center.y + VIEW_RADIUS, WORLD_HEIGHT - 1)
+
+	# Build set of tiles that should be active
+	var wanted: Dictionary = {}
+	for x: int in range(x_min, x_max + 1):
+		for y: int in range(y_min, y_max + 1):
+			wanted[Vector2i(x, y)] = true
+
+	# Destroy nodes no longer in view
+	var to_remove: Array[Vector2i] = []
+	for coords: Vector2i in tile_nodes:
+		if not wanted.has(coords):
+			to_remove.append(coords)
+	for coords: Vector2i in to_remove:
+		tile_nodes[coords].queue_free()
+		tile_nodes.erase(coords)
+		var td: Dictionary = tile_data.get(coords, {})
+		if td.has("body"):
+			td["body"].queue_free()
+			td.erase("body")
+
+	# Create nodes for newly-visible tiles
+	for coords: Vector2i in wanted:
+		if tile_nodes.has(coords):
+			continue
+		var td: Dictionary = tile_data.get(coords, {})
+		if td.is_empty():
+			continue
+		_materialise_tile(coords, td)
+
+func _materialise_tile(coords: Vector2i, td: Dictionary) -> void:
+	var col: Color = td.get("color", Color.MAGENTA)
+	var rect := ColorRect.new()
+	rect.color = col
+	rect.size = Vector2(TILE_SIZE, TILE_SIZE)
+	rect.position = Vector2(coords.x * TILE_SIZE, coords.y * TILE_SIZE)
+	add_child(rect)
+	tile_nodes[coords] = rect
+
+	if not bool(td.get("passable", true)):
+		var body := StaticBody2D.new()
+		body.position = rect.position + Vector2(TILE_SIZE / 2.0, TILE_SIZE / 2.0)
+		var shape := CollisionShape2D.new()
+		var box := RectangleShape2D.new()
+		box.size = Vector2(TILE_SIZE, TILE_SIZE)
+		shape.shape = box
+		body.collision_layer = 1
+		body.add_child(shape)
+		add_child(body)
+		tile_data[coords]["body"] = body
 
 func _spawn_village() -> void:
 	# Ashenveil village in the surface_plains biome, centred around tile (15,15)
@@ -194,7 +280,8 @@ func _spawn_village() -> void:
 		for bx: int in range(int(b.w)):
 			for by: int in range(int(b.h)):
 				var coords := Vector2i(int(b.x) + bx, int(b.y) + by)
-				_create_tile(coords, b.color, "building", "", false)
+				# Data-only — node created by streaming when player is nearby
+				tile_data[coords] = { "type": "building", "element": "", "passable": false, "color": b.color as Color }
 
 # ── Tile helpers ──────────────────────────────────────────────────────────────
 
@@ -212,32 +299,25 @@ func _base_color(base: String) -> Color:
 		_:       return COLOR_DIRT
 
 func _create_tile(coords: Vector2i, color: Color, type: String, element: String, passable: bool) -> void:
-	# Remove any existing tile first
+	# Remove any existing nodes first
 	if tile_nodes.has(coords):
 		tile_nodes[coords].queue_free()
 		tile_nodes.erase(coords)
 	if tile_data.has(coords) and tile_data[coords].has("body"):
 		tile_data[coords]["body"].queue_free()
 
-	var rect := ColorRect.new()
-	rect.color = color
-	rect.size = Vector2(TILE_SIZE, TILE_SIZE)
-	rect.position = Vector2(coords.x * TILE_SIZE, coords.y * TILE_SIZE)
-	add_child(rect)
-	tile_nodes[coords] = rect
-	tile_data[coords] = { "type": type, "element": element, "passable": passable }
+	# Write data record
+	tile_data[coords] = { "type": type, "element": element, "passable": passable, "color": color }
 
-	if not passable:
-		var body := StaticBody2D.new()
-		body.position = rect.position + Vector2(TILE_SIZE / 2.0, TILE_SIZE / 2.0)
-		var shape := CollisionShape2D.new()
-		var box := RectangleShape2D.new()
-		box.size = Vector2(TILE_SIZE, TILE_SIZE)
-		shape.shape = box
-		body.collision_layer = 1
-		body.add_child(shape)
-		add_child(body)
-		tile_data[coords]["body"] = body
+	# Materialise immediately only if this tile is within the current stream window
+	if _is_in_view(coords):
+		_materialise_tile(coords, tile_data[coords])
+
+func _is_in_view(coords: Vector2i) -> bool:
+	if _last_stream_tile == Vector2i(-9999, -9999):
+		return true  # before first stream — materialise everything (village/synthesizer spawns)
+	return (abs(coords.x - _last_stream_tile.x) <= VIEW_RADIUS and
+	        abs(coords.y - _last_stream_tile.y) <= VIEW_RADIUS)
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
@@ -258,7 +338,26 @@ func dig_tile(tile_coords: Vector2i) -> String:
 	# Remove ore tile, replace with passable ground
 	var biome := _get_biome(tile_coords.x)
 	_create_tile(tile_coords, _base_color(biome.base), biome.base, "", true)
+	_dug_tiles.append(tile_coords)
 	return element
+
+func serialize_dug_tiles() -> Array:
+	var result: Array = []
+	for coords: Vector2i in _dug_tiles:
+		result.append([coords.x, coords.y])
+	return result
+
+func restore_dug_tiles(dug: Array) -> void:
+	for entry: Variant in dug:
+		var arr: Array = entry as Array
+		if arr.size() < 2:
+			continue
+		var coords := Vector2i(int(arr[0]), int(arr[1]))
+		var td: Dictionary = tile_data.get(coords, {})
+		if td.get("type", "") == "ore":
+			var biome := _get_biome(coords.x)
+			_create_tile(coords, _base_color(biome.base), biome.base, "", true)
+		_dug_tiles.append(coords)
 
 func _spawn_enemies() -> void:
 	var enemy_scene: PackedScene = load(ENEMY_SCENE)
