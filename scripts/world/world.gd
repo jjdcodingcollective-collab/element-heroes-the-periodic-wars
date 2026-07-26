@@ -7,7 +7,13 @@ extends Node2D
 # Performance model: tile_data stores the logical world for all 200×200 tiles
 # (pure Dictionaries, no nodes). Visual ColorRect nodes and collision bodies
 # are only created for tiles within VIEW_RADIUS of the player and destroyed
-# when they scroll out of range. This keeps live node count under ~1,500.
+# when they scroll out of range.
+#
+# NOTE: at VIEW_RADIUS = 50 this is a (2*50+1)^2 = 10,201 tile window, so roughly
+# 10k live ColorRects rather than the ~1,500 previously claimed here. It boots and
+# runs, but lowering VIEW_RADIUS (~35 -> ~5k nodes) is a cheap win. The real fix is
+# migrating to TileMap, which is worth doing once — and only once a real tileset
+# exists, since the atlas layout drives the migration.
 
 const TILE_SIZE: int = 16
 const WORLD_WIDTH: int  = 200
@@ -118,6 +124,8 @@ func _init_ui() -> void:
 	var hud    := get_node_or_null("HUD")
 	if hud and player:
 		hud.init(player, self)
+		_wire_player_lifecycle(player, hud)
+		_wire_resonance(player, hud)
 		# Wire streaming — player position now known, do initial tile stream
 		set_player_ref(player as Node2D)
 		# Give CraftingUI a reference to the player inventory
@@ -148,6 +156,7 @@ func _init_ui() -> void:
 		aldric.npc_name = "Prof. Aldric Voss"
 		aldric.portrait_color = Color(0.25, 0.45, 0.65)
 		aldric.interact_radius = 40.0
+		aldric.handles_resonance_assembly = true
 		aldric.dialogue = ([
 			"Kael! Just the person I needed. Come closer — these old ears aren't what they used to be.",
 			"You've seen it too, haven't you? The water. Three wells have gone black this week alone.",
@@ -160,6 +169,52 @@ func _init_ui() -> void:
 			"And Kael... be careful. The plains haven't felt right lately. I've noticed things moving at the edge of the fog.",
 			"Go on then. The village is counting on us — even if they don't know it yet.",
 		] as Array[String])
+
+# ── Player lifecycle (death / respawn) ───────────────────────────────────────
+
+# Ashenveil village — matches the Player node's authored start position.
+const PLAYER_SPAWN: Vector2 = Vector2(192, 192)
+
+func _wire_player_lifecycle(player: Node, hud: Node) -> void:
+	if player.has_signal("died") and not player.died.is_connected(_on_player_died):
+		player.died.connect(_on_player_died.bind(hud))
+	if hud.has_signal("respawn_requested") and not hud.respawn_requested.is_connected(_on_respawn_requested):
+		hud.respawn_requested.connect(_on_respawn_requested)
+
+func _on_player_died(hud: Node) -> void:
+	if hud and hud.has_method("show_death_screen"):
+		hud.show_death_screen()
+
+func _on_respawn_requested() -> void:
+	var player := get_node_or_null("Player")
+	if player and player.has_method("respawn"):
+		player.respawn(PLAYER_SPAWN)
+		set_player_ref(player as Node2D)
+
+# ── Act 3 — Resonance Engine ─────────────────────────────────────────────────
+
+func _wire_resonance(_player: Node, hud: Node) -> void:
+	if not ResonanceSystem.part_acquired.is_connected(_on_resonance_part):
+		ResonanceSystem.part_acquired.connect(_on_resonance_part.bind(hud))
+	if not ResonanceSystem.engine_ready.is_connected(_on_resonance_ready):
+		ResonanceSystem.engine_ready.connect(_on_resonance_ready.bind(hud))
+	if not ResonanceSystem.engine_assembled.is_connected(_on_engine_assembled):
+		ResonanceSystem.engine_assembled.connect(_on_engine_assembled.bind(hud))
+
+func _on_resonance_part(item_key: String, collected: int, total: int, hud: Node) -> void:
+	if hud and hud.has_method("show_banner"):
+		hud.show_banner("Resonance component built: %s  (%d/%d)"
+			% [ResonanceSystem.display_name_for(item_key), collected, total],
+			Color(0.6, 0.9, 1.0))
+
+func _on_resonance_ready(hud: Node) -> void:
+	if hud and hud.has_method("show_banner"):
+		hud.show_banner("All six components complete — bring them to Prof. Aldric Voss in Ashenveil.",
+			Color(1.0, 0.9, 0.4))
+
+func _on_engine_assembled(engine_name: String, hud: Node) -> void:
+	if hud and hud.has_method("show_victory_screen"):
+		hud.show_victory_screen(engine_name)
 
 # ── Generation ────────────────────────────────────────────────────────────────
 

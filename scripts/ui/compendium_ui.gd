@@ -3,7 +3,7 @@ extends Control
 # CompendiumUI — in-game periodic table reference.
 # Shows all 118 elements; discovered ones are highlighted.
 
-@onready var element_grid: GridContainer = $ElementGrid
+@onready var element_grid: GridContainer = $ScrollContainer/ElementGrid
 @onready var detail_panel: PanelContainer = $DetailPanel
 @onready var detail_name: Label = $DetailPanel/VBox/Name
 @onready var detail_symbol: Label = $DetailPanel/VBox/Symbol

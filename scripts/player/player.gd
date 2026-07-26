@@ -32,6 +32,11 @@ var _corrode_timer: float = 0.0      # armor corrode debuff
 var _corrode_amount: float = 0.0     # DR reduction while corroded
 const I_FRAME_DURATION: float = 0.5
 
+signal died
+signal respawned
+
+var is_dead: bool = false
+
 func get_health() -> float:
 	return hp
 
@@ -39,6 +44,8 @@ func get_max_health() -> float:
 	return MAX_HP
 
 func take_damage(amount: float) -> void:
+	if is_dead:
+		return
 	if _invincible_timer > 0.0:
 		return
 	var dr: float = 0.0
@@ -49,6 +56,42 @@ func take_damage(amount: float) -> void:
 	hp = maxf(hp - final_damage, 0.0)
 	_invincible_timer = I_FRAME_DURATION
 	AudioManager.on_player_hit()
+	if hp <= 0.0:
+		_die()
+
+func heal(amount: float) -> void:
+	if is_dead:
+		return
+	hp = minf(hp + amount, MAX_HP)
+
+func _die() -> void:
+	if is_dead:
+		return
+	is_dead = true
+	velocity = Vector2.ZERO
+	_stun_timer = 0.0
+	_corrode_timer = 0.0
+	_corrode_amount = 0.0
+	if _placeholder:
+		_placeholder.modulate = Color(0.4, 0.4, 0.4, 0.6)
+	emit_signal("died")
+
+# Zelda-style recovery: full health, debuffs cleared, inventory retained.
+# Progress is never destroyed — losing collected elements would punish the
+# exploration the game is trying to teach.
+func respawn(spawn_position: Vector2) -> void:
+	global_position = spawn_position
+	hp = MAX_HP
+	is_dead = false
+	velocity = Vector2.ZERO
+	facing = Vector2.DOWN
+	_invincible_timer = I_FRAME_DURATION * 4.0  # grace period on respawn
+	_stun_timer = 0.0
+	_corrode_timer = 0.0
+	_corrode_amount = 0.0
+	if _placeholder:
+		_placeholder.modulate = Color(1, 1, 1, 1)
+	emit_signal("respawned")
 
 func apply_stun(duration: float) -> void:
 	_stun_timer = maxf(_stun_timer, duration)
@@ -86,6 +129,10 @@ func _spawn_placeholder() -> void:
 
 func _physics_process(delta: float) -> void:
 	_invincible_timer = maxf(_invincible_timer - delta, 0.0)
+	if is_dead:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
 	_stun_timer       = maxf(_stun_timer       - delta, 0.0)
 	_corrode_timer    = maxf(_corrode_timer    - delta, 0.0)
 	if _corrode_timer <= 0.0:
@@ -122,6 +169,8 @@ func _update_animation() -> void:
 	animated_sprite.play(prefix + dir_name)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_dead:
+		return
 	# Mouse button events need explicit type check in Godot 4
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:

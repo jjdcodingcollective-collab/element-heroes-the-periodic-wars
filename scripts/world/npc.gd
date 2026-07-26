@@ -12,6 +12,17 @@ extends StaticBody2D
 @export var interact_radius: float = 32.0
 @export_multiline var dialogue: Array[String] = ["..."]
 
+# When true this NPC performs the Act 3 Resonance Engine assembly if the
+# player is carrying all six components. Set on Aldric in world.gd.
+@export var handles_resonance_assembly: bool = false
+
+@export_multiline var assembly_dialogue: Array[String] = [
+	"Kael — stop. Put them on the bench. All six of them.",
+	"Alkali conductors. A ferromagnetic core. Noble gas resonators. A thermal coil, a stabilizer... and a fuel cell.",
+	"Do you understand what you've done? You didn't find these. You MADE them. You learned the reactions.",
+	"Hold the casing steady. This is going to resonate.",
+]
+
 var _placeholder: ColorRect = null
 var _sprite: Sprite2D = null
 var _label: Label = null
@@ -65,5 +76,28 @@ func try_interact(player_pos: Vector2) -> void:
 	if global_position.distance_to(player_pos) > interact_radius:
 		return
 	var dialogue_ui := get_tree().get_first_node_in_group("dialogue_ui")
-	if dialogue_ui and not dialogue_ui.is_open():
-		dialogue_ui.show_dialogue(npc_name, dialogue, portrait_color)
+	if dialogue_ui == null or dialogue_ui.is_open():
+		return
+
+	if handles_resonance_assembly and _try_assemble_engine(dialogue_ui):
+		return
+
+	dialogue_ui.show_dialogue(npc_name, dialogue, portrait_color)
+
+# Returns true if the engine was assembled and assembly dialogue was shown.
+func _try_assemble_engine(dialogue_ui: Node) -> bool:
+	if ResonanceSystem.is_assembled:
+		return false
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return false
+	var equip := player.get_node_or_null("Equipment")
+	if equip == null or not ResonanceSystem.has_all_parts(equip):
+		return false
+
+	var engine: Dictionary = ResonanceSystem.assemble(equip)
+	if engine.is_empty():
+		return false
+
+	dialogue_ui.show_dialogue(npc_name, assembly_dialogue, portrait_color)
+	return true

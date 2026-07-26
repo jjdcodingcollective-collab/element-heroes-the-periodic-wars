@@ -117,4 +117,14 @@ func _on_craft_pressed() -> void:
 			if players.size() > 0 and players[0].has_method("equip_armor"):
 				players[0].equip_armor(item)
 				result_label.text = "Equipped: %s!" % str(compound.get("name", ""))
+		else:
+			# Everything else (engine components, alloys, consumables, story
+			# items) is stored as an equipment item. Without this the crafted
+			# output was silently discarded and the elements spent for nothing.
+			var item: String = str(compound.get("game_item", ""))
+			if item != "" and players.size() > 0:
+				var equip := players[0].get_node_or_null("Equipment")
+				if equip:
+					equip.add_item(item, 1)
+					ResonanceSystem.notify_part_crafted(item, equip)
 		clear_grid()

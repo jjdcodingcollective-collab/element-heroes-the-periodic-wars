@@ -167,3 +167,162 @@ func show_lore(boss_name: String, lore_text: String) -> void:
 	tween.tween_interval(6.0)
 	tween.tween_property(panel, "modulate:a", 0.0, 1.5)
 	tween.tween_callback(panel.queue_free).set_delay(1.5)
+
+# ── Death / Victory overlays ─────────────────────────────────────────────────
+
+signal respawn_requested
+
+var _death_overlay: Control = null
+var _death_input_armed: bool = false
+
+const DEATH_QUOTES := [
+	"\"Every failed reaction is data, Kael. Get up.\"  — Prof. Aldric Voss",
+	"\"Conservation of mass says nothing about conservation of pride.\"  — Prof. Aldric Voss",
+	"\"You are not destroyed. You are merely... rearranged.\"  — Prof. Aldric Voss",
+	"\"The wilds test hypotheses harshly. Revise and return.\"  — Prof. Aldric Voss",
+]
+
+func show_death_screen() -> void:
+	if _death_overlay != null:
+		return
+	_death_input_armed = false
+
+	_death_overlay = Control.new()
+	_death_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_death_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	_death_overlay.z_index = 300
+	add_child(_death_overlay)
+
+	var bg := ColorRect.new()
+	bg.color = Color(0.08, 0.0, 0.02, 0.0)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_death_overlay.add_child(bg)
+
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_preset(Control.PRESET_CENTER)
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 14)
+	_death_overlay.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "REACTION FAILED"
+	title.add_theme_font_size_override("font_size", 34)
+	title.modulate = Color(0.95, 0.25, 0.25)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	var quote := Label.new()
+	quote.text = DEATH_QUOTES[randi() % DEATH_QUOTES.size()]
+	quote.add_theme_font_size_override("font_size", 12)
+	quote.modulate = Color(0.8, 0.8, 0.7)
+	quote.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	quote.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	quote.custom_minimum_size = Vector2(460, 0)
+	vbox.add_child(quote)
+
+	var hint := Label.new()
+	hint.name = "Hint"
+	hint.text = ""
+	hint.add_theme_font_size_override("font_size", 13)
+	hint.modulate = Color(0.9, 0.85, 0.4)
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(hint)
+
+	var keep := Label.new()
+	keep.text = "Your samples and equipment are intact."
+	keep.add_theme_font_size_override("font_size", 10)
+	keep.modulate = Color(0.6, 0.75, 0.6)
+	keep.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(keep)
+
+	var tween := create_tween()
+	tween.tween_property(bg, "color:a", 0.88, 0.8)
+	tween.tween_callback(func() -> void:
+		_death_input_armed = true
+		hint.text = "Press any key to wake in Ashenveil"
+	)
+
+func _input(event: InputEvent) -> void:
+	if _death_overlay == null or not _death_input_armed:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		_dismiss_death_screen()
+		get_viewport().set_input_as_handled()
+	elif event is InputEventMouseButton and event.pressed:
+		_dismiss_death_screen()
+		get_viewport().set_input_as_handled()
+
+func _dismiss_death_screen() -> void:
+	_death_input_armed = false
+	if _death_overlay:
+		_death_overlay.queue_free()
+		_death_overlay = null
+	emit_signal("respawn_requested")
+
+func show_victory_screen(engine_name: String) -> void:
+	var overlay := Control.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.z_index = 320
+	add_child(overlay)
+
+	var bg := ColorRect.new()
+	bg.color = Color(0.02, 0.05, 0.10, 0.0)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(bg)
+
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_preset(Control.PRESET_CENTER)
+	vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 12)
+	overlay.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "THE RESONANCE"
+	title.add_theme_font_size_override("font_size", 36)
+	title.modulate = Color(0.6, 0.9, 1.0)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	var sub := Label.new()
+	sub.text = "%s assembled — the Periodic Wars are ended." % engine_name
+	sub.add_theme_font_size_override("font_size", 14)
+	sub.modulate = Color(0.9, 0.9, 0.8)
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	sub.custom_minimum_size = Vector2(520, 0)
+	vbox.add_child(sub)
+
+	var body := Label.new()
+	body.text = "The wells run clear. Ashenveil breathes.\n\nYou learned the elements. You mastered the reactions.\nYou won the Periodic Wars."
+	body.add_theme_font_size_override("font_size", 11)
+	body.modulate = Color(0.75, 0.8, 0.75)
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.custom_minimum_size = Vector2(520, 0)
+	vbox.add_child(body)
+
+	var tween := create_tween()
+	tween.tween_property(bg, "color:a", 0.94, 1.5)
+
+func show_banner(text: String, color: Color = Color(0.7, 0.9, 1.0)) -> void:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", 16)
+	label.modulate = color
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	label.offset_top = 70.0
+	label.custom_minimum_size = Vector2(560, 0)
+	label.z_index = 210
+	add_child(label)
+
+	var tween := create_tween()
+	tween.tween_interval(3.0)
+	tween.tween_property(label, "modulate:a", 0.0, 1.2)
+	tween.tween_callback(label.queue_free)

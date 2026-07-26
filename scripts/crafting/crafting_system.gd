@@ -23,10 +23,7 @@ func _grid_to_ingredient_map(grid: Array) -> Dictionary:
 
 # Look up a compound by its game_item key.
 func get_compound_by_item(item_name: String) -> Dictionary:
-	for c: Dictionary in ElementDB.compounds.values():
-		if str(c.get("game_item", "")) == item_name:
-			return c
-	return {}
+	return ElementDB.get_compound_by_item(item_name)
 
 # Return all compounds as an Array (for iteration).
 func get_all_compounds() -> Array:

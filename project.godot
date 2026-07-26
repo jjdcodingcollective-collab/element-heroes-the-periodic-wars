@@ -105,6 +105,7 @@ ElementDB="*res://scripts/data/element_database.gd"
 CraftingSystem="*res://scripts/crafting/crafting_system.gd"
 SaveSystem="*res://scripts/data/save_system.gd"
 AudioManager="*res://scripts/audio/audio_manager.gd"
+ResonanceSystem="*res://scripts/story/resonance_system.gd"
 
 [layer_names]
 

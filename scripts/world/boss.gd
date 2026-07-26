@@ -73,8 +73,8 @@ func _load_data() -> void:
 		return
 	for b: Dictionary in parsed["bosses"]:
 		if b.get("id", "") == boss_id:
-			_data = b
-			_phases = b.get("phases", [])
+			_data = ElementDB.sanitize_nulls(b)
+			_phases = _data.get("phases", [])
 			break
 
 func _apply_phase(phase_index: int) -> void:
@@ -215,7 +215,7 @@ func _tick_burn(delta: float) -> void:
 		return
 	set_meta("burn_timer", t)
 	var dps: float = float(get_meta("burn_dps", 0.0))
-	var resist: float = float(resistances.get("burn", 1.0))
+	var resist: float = float(resistances.get("burn", NO_RESISTANCE))
 	if resist < 999.0:
 		_take_damage_raw(dps * delta * (1.0 - resist))
 
@@ -450,13 +450,22 @@ func _schedule_explosion(pos: Vector2, radius: float, damage: float, delay: floa
 					_player.apply_knockback(dir * 280.0)
 	)
 
+# Resistance values are fractional damage reduction taken from the data files:
+#   0.0 = no resistance,  1.0 = fully immune,  negative = extra vulnerable.
+# A missing key must therefore default to 0.0. It previously defaulted to 1.0,
+# which made every attack of an undeclared damage type (notably "physical",
+# which no creature or boss declares) deal exactly zero damage.
+# Total immunity is signalled separately by the IMMUNE sentinel below.
+const NO_RESISTANCE: float = 0.0
+const IMMUNE_THRESHOLD: float = 999.0
+
 # ── Damage / Death ────────────────────────────────────────────────────────────
 
 func take_damage(amount: float, damage_type: String = "physical") -> void:
 	if _state == "dead":
 		return
-	var resist: float = float(resistances.get(damage_type, 1.0))
-	if resist >= 999.0:
+	var resist: float = float(resistances.get(damage_type, NO_RESISTANCE))
+	if resist >= IMMUNE_THRESHOLD:
 		_spawn_hit_label(0.0)
 		return
 

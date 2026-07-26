@@ -12,3 +12,6 @@ export_presets.cfg
 # Compiled GDScript cache
 *.gdc
 *.gde
+
+# Local tooling / scratch
+workspace/

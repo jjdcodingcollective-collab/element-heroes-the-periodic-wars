@@ -342,11 +342,11 @@
   },
   {
     "name": "Uranium Fuel Cell",
-    "formula": "UO2",
-    "elements": { "U": 1, "O": 2 },
+    "formula": "4UO2",
+    "elements": { "U": 4, "O": 8 },
     "category": "resonance_engine_part",
     "game_item": "uranium_cell",
-    "real_world_use": "Uranium dioxide; the standard nuclear reactor fuel pellet",
+    "real_world_use": "Uranium dioxide; the standard nuclear reactor fuel pellet. A fuel assembly stacks many pellets, so it needs far more material than a single shell.",
     "game_use": "Resonance Engine power source — collected in Deep Magma Layer (Act 3)",
     "reaction_type": "nuclear_compound",
     "act": 3
