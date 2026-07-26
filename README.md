@@ -17,7 +17,7 @@ A pixel-art 2D top-down adventure game built in **Godot 4** around all 118 eleme
 
 ### Chemistry Crafting
 - **All 118 elements** collectible with realistic lab equipment constraints (containers, PPE tiers)
-- **65+ compound recipes** matching real chemical formulas in a 3×3 crafting grid
+- **64 compound recipes** matching real chemical formulas in a 3×3 crafting grid
 - **Synthesizer machine** — polymer lab for advanced plastic/composite intermediates
 - **Real lab handling data** — every element requires the correct container tier and PPE
 
@@ -38,10 +38,11 @@ A pixel-art 2D top-down adventure game built in **Godot 4** around all 118 eleme
 - Element rewards for correct answers · HP penalty + explanation for wrong ones
 - S/A/B/C graded sessions with Prof. Aldric quotes
 
-### Audio & Art (in progress)
-- **AudioManager** autoload — crossfading biome music, 12-slot SFX pool, volume control
+### Audio & Art (not started)
+- **AudioManager** autoload is written and call sites are wired — but no `.ogg` files exist yet
 - Full **sprite animation spec** written (`assets/sprites/SPRITE_SPEC.md`)
-- Folders and wiring ready — drop `.ogg` files and sprite sheets in to activate
+- **No art exists.** The game currently renders entirely as coloured rectangles, and
+  no sprite is referenced by any scene or script. See `assets/sprites/reference/README.md`
 
 ---
 
@@ -112,7 +113,7 @@ Questions in Aldric's lab span 6 chemistry categories:
 |-----------|------------|
 | Engine | Godot 4 (GDScript, strict typing) |
 | Pixel Art | Aseprite / Pixelorama |
-| Element Data | JSON (118 elements, 65+ recipes) |
+| Element Data | JSON (118 elements, 64 recipes) |
 | Audio | Godot AudioStreamPlayer + custom AudioManager |
 | Version Control | Git + GitHub |
 | Target Platforms | Web (HTML5), Windows, macOS, Linux |
@@ -151,7 +152,7 @@ Questions in Aldric's lab span 6 chemistry categories:
 | 4 — Combat | Enemies, bosses, weapons, armor | ✅ Complete |
 | 5 — Building | Compound-based block placement | ⬜ Planned |
 | 6 — Education | Science mini-game, compendium, quiz | ✅ Complete |
-| 7 — Polish | Pixel art sprites, music, SFX, story | 🔄 In Progress |
+| 7 — Polish | Pixel art sprites, music, SFX, story | ⬜ Not started |
 
 Full plan: [`.claude/plans/game-development-plan.md`](.claude/plans/game-development-plan.md)
 

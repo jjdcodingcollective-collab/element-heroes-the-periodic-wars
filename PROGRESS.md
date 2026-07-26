@@ -1,7 +1,7 @@
 # Element Heroes — The Periodic Wars
 ## Development Progress Log
 
-Last updated: 2026-05-30
+Last updated: 2026-07-26
 
 ---
 
@@ -18,12 +18,21 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 
 ## Build Status
 
+> **How to read "Done".** Until 2026-07-26 this project had never been executed —
+> every status below meant "code was written", not "code works". The project has
+> now been booted and covered by an automated test suite (`tests/test_runner.tscn`,
+> 81 assertions), which immediately found four game-breaking defects in systems
+> marked ✅ Done: crafting never matched a recipe, all physical attacks dealt zero
+> damage, five recipes were silently dropped at load, and the endgame item was
+> unobtainable. Those are fixed. Treat ✅ as "written and boots"; only the rows
+> marked **tested** are covered by assertions.
+
 | System | Status | Notes |
 |--------|--------|-------|
 | Project scaffolding | ✅ Done | Godot 4, autoloads, input map |
-| Element data (118 elements) | ✅ Done | `data/elements.json` |
-| Compound recipes (65+) | ✅ Done | Base, weapons, polymers, armors |
-| Lab handling data (118 elements) | ✅ Done | `data/element_handling.json` (duplicate `element_lab_handling.json` removed) |
+| Element data (118 elements) | ✅ Done **tested** | `data/elements.json` |
+| Compound recipes (64) | ✅ Done **tested** | Base, weapons, polymers, armors, 6 Resonance Engine parts |
+| Lab handling data (118 elements) | ✅ Done **tested** | `data/element_handling.json` (duplicate `element_lab_handling.json` removed) |
 | World generation | ✅ Done | 6 biomes, tile-based, ore spawning |
 | Player controller | ✅ Done | 8-direction, top-down, i-frames |
 | Element collection / digging | ✅ Done | Float grams/mL, range check |
@@ -32,26 +41,28 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | HUD | ✅ Done | Health, inventory bar, minimap, biome, weapon + armor display |
 | Minimap | ✅ Done | Live player position overlay |
 | Crafting UI | ✅ Done | 3×3 grid, auto-equips weapons/armor on craft |
-| Crafting system | ✅ Done | Recipe matching, item-ingredient support |
+| Crafting system | ✅ Done **tested** | Recipe matching, item-ingredient support |
 | Dialogue system | ✅ Done | Multi-line NPC typewriter dialogue |
 | NPC — Aldric Voss | ✅ Done | Placed in Ashenveil village, full quest intro dialogue |
 | Camera | ✅ Done | World-bounds clamping |
-| Save/load system | ✅ Done | Inventory, equipment, weapon, armor, compendium |
+| Save/load system | ✅ Done **tested** | Versioned (v3) with migration; inventory, equipment, weapon, armor, compendium, dug tiles, Act 3 progress |
 | Enemy system | ✅ Done | Patrol/chase AI, contact damage, element drops |
-| Enemy variants — 18 CHIMERA × 3 tiers | ✅ Done | 54 variants total, specials, auras, resistances |
+| Enemy variants — 18 CHIMERA × 3 tiers | ✅ Done **tested** | 54 variants total, specials, auras, resistances |
 | Compendium UI | ✅ Done | 118-element grid, auto-discovers on first collect |
 | Weapon system — 10 weapons (T1–T5) | ✅ Done | Melee arc + ranged projectile, DoT effects |
 | Armor system — 5 armors (T1–T5) | ✅ Done | Single slot, flat DR%, Zelda-style |
 | Synthesizer machine | ✅ Done | World object + UI, 5 polymer intermediates |
 | Boss encounters — 6 Compound Titans | ✅ Done | 3-phase fights, arena hazards, lore drops |
 | Science mini-game (quiz) | ✅ Done | Aldric's desk, 26 questions, element rewards, graded |
+| Player death / respawn | ✅ Done **tested** | Zelda-style: respawn in Ashenveil, full HP, inventory retained |
+| Win condition — Resonance Engine | ✅ Done **tested** | 6 craftable components, assembled by Aldric, victory screen (Act 3) |
+| Automated test suite | ✅ Done | 81 assertions, `tests/test_runner.tscn`, runs headless |
+| CI pipeline | ✅ Done | `.github/workflows/tests.yml` — asset validation, import, tests, boot check |
+| Asset validator | ✅ Done | `tools/validate_assets.py` — magic-byte check, blocks fake images |
 | Audio system | ✅ Done | AudioManager autoload, crossfade music, SFX pool — awaiting .ogg files |
 | Sprite spec | ✅ Done | Full animation spec in `assets/sprites/SPRITE_SPEC.md` |
-| Pixel art sprites — player | ✅ Done | `assets/sprites/player/kael.png` — Golden Sun/NES Zelda style |
-| Pixel art sprites — tileset | ✅ Done | `assets/sprites/tiles/world_tiles.png` — 7 biome rows |
-| Pixel art sprites — enemies (6/18) | 🔄 In progress | ashburn_shambler, carbon_crawler, potash_poltergeist, iron_hulk, copper_coil, zinc_phantom — real mutated creatures |
-| Pixel art sprites — enemies (12/18) | ⬜ Pending | silver_specter through platinum_sentinel |
-| Pixel art sprites — bosses | ⬜ Pending | 6 Compound Titans (48×48) |
+| Pixel art sprites — ALL | ❌ Not started | The 26 previously committed `.png` files were HTML pages, not images. Removed. See `assets/sprites/reference/README.md` |
+| Sprite integration layer | ❌ Not started | **No sprite is referenced by any scene or script.** Everything renders as ColorRect placeholders |
 | Pixel art sprites — NPCs | ⬜ Pending | Aldric Voss, villager_a, villager_b |
 | Pixel art sprites — world objects | ⬜ Pending | synthesizer, lab_desk, well, market_stall, projectile |
 | Pixel art sprites — HUD icons | ⬜ Pending | hearts, slots, weapon/armor/compendium icons |
@@ -290,21 +301,21 @@ Expert tier tinted purple in-game. Intermediate tinted warm gold.
 
 ## Next Steps
 
-| Priority | Task | Phase |
-|----------|------|-------|
-| High | Remaining 12 enemy sprites (silver_specter → platinum_sentinel) — mutated real creatures | 7 |
-| High | 6 boss sprites (48×48) — PEROXIS, CHALCOR, AURIUM, AZRAEL, ATACAMA, URANOX | 7 |
-| High | NPC sprites — Aldric Voss, villager_a, villager_b | 7 |
-| High | World object sprites — synthesizer, lab_desk, well, market_stall, projectile | 7 |
-| High | HUD icons — hearts, slots, weapon/armor/compendium icons | 7 |
-| High | SFX files via jsfxr → drop into `assets/audio/sfx/` + uncomment in AudioManager | 7 |
-| High | Biome music via BeepBox → drop into `assets/audio/music/` + uncomment | 7 |
-| Medium | Export presets — configure Godot export for Windows/Linux/Mac | 8 |
-| Medium | Building system — compound-based block placement | 5 |
-| Medium | Achievement system — quiz streaks, boss kill milestones | 6 |
-| Medium | Story expansion — NPC quests, biome-specific dialogue | 7 |
-| Low | More compound recipes (target: 200+, current: 65+) | 3 |
-| Low | Per-biome NPC characters | 7 |
+Ordered by what unblocks the most downstream work, not by phase number.
+
+| Priority | Task | Why it is here |
+|----------|------|----------------|
+| **P0 — blocked on decision** | Choose an art strategy | Gates sprites, TileMap migration, and HUD icons simultaneously. Nothing in Phase 7 can start until this is answered, and the previous attempt failed silently. Options: commission/buy a tileset, hand-draw, or ship deliberately-stylised geometry as the final look |
+| **P0 — blocked on decision** | Choose target platform (HTML5 vs desktop) | Changes export config, input handling, and file-size budget. Recommendation: HTML5 first — the audience is schools, and Chromebooks cannot run a desktop binary |
+| **P0 — blocked on decision** | Resolve the naming split | `STORY.md` uses Ash / Ashwick / Aldric **Vayne** / Mira. The code uses Kael / Ashenveil / Aldric **Voss** and has no Mira. These are two different drafts; one has to win before any dialogue or story content is written |
+| High | Play the game end to end as a human | The test suite proves systems work in isolation. Nobody has yet confirmed the game is *playable* — difficulty, pacing, whether the Resonance Engine hunt is discoverable |
+| High | Sprite integration layer | Even with finished art, no `AnimatedSprite2D`/`SpriteFrames` wiring exists. This code is identical regardless of who draws the pixels, so it can start before the art decision lands |
+| High | SFX + music files | `AudioManager` and all call sites are written; the folders are empty. jsfxr / BeepBox output dropped in and uncommented is the whole task |
+| Medium | Reduce `VIEW_RADIUS` in `world.gd` | Currently 50, which is 101×101 = **10,201** live ColorRects, not the "~1,500" the comment claims. ~35 is a cheap stopgap; the real fix is TileMap, which is coupled to the art decision |
+| Medium | Export presets | Depends on the platform decision above |
+| Medium | Achievement system — quiz streaks, boss kill milestones | Phase 6 |
+| Low | Building system — compound-based block placement | Phase 5. Recommend cutting: it is a large system that does not serve the teaching goal, and the game already has a complete loop without it |
+| Low | More compound recipes (target: 200+, current: 64) | Pure data work; safe to do any time. Note `game_item` must stay unique — it is now the primary key |
 
 ---
 

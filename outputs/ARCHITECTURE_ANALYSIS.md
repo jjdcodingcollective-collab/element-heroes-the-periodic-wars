@@ -1,3 +1,28 @@
+> ## ⚠️ SUPERSEDED — 2026-07-26
+>
+> **This document is stale in both directions and should not be used for planning.**
+> It was written on 2026-05-29 by static reading only; the project had never been run.
+>
+> **It reports as broken things that actually work:** `hud.show_lore()`, biome music
+> crossfade, boss music (`on_boss_fight_start`/`on_boss_fight_end`),
+> `ElementDB.get_enemy_data()`, save versioning, `dug_tiles` persistence, and
+> `min_weapon_tier` enforcement (10% damage multiplier) are all implemented.
+>
+> **It missed the four defects that actually mattered**, none of which are findable
+> without executing the code: crafting never matched any recipe (JSON floats vs. grid
+> ints under type-strict `Dictionary ==`), every physical attack dealt exactly zero
+> damage (resistance default of `1.0` = immune, and nothing declares `"physical"`),
+> five recipes were silently dropped because `compounds` was keyed by a non-unique
+> `formula`, and the endgame item was therefore unobtainable.
+>
+> **Its top P1 item — "40,000 ColorRects at startup" — is fixed;** tile streaming was
+> added afterwards. The live count is now ~10,201, which is still high but not fatal.
+>
+> Current state of the project: see `outputs/PROJECT_REALITY_CHECK_2026-07-26.md`
+> and `PROGRESS.md`.
+
+---
+
 # Element Heroes — The Periodic Wars
 ## Comprehensive Architecture & Gap Analysis
 ### As of 2026-05-29 | Engine: Godot 4.3 (GL Compatibility)
