@@ -17,7 +17,7 @@ extends StaticBody2D
 @export var handles_resonance_assembly: bool = false
 
 @export_multiline var assembly_dialogue: Array[String] = [
-	"Kael — stop. Put them on the bench. All six of them.",
+	"Orion — stop. Put them on the bench. All six of them.",
 	"Alkali conductors. A ferromagnetic core. Noble gas resonators. A thermal coil, a stabilizer... and a fuel cell.",
 	"Do you understand what you've done? You didn't find these. You MADE them. You learned the reactions.",
 	"Hold the casing steady. This is going to resonate.",

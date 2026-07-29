@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 z_index = -10
 
-; Player spawns near Ashenveil village (tile 12,12 = px 192,192)
+; Player spawns near Ashvale village (tile 12,12 = px 192,192)
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector2(192, 192)
 

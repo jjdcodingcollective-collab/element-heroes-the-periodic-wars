@@ -28,7 +28,7 @@
     "category": "device",
     "game_item": "purification_lattice",
     "real_world_use": "Silver sulfate and calcium compounds used in water filtration",
-    "game_use": "Story item — seals the Ashwick well against corrosion storm (Act 1 objective)",
+    "game_use": "Story item — seals the Ashvale well against corrosion storm (Act 1 objective)",
     "reaction_type": "compound_synthesis",
     "act": 1
   },
@@ -270,7 +270,7 @@
     "category": "lighting",
     "game_item": "neon_tube",
     "real_world_use": "Neon gas glows orange-red in discharge tubes",
-    "game_use": "Decorative orange-red light source; Ashwick market sign prop",
+    "game_use": "Decorative orange-red light source; Ashvale market sign prop",
     "reaction_type": "noble_gas_discharge",
     "act": 1
   },

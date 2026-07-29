@@ -29,7 +29,7 @@ A 2D pixel-art top-down adventure game built in Godot 4 around all 118 elements 
 - 200×200 tile procedural world with FastNoiseLite
 - 6 biomes arranged as horizontal regions on the map
 - Biome-specific tile colors, ore spawning, and enemy weights
-- Ashenveil village (6 buildings, well, market stall) at tile cluster (10–22, 10–18)
+- Ashvale village (6 buildings, well, market stall) at tile cluster (10–22, 10–18)
 - Camera with world-bounds clamping
 
 | Biome | X Range | Base Tile | Key Elements |
@@ -149,7 +149,7 @@ A 2D pixel-art top-down adventure game built in Godot 4 around all 118 elements 
 
 ### Pixel Art — Spec written, awaiting assets
 Full specification in `assets/sprites/SPRITE_SPEC.md` covering:
-- Player (Kael): 16×16, 8 animations (idle/walk × 4 directions), 24 frames total
+- Player (Orion): 16×16, 8 animations (idle/walk × 4 directions), 24 frames total
 - 18 enemies: 16×16, 4-frame walk cycle per creature
 - 6 bosses: 48×48, idle + attack frames
 - World tiles: atlas PNG, 6 biome rows

@@ -1,5 +1,5 @@
 {
-  "lore": "Before the Calamity, the Voss Institute ran Project CHIMERA — a classified programme fusing unstable elemental compounds into living constructs. They called them Elementals. When the Institute fell, the creatures escaped containment. They roam the world now, drawn to the elemental concentrations that birthed them.",
+  "lore": "Before the Calamity, the Meridian Institute ran Project CHIMERA alongside its Ouroboros Ring transmutation research — a classified programme fusing unstable elemental compounds into living constructs. They called them Elementals. When the Institute fell in the Containment Breach of Year 301, the creatures escaped containment. They roam the world now, drawn to the elemental concentrations that birthed them.",
 
   "tier_multipliers": {
     "basic":        { "hp": 1.0,  "damage": 1.0,  "speed": 1.0,  "sight": 1.0,  "xp": 10  },
@@ -398,7 +398,7 @@
       "name": "Platinum Sentinel",
       "biome": "magma_layer",
       "elements": ["Pt", "U", "Th"],
-      "lore": "CHIMERA File #018 — The apex CHIMERA construct. Platinum-iridium exoskeleton, virtually indestructible. Designed as the final failsafe of the Voss Institute. It was never meant to escape.",
+      "lore": "CHIMERA File #018 — The apex CHIMERA construct. Platinum-iridium exoskeleton, virtually indestructible. Designed as the final failsafe of the Meridian Institute. It was never meant to escape.",
       "base_hp": 200,
       "base_damage": 40,
       "base_speed": 40,

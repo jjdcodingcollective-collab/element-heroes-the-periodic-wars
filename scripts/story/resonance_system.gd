@@ -1,7 +1,7 @@
 extends Node
 
 # ResonanceSystem — tracks Act 3 endgame progress: the six Resonance Engine
-# components and their final assembly by Prof. Aldric Voss.
+# components and their final assembly by Prof. Aldric Daedalus.
 #
 # Autoload as "ResonanceSystem".
 #

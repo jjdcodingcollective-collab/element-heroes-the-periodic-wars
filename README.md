@@ -13,7 +13,7 @@ A pixel-art 2D top-down adventure game built in **Godot 4** around all 118 eleme
 ### Exploration & World
 - **Procedurally generated top-down world** — 200×200 tile map across 6 distinct biomes
 - **6 element-themed biomes** — each with unique ore deposits, enemies, and a Compound Titan boss
-- **Ashenveil village** — NPC hub with Prof. Aldric Voss, the Synthesizer machine, and the research lab
+- **Ashvale village** — NPC hub with Prof. Aldric Daedalus, the Synthesizer machine, and the research lab
 
 ### Chemistry Crafting
 - **All 118 elements** collectible with realistic lab equipment constraints (containers, PPE tiers)

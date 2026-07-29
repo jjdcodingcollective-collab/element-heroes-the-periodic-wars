@@ -5,7 +5,7 @@ Godot import settings: Filter = **Nearest** (pixel art), Mipmaps = off.
 
 ---
 
-## Player — Kael (16×16 per frame)
+## Player — Orion (16×16 per frame)
 
 **File:** `player/kael.png`
 **Frames:** 24 total — laid out horizontally, left-to-right
@@ -37,7 +37,7 @@ Godot import settings: Filter = **Nearest** (pixel art), Mipmaps = off.
 
 | File | Character | Colour | Notes |
 |------|-----------|--------|-------|
-| `npc/aldric.png` | Prof. Aldric Voss | Dark blue robes, white beard | Idle bob only, no walk needed |
+| `npc/aldric.png` | Prof. Aldric Daedalus | Dark blue robes, white beard | Idle bob only, no walk needed |
 | `npc/villager_a.png` | Generic villager | Brown tunic | |
 | `npc/villager_b.png` | Generic villager | Green tunic | |
 

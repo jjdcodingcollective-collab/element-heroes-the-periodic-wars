@@ -153,26 +153,26 @@ func _init_ui() -> void:
 	# (avoids needing to open the editor to set the Inspector fields)
 	var aldric := get_node_or_null("Aldric")
 	if aldric:
-		aldric.npc_name = "Prof. Aldric Voss"
+		aldric.npc_name = "Prof. Aldric Daedalus"
 		aldric.portrait_color = Color(0.25, 0.45, 0.65)
 		aldric.interact_radius = 40.0
 		aldric.handles_resonance_assembly = true
 		aldric.dialogue = ([
-			"Kael! Just the person I needed. Come closer — these old ears aren't what they used to be.",
+			"Orion! Just the person I needed. Come closer — these old ears aren't what they used to be.",
 			"You've seen it too, haven't you? The water. Three wells have gone black this week alone.",
 			"I've been running analyses. The contamination has an elemental signature — something is disrupting the hydrogen-oxygen bonds at a molecular level.",
 			"It's not natural erosion. Something — or someone — is introducing a foreign compound into the aquifer.",
 			"I have a theory, but I need your help to test it. Bring me two Hydrogen samples and one Oxygen sample. We'll synthesize a pure control batch and compare.",
 			"You'll find the elements scattered around the plains. Use your hands — they're closer to the ground than mine these days.",
-			"And Kael... before you go — there's a stack of research notes on my desk. Worth reading. Knowledge is as important as any weapon out there.",
+			"And Orion... before you go — there's a stack of research notes on my desk. Worth reading. Knowledge is as important as any weapon out there.",
 			"Press [F] near the desk to study. Get enough right and you'll earn some element samples from my reserves. Don't worry, I have plenty.",
-			"And Kael... be careful. The plains haven't felt right lately. I've noticed things moving at the edge of the fog.",
+			"And Orion... be careful. The plains haven't felt right lately. I've noticed things moving at the edge of the fog.",
 			"Go on then. The village is counting on us — even if they don't know it yet.",
 		] as Array[String])
 
 # ── Player lifecycle (death / respawn) ───────────────────────────────────────
 
-# Ashenveil village — matches the Player node's authored start position.
+# Ashvale village — matches the Player node's authored start position.
 const PLAYER_SPAWN: Vector2 = Vector2(192, 192)
 
 func _wire_player_lifecycle(player: Node, hud: Node) -> void:
@@ -209,7 +209,7 @@ func _on_resonance_part(item_key: String, collected: int, total: int, hud: Node)
 
 func _on_resonance_ready(hud: Node) -> void:
 	if hud and hud.has_method("show_banner"):
-		hud.show_banner("All six components complete — bring them to Prof. Aldric Voss in Ashenveil.",
+		hud.show_banner("All six components complete — bring them to Prof. Aldric Daedalus in Ashvale.",
 			Color(1.0, 0.9, 0.4))
 
 func _on_engine_assembled(engine_name: String, hud: Node) -> void:
@@ -320,7 +320,7 @@ func _materialise_tile(coords: Vector2i, td: Dictionary) -> void:
 		tile_data[coords]["body"] = body
 
 func _spawn_village() -> void:
-	# Ashenveil village in the surface_plains biome, centred around tile (15,15)
+	# Ashvale village in the surface_plains biome, centred around tile (15,15)
 	# Buildings are impassable rock-coloured rectangles.
 	# SPRITE SWAP: replace ColorRect logic here with instanced building scenes.
 	var buildings := [

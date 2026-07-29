@@ -176,10 +176,10 @@ var _death_overlay: Control = null
 var _death_input_armed: bool = false
 
 const DEATH_QUOTES := [
-	"\"Every failed reaction is data, Kael. Get up.\"  — Prof. Aldric Voss",
-	"\"Conservation of mass says nothing about conservation of pride.\"  — Prof. Aldric Voss",
-	"\"You are not destroyed. You are merely... rearranged.\"  — Prof. Aldric Voss",
-	"\"The wilds test hypotheses harshly. Revise and return.\"  — Prof. Aldric Voss",
+	"\"Every failed reaction is data, Orion. Get up.\"  — Prof. Aldric Daedalus",
+	"\"Conservation of mass says nothing about conservation of pride.\"  — Prof. Aldric Daedalus",
+	"\"You are not destroyed. You are merely... rearranged.\"  — Prof. Aldric Daedalus",
+	"\"The wilds test hypotheses harshly. Revise and return.\"  — Prof. Aldric Daedalus",
 ]
 
 func show_death_screen() -> void:
@@ -241,7 +241,7 @@ func show_death_screen() -> void:
 	tween.tween_property(bg, "color:a", 0.88, 0.8)
 	tween.tween_callback(func() -> void:
 		_death_input_armed = true
-		hint.text = "Press any key to wake in Ashenveil"
+		hint.text = "Press any key to wake in Ashvale"
 	)
 
 func _input(event: InputEvent) -> void:
@@ -297,7 +297,7 @@ func show_victory_screen(engine_name: String) -> void:
 	vbox.add_child(sub)
 
 	var body := Label.new()
-	body.text = "The wells run clear. Ashenveil breathes.\n\nYou learned the elements. You mastered the reactions.\nYou won the Periodic Wars."
+	body.text = "The wells run clear. Ashvale breathes.\n\nYou learned the elements. You mastered the reactions.\nYou won the Periodic Wars."
 	body.add_theme_font_size_override("font_size", 11)
 	body.modulate = Color(0.75, 0.8, 0.75)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

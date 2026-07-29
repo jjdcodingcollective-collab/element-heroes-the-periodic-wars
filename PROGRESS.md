@@ -43,7 +43,7 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Crafting UI | ✅ Done | 3×3 grid, auto-equips weapons/armor on craft |
 | Crafting system | ✅ Done **tested** | Recipe matching, item-ingredient support |
 | Dialogue system | ✅ Done | Multi-line NPC typewriter dialogue |
-| NPC — Aldric Voss | ✅ Done | Placed in Ashenveil village, full quest intro dialogue |
+| NPC — Aldric Daedalus | ✅ Done | Placed in Ashvale village, full quest intro dialogue |
 | Camera | ✅ Done | World-bounds clamping |
 | Save/load system | ✅ Done **tested** | Versioned (v3) with migration; inventory, equipment, weapon, armor, compendium, dug tiles, Act 3 progress |
 | Enemy system | ✅ Done | Patrol/chase AI, contact damage, element drops |
@@ -54,7 +54,7 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Synthesizer machine | ✅ Done | World object + UI, 5 polymer intermediates |
 | Boss encounters — 6 Compound Titans | ✅ Done | 3-phase fights, arena hazards, lore drops |
 | Science mini-game (quiz) | ✅ Done | Aldric's desk, 26 questions, element rewards, graded |
-| Player death / respawn | ✅ Done **tested** | Zelda-style: respawn in Ashenveil, full HP, inventory retained |
+| Player death / respawn | ✅ Done **tested** | Zelda-style: respawn in Ashvale, full HP, inventory retained |
 | Win condition — Resonance Engine | ✅ Done **tested** | 6 craftable components, assembled by Aldric, victory screen (Act 3) |
 | Automated test suite | ✅ Done | 81 assertions, `tests/test_runner.tscn`, runs headless |
 | CI pipeline | ✅ Done | `.github/workflows/tests.yml` — asset validation, import, tests, boot check |
@@ -63,7 +63,7 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Sprite spec | ✅ Done | Full animation spec in `assets/sprites/SPRITE_SPEC.md` |
 | Pixel art sprites — ALL | ❌ Not started | The 26 previously committed `.png` files were HTML pages, not images. Removed. See `assets/sprites/reference/README.md` |
 | Sprite integration layer | ❌ Not started | **No sprite is referenced by any scene or script.** Everything renders as ColorRect placeholders |
-| Pixel art sprites — NPCs | ⬜ Pending | Aldric Voss, villager_a, villager_b |
+| Pixel art sprites — NPCs | ⬜ Pending | Aldric Daedalus, villager_a, villager_b |
 | Pixel art sprites — world objects | ⬜ Pending | synthesizer, lab_desk, well, market_stall, projectile |
 | Pixel art sprites — HUD icons | ⬜ Pending | hearts, slots, weapon/armor/compendium icons |
 | Sound / music files | ⬜ Pending | Folders created, AudioManager ready — awaiting .ogg files |
@@ -87,7 +87,7 @@ element-heros---the-periodic-wars/
 ├── assets/
 │   ├── sprites/
 │   │   ├── SPRITE_SPEC.md              # Full sprite + animation specification
-│   │   ├── player/kael.png             # Kael — 4×8 sprite sheet (Golden Sun/NES Zelda style)
+│   │   ├── player/orion.png            # Orion — 4×8 sprite sheet (Golden Sun/NES Zelda style)
 │   │   ├── tiles/world_tiles.png       # World tileset — 7 biome rows
 │   │   └── enemies/                    # 6/18 enemy sprites — mutated real creatures
 │   └── audio/
@@ -206,7 +206,7 @@ Tier 3–5 require polymer intermediates from the Synthesizer.
 
 ## Synthesizer
 
-World object at tile (22,12), east of Ashenveil village. Press **F** nearby to open.
+World object at tile (22,12), east of Ashvale village. Press **F** nearby to open.
 
 | Polymer | Recipe | Used In |
 |---------|--------|---------|
@@ -307,7 +307,7 @@ Ordered by what unblocks the most downstream work, not by phase number.
 |----------|------|----------------|
 | **P0 — blocked on decision** | Choose an art strategy | Gates sprites, TileMap migration, and HUD icons simultaneously. Nothing in Phase 7 can start until this is answered, and the previous attempt failed silently. Options: commission/buy a tileset, hand-draw, or ship deliberately-stylised geometry as the final look |
 | **P0 — blocked on decision** | Choose target platform (HTML5 vs desktop) | Changes export config, input handling, and file-size budget. Recommendation: HTML5 first — the audience is schools, and Chromebooks cannot run a desktop binary |
-| **P0 — blocked on decision** | Resolve the naming split | `STORY.md` uses Ash / Ashwick / Aldric **Vayne** / Mira. The code uses Kael / Ashenveil / Aldric **Voss** and has no Mira. These are two different drafts; one has to win before any dialogue or story content is written |
+| ✅ Resolved 2026-07-29 | Naming split | Canon is now: **Orion** (protagonist), **Ashvale** (village), **Prof. Aldric Daedalus** (mentor), **Mira** (companion, unchanged), **Elder Sibyl**, **Talos** (Sky Islands companion), **The Lethean Order** / **The Archon** (villains). Space-age + Greco-Roman mythology, applied to humans/villains only — bosses and CHIMERA enemies stay element/chemistry-named by design. `STORY.md` and all dialogue/UI strings in code updated to match. See `context/DECISIONS.md` D-008 |
 | High | Play the game end to end as a human | The test suite proves systems work in isolation. Nobody has yet confirmed the game is *playable* — difficulty, pacing, whether the Resonance Engine hunt is discoverable |
 | High | Sprite integration layer | Even with finished art, no `AnimatedSprite2D`/`SpriteFrames` wiring exists. This code is identical regardless of who draws the pixels, so it can start before the art decision lands |
 | High | SFX + music files | `AudioManager` and all call sites are written; the folders are empty. jsfxr / BeepBox output dropped in and uncommented is the whole task |
