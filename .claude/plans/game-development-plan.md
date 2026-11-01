@@ -147,12 +147,14 @@ A 2D pixel-art top-down adventure game built in Godot 4 around all 118 elements 
 
 **Recommended tools:** jsfxr (browser, instant SFX) · BeepBox (browser, chiptune music loops) · Audacity (WAV→OGG conversion)
 
-### Pixel Art — Spec written, awaiting assets
+### Pixel Art — Spec written, human style locked, awaiting assets
 Full specification in `assets/sprites/SPRITE_SPEC.md` covering:
-- Player (Orion): 16×16, 8 animations (idle/walk × 4 directions), 24 frames total
-- 18 enemies: 16×16, 4-frame walk cycle per creature
-- 6 bosses: 48×48, idle + attack frames
-- World tiles: atlas PNG, 6 biome rows
+- Human style locked (D-010): sharp/angular, worn materials, per `assets/sprites/ART_STYLE.md` §3a. Enemy/boss style, tiles and 16×16 vs 16×24 character frames still open
+- Player (Orion): 16×16 (pending the 16×24 decision), 8 animations (idle/walk × 4 directions), 24 frames total
+- 18 CHIMERA enemies (real animals fused with an element): 16×16, 4-frame walk cycle per creature
+  - Golem/spirit-like enemies are failed Project REVERSION subjects (D-012): they may look less animal but keep one clear animal cue
+- 6 bosses (mythical creatures fused with a compound, D-011): 48×48, 4-frame idle + 2-frame attack
+- World tiles: atlas PNG, 7 rows (6 biomes + village)
 - World objects: Synthesizer (32×32), lab desk, well, market stall
 - HUD icons: hearts, inventory slots, weapon/armor slots
 
