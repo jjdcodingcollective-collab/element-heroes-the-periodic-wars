@@ -101,7 +101,7 @@ Only Tier 1 sets rules; the others contribute specific ideas.
 | **CHALCOR** (CuFeS₂) | Boss 2, Underground Mines | Hoard dragon: fool's-gold plate scales with purple/blue tarnish, copper horns, sulfur breath, fake-gold hoard |
 | **AURIUM** (HAuCl₄) | Boss 3, Crystal Caverns | Three-headed hydra: molten gold necks, ruby acid frills, acid spit hardens to gold |
 | **AZRAEL** (NaN₃) | Boss 4, Sky Islands | White phoenix: crystal feathers, crystal halo, cold blue flame, chest swells like an airbag then detonates |
-| **ATACAMA** (Cu₂Cl(OH)₃) | Boss 5, Ocean Floor | Leviathan: sea serpent armoured in verdigris bronze hull plates, embedded cannon, emerald glow |
+| **ATACAMA** (Cu₂Cl(OH)₃) | Boss 5, Ocean Floor | Leviathan: vast sea beast armoured in verdigris bronze hull plates, embedded cannon, emerald glow |
 | **URANOX** (UO₂) | Boss 6, Magma Layer | Basilisk: black uraninite plates with radioactive green cracks, green crystal crown, lethal gaze beam |
 
 ---

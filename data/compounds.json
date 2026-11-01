@@ -105,7 +105,7 @@
     "category": "compound",
     "game_item": "iron_oxide",
     "real_world_use": "Iron(III) oxide; common rust; used as red pigment",
-    "game_use": "Weakens Iron Constructs; ingredient in thermite; red dye",
+    "game_use": "Weakens Iron Hulks; ingredient in thermite; red dye",
     "reaction_type": "oxidation",
     "act": 1
   },
@@ -457,7 +457,7 @@
     "category": "consumable",
     "game_item": "brine_flask",
     "real_world_use": "Saltwater solution; used in food preservation and medicine",
-    "game_use": "Restores 10 HP; preserves food items; weakens Alkali Golems on contact",
+    "game_use": "Restores 10 HP; preserves food items; weakens alkali-metal CHIMERA creatures on contact",
     "reaction_type": "solution",
     "act": 1
   },

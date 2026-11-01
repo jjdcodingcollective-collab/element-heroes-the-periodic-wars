@@ -41,7 +41,8 @@ A pixel-art 2D top-down adventure game built in **Godot 4** around all 118 eleme
 ### Audio & Art (not started)
 - **AudioManager** autoload is written and call sites are wired — but no `.ogg` files exist yet
 - Full **sprite animation spec** written (`assets/sprites/SPRITE_SPEC.md`)
-- **No art exists.** The game currently renders entirely as coloured rectangles, and
+- **Art direction set** (`assets/sprites/ART_STYLE.md`): Golden Sun GBA + NES/SNES Zelda, top-down 3/4, 16×16 tiles; human style locked (sharp, angular, worn materials). Enemy/boss style, tiles and 16×16 vs 16×24 character frames are still open
+- **No sprite art exists yet** (only `icon.png`). The game currently renders entirely as coloured rectangles, and
   no sprite is referenced by any scene or script. See `assets/sprites/reference/README.md`
 
 ---

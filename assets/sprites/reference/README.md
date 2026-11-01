@@ -37,8 +37,9 @@ verify the bytes that land on disk before committing them.
 ## What is actually needed
 
 `assets/sprites/SPRITE_SPEC.md` holds the full animation specification — frame
-counts, dimensions, and per-entity descriptions. Any art path (hand-drawn,
-commissioned, or programmatically generated) should be driven from that spec.
+counts, dimensions, and per-entity descriptions. `ART_STYLE.md` sets how it
+should look: the human style is locked (D-010) and bosses are mythical creatures
+(D-011). Whatever the art path, drive it from those two files.
 
 Note that producing the images is only half the work: **no sprite is currently
 referenced by any scene or script.** The loading and animation layer

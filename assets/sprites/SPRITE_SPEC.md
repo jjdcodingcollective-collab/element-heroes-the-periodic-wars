@@ -1,14 +1,16 @@
 # Sprite Sheet Specification — Element Heroes
 
 All sprites are **16×16 pixels** unless noted. Export as PNG with transparent backgrounds.
+
+**Status (2026-11-01):** none of these files exist yet; `assets/sprites/icon.png` is the only real art. The human style is locked (D-010, see `ART_STYLE.md` §3a). Enemy/boss style, tiles and the character frame size (16×16 vs 16×24) are still open.
 Godot import settings: Filter = **Nearest** (pixel art), Mipmaps = off.
 
 ---
 
 ## Player — Orion (16×16 per frame)
 
-**File:** `player/kael.png`
-**Frames:** 24 total — laid out horizontally, left-to-right
+**File:** `player/orion.png`
+**Frames:** 24 drawn frames on a 4-column × 8-row grid (one animation per row; idle rows use the first 2 cells)
 
 | Row | Animation | Frames | Description |
 |-----|-----------|--------|-------------|
@@ -18,7 +20,7 @@ Godot import settings: Filter = **Nearest** (pixel art), Mipmaps = off.
 | 3 | idle_right | 2 | Mirror of left (or redraw). |
 | 4 | walk_down  | 4 | Leg swing, arm swing opposite. |
 | 5 | walk_up    | 4 | Back view walk. |
-| 6 | walk_left  | 4 | Side walk, hair/coat bounce. |
+| 6 | walk_left  | 4 | Side walk, hair/jacket bounce. |
 | 7 | walk_right | 4 | Mirror or redraw. |
 
 **Godot SpriteFrames setup:**
@@ -86,7 +88,7 @@ Bosses are **mythical creatures** fused with their compound (D-011); regular ene
 | `bosses/chalcor.png` | CHALCOR — Chalcopyrite | Hoard dragon: fool's-gold scales, purple tarnish, sulfur breath |
 | `bosses/aurium.png` | AURIUM — Chloroauric Acid | Three-headed hydra: molten gold, ruby acid frills |
 | `bosses/azrael.png` | AZRAEL — Sodium Azide | White crystal phoenix: halo, airbag-swell detonation |
-| `bosses/atacama.png` | ATACAMA — Atacamite | Leviathan: verdigris bronze-hulled sea serpent, emerald glow |
+| `bosses/atacama.png` | ATACAMA — Atacamite | Leviathan: verdigris bronze hull plates, barnacles, embedded cannon, emerald glow |
 | `bosses/uranox.png` | URANOX — Uraninite | Basilisk: black uraninite plates, green radioactive cracks, gaze beam |
 
 **Boss SpriteFrames:** idle = 4 fps (4 frames loop), attack = 8 fps (2 frames, no loop)

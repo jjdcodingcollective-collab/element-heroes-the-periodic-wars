@@ -87,9 +87,8 @@ element-heros---the-periodic-wars/
 ├── assets/
 │   ├── sprites/
 │   │   ├── SPRITE_SPEC.md              # Full sprite + animation specification
-│   │   ├── player/orion.png            # Orion — 4×8 sprite sheet (Golden Sun/NES Zelda style)
-│   │   ├── tiles/world_tiles.png       # World tileset — 7 biome rows
-│   │   └── enemies/                    # 6/18 enemy sprites — mutated real creatures
+│   │   ├── ART_STYLE.md                # Visual rulebook (Golden Sun + Zelda, human style locked)
+│   │   ├── icon.png                    # Only real art so far; player/, tiles/, enemies/ sprites not yet drawn
 │   └── audio/
 │       ├── music/                      # Drop biome .ogg tracks here
 │       └── sfx/                        # Drop sound effect .ogg files here
@@ -305,7 +304,7 @@ Ordered by what unblocks the most downstream work, not by phase number.
 
 | Priority | Task | Why it is here |
 |----------|------|----------------|
-| **P0 — blocked on decision** | Choose an art strategy | Gates sprites, TileMap migration, and HUD icons simultaneously. Nothing in Phase 7 can start until this is answered, and the previous attempt failed silently. Options: commission/buy a tileset, hand-draw, or ship deliberately-stylised geometry as the final look |
+| **P0 — partly decided** | Finish the art strategy | Direction is confirmed (Golden Sun GBA + NES/SNES Zelda, 3/4 top-down, 16×16 tiles) and the human style is locked (D-010); bosses are mythical creatures, regular enemies real animals (D-011). Still open: enemy/boss rendering style, tiles, and 16×16 vs 16×24 character frames. Gates sprites, TileMap migration and HUD icons. See `assets/sprites/ART_STYLE.md` |
 | **P0 — blocked on decision** | Choose target platform (HTML5 vs desktop) | Changes export config, input handling, and file-size budget. Recommendation: HTML5 first — the audience is schools, and Chromebooks cannot run a desktop binary |
 | ✅ Resolved 2026-07-29 | Naming split | Canon is now: **Orion** (protagonist), **Ashvale** (village), **Prof. Aldric Daedalus** (mentor), **Mira** (companion, unchanged), **Elder Sibyl**, **Talos** (Sky Islands companion), **The Lethean Order** / **The Archon** (villains). Space-age + Greco-Roman mythology, applied to humans/villains only — bosses and CHIMERA enemies stay element/chemistry-named by design. `STORY.md` and all dialogue/UI strings in code updated to match. See `context/DECISIONS.md` D-008 |
 | High | Play the game end to end as a human | The test suite proves systems work in isolation. Nobody has yet confirmed the game is *playable* — difficulty, pacing, whether the Resonance Engine hunt is discoverable |
@@ -323,7 +322,6 @@ Ordered by what unblocks the most downstream work, not by phase number.
 
 | Hash | Description |
 |------|-------------|
-| *(next)* | Add pixel art sprites (player, tileset, 6 enemies), bug fixes, architecture docs |
 | `a5b17ad` | Add 6 compound titan bosses with 3-phase fights and arena hazards |
 | `a0b4731` | Add 18 CHIMERA enemy variants with 3-tier grinding system |
 | `4a3aad7` | Update PROGRESS.md — armor, weapons, Synthesizer |
