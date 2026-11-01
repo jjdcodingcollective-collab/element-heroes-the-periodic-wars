@@ -47,29 +47,31 @@ Godot import settings: Filter = **Nearest** (pixel art), Mipmaps = off.
 
 ## Enemies (16×16 per frame, 4-frame walk cycle)
 
+Each enemy is a real animal fused with an element (D-011). "Reverted" subjects went through Project REVERSION and look golem-like, spectral or ooze-like, but keep a readable trace of their animal silhouette (D-012).
+
 Each enemy: 2 rows × 4 frames = 8 frames total.
 Row 0 = walk left, Row 1 = walk right (or mirror).
 
-| File | Enemy | Colour palette |
-|------|-------|---------------|
-| `enemies/ashburn_shambler.png` | Ashburn Shambler | Black ash, orange ember glow |
-| `enemies/carbon_crawler.png` | Carbon Crawler | Dark grey/black, chitinous |
-| `enemies/potash_poltergeist.png` | Potash Poltergeist | Violet/purple spectral |
-| `enemies/iron_hulk.png` | Iron Hulk | Dark iron-grey, chunky |
-| `enemies/copper_coil.png` | Copper Coil | Copper/verdigris green |
-| `enemies/zinc_phantom.png` | Zinc Phantom | Pale blue-white |
-| `enemies/silver_specter.png` | Silver Specter | Translucent silver shimmer |
-| `enemies/gold_golem.png` | Gold Golem | Rich gold, heavy |
-| `enemies/prismatic_hound.png` | Prismatic Hound | Shifting rainbow crystal |
-| `enemies/alkali_hawk.png` | Alkali Hawk | White feathers, fizzing tips |
-| `enemies/static_djinn.png` | Static Djinn | Electric blue/yellow arcs |
-| `enemies/stormwing.png` | Stormwing | Dark storm-cloud grey, lightning |
-| `enemies/brine_crawler.png` | Brine Crawler | Cyan/teal crab |
-| `enemies/verdigris_lurker.png` | Verdigris Lurker | Mottled green-blue |
-| `enemies/deep_shocker.png` | Deep Shocker | Deep purple, electric tendrils |
-| `enemies/uranium_wraith.png` | Uranium Wraith | Black + sickly green aura |
-| `enemies/thorium_scorcher.png` | Thorium Scorcher | Orange-red flame lizard |
-| `enemies/platinum_sentinel.png` | Platinum Sentinel | Silvery-white armoured |
+| File | Enemy | Base animal | Colour palette |
+|------|-------|-------------|---------------|
+| `enemies/ashburn_shambler.png` | Ashburn Shambler | Black ash, orange ember glow | Black bear |
+| `enemies/carbon_crawler.png` | Carbon Crawler | Dark grey/black, chitinous | Stag beetle |
+| `enemies/potash_poltergeist.png` | Potash Poltergeist | Violet/purple spectral | Cane toad (reverted) |
+| `enemies/iron_hulk.png` | Iron Hulk | Dark iron-grey, chunky | Rhinoceros |
+| `enemies/copper_coil.png` | Copper Coil | Copper/verdigris green | King cobra |
+| `enemies/zinc_phantom.png` | Zinc Phantom | Pale blue-white | Moon jellyfish (reverted) |
+| `enemies/silver_specter.png` | Silver Specter | Translucent silver shimmer | Manta ray (reverted) |
+| `enemies/gold_golem.png` | Gold Golem | Rich gold, heavy | Silverback gorilla (reverted) |
+| `enemies/prismatic_hound.png` | Prismatic Hound | Shifting rainbow crystal | Grey wolf |
+| `enemies/alkali_hawk.png` | Alkali Hawk | White feathers, fizzing tips | Peregrine falcon |
+| `enemies/static_djinn.png` | Static Djinn | Electric blue/yellow arcs | Electric eel (reverted) |
+| `enemies/stormwing.png` | Stormwing | Dark storm-cloud grey, lightning | Wandering albatross |
+| `enemies/brine_crawler.png` | Brine Crawler | Cyan/teal crab | Mantis shrimp |
+| `enemies/verdigris_lurker.png` | Verdigris Lurker | Mottled green-blue | Giant octopus (reverted) |
+| `enemies/deep_shocker.png` | Deep Shocker | Deep purple, electric tendrils | Box jellyfish |
+| `enemies/uranium_wraith.png` | Uranium Wraith | Black + sickly green aura | Death's-head hawkmoth (reverted) |
+| `enemies/thorium_scorcher.png` | Thorium Scorcher | Orange-red flame lizard | Komodo dragon |
+| `enemies/platinum_sentinel.png` | Platinum Sentinel | Silvery-white armoured | Pangolin (reverted) |
 
 **Tier variants:** No separate sprites needed. Code applies modulate tint:
 - Basic: no tint

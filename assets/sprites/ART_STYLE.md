@@ -19,7 +19,7 @@ Only Tier 1 sets rules; the others contribute specific ideas.
 |------|------|--------------|
 | **1 — Core** | Golden Sun overworld sheets and screenshots (Isaac sheet, Vale crowd, inn scene, sanctum), Zelda: Minish Cap screenshots | Proportions, 3/4 camera, outline treatment, palette warmth, tile density, animation layout |
 | **2 — Mood & bosses** | FF6 battle sprites and monster sheets, Golden Sun battle sprites, Chrono Trigger campfire, Sea of Stars–style sunset hill, FF6 Goddess | Boss silhouettes and detail level, lighting moods for set-piece scenes, portrait style (GBA cross-stitch portraits) |
-| **3 — Ideas only** | Elemental golem sheets (pixel and painted), rusty robot, clockwork golem, eyeball wraith, ice spirit, flat icon packs (Tiny RPG, monster grid) | Creature concepts: "element made solid" golems, glowing cores, material-readable bodies. **Do not copy their rendering** — the painted golems are not pixel art, and the icon packs are too flat and chunky for our sprites |
+| **3 — Ideas only** | Elemental golem sheets (pixel and painted), rusty robot, clockwork golem, eyeball wraith, ice spirit, flat icon packs (Tiny RPG, monster grid) | Creature concepts: "element made solid" bodies, glowing cores, material-readable surfaces. The golem sheets are the look for **reverted** enemies (D-012), as long as the animal underneath still reads. **Do not copy their rendering** — the painted golems are not pixel art, and the icon packs are too flat and chunky for our sprites |
 
 ---
 
@@ -96,6 +96,7 @@ Only Tier 1 sets rules; the others contribute specific ideas.
 | **Orion** | Protagonist, scientist | Sharp, angular build to match Mira (not rounded); spiky chestnut hair; **brass goggles on forehead**; **battered saddle-brown leather jacket** (scuffed elbows, stitched patches, brass buckles, upturned collar) over a dark teal shirt; olive canvas satchel; dark trousers; brown boots |
 | **Mira** | Companion, combat (Fe/Cu) | Copper-red choppy hair; **sage-green bandana**; iron-grey padded vest with copper rivets; fingerless gloves; pick-hammer on her back; miner's lamp on her belt |
 | **Prof. Aldric Daedalus** | Mentor | Dark blue robes; white beard (per the spec) |
+| **Enemies (D-011, D-012)** | 18 CHIMERA creatures | **Real animal + element.** Reverted subjects (Project REVERSION) are less animal: golem, vapour, plasma or ooze bodies. Always keep one clear animal cue in the silhouette (Gold Golem keeps a gorilla's frame and knuckle-walk; Zinc Phantom keeps a jellyfish bell). The full list is in `SPRITE_SPEC.md` |
 | **Bosses (D-011)** | All 6 Compound Titans | **Mythical creature + compound.** Regular enemies are real animals + element. The creature is chosen for how it echoes the chemistry or lore |
 | **PEROXIS** (Na₂O₂) | Boss 1, Surface Plains | Manticore: pale yellow crystal lion, crystal bat wings, scorpion tail oozing caustic foam, orange-white core |
 | **CHALCOR** (CuFeS₂) | Boss 2, Underground Mines | Hoard dragon: fool's-gold plate scales with purple/blue tarnish, copper horns, sulfur breath, fake-gold hoard |
