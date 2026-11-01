@@ -48,14 +48,16 @@ A pixel-art 2D top-down adventure game built in **Godot 4** around all 118 eleme
 
 ## Biomes
 
-| Biome | Elements | Boss Titan |
-|-------|----------|-----------|
-| Surface Plains | Na, K, C | PEROXIS — Na₂O₂ |
-| Underground Mines | Fe, Cu, Zn, Ni | CHALCOR — CuFeS₂ |
-| Crystal Caverns | Ag, Au | AURIUM — HAuCl₄ |
-| Sky Islands | K, Na | AZRAEL — NaN₃ |
-| Ocean Floor | Cu, Zn | ATACAMA — Cu₂Cl(OH)₃ |
-| Magma Layer | U, Th, Pt | URANOX — UO₂ |
+| Biome | Elements | Boss Titan | Form |
+|-------|----------|-----------|------|
+| Surface Plains | Na, K, C | PEROXIS — Na₂O₂ | Manticore |
+| Underground Mines | Fe, Cu, Zn, Ni | CHALCOR — CuFeS₂ | Hoard dragon |
+| Crystal Caverns | Ag, Au | AURIUM — HAuCl₄ | Three-headed hydra |
+| Sky Islands | K, Na | AZRAEL — NaN₃ | Phoenix |
+| Ocean Floor | Cu, Zn | ATACAMA — Cu₂Cl(OH)₃ | Leviathan |
+| Magma Layer | U, Th, Pt | URANOX — UO₂ | Basilisk |
+
+Bosses are mythical creatures fused with their compound; regular enemies are real animals fused with an element (see `assets/sprites/ART_STYLE.md`).
 
 ---
 

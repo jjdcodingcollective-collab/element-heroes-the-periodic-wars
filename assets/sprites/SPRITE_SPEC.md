@@ -27,7 +27,7 @@ Godot import settings: Filter = **Nearest** (pixel art), Mipmaps = off.
 - Hframes = 4, Vframes = 8 in the SpriteFrames editor, or use Aseprite export as strip
 
 **Design notes:**
-- Pink/magenta lab coat, goggles on forehead
+- Battered saddle-brown leather jacket over teal shirt, goggles on forehead (see `ART_STYLE.md`)
 - Satchel visible on side views
 - 3-colour palette + black outline + 1 highlight
 
@@ -78,14 +78,16 @@ Row 0 = walk left, Row 1 = walk right (or mirror).
 
 ## Bosses (48×48 per frame, 4-frame idle + 2-frame attack)
 
+Bosses are **mythical creatures** fused with their compound (D-011); regular enemies are real animals.
+
 | File | Boss | Notes |
 |------|------|-------|
-| `bosses/peroxis.png` | PEROXIS — Sodium Peroxide | Blazing white/orange crystal |
-| `bosses/chalcor.png` | CHALCOR — Chalcopyrite | Copper-gold rock giant |
-| `bosses/aurium.png` | AURIUM — Chloroauric Acid | Golden serpent, acid drip |
-| `bosses/azrael.png` | AZRAEL — Sodium Azide | Dark spectral, explosive aura |
-| `bosses/atacama.png` | ATACAMA — Atacamite | Verdigris sea-creature |
-| `bosses/uranox.png` | URANOX — Uraninite | Stone giant, green uranium glow |
+| `bosses/peroxis.png` | PEROXIS — Sodium Peroxide | Manticore: crystal lion, scorpion tail, caustic foam |
+| `bosses/chalcor.png` | CHALCOR — Chalcopyrite | Hoard dragon: fool's-gold scales, purple tarnish, sulfur breath |
+| `bosses/aurium.png` | AURIUM — Chloroauric Acid | Three-headed hydra: molten gold, ruby acid frills |
+| `bosses/azrael.png` | AZRAEL — Sodium Azide | White crystal phoenix: halo, airbag-swell detonation |
+| `bosses/atacama.png` | ATACAMA — Atacamite | Leviathan: verdigris bronze-hulled sea serpent, emerald glow |
+| `bosses/uranox.png` | URANOX — Uraninite | Basilisk: black uraninite plates, green radioactive cracks, gaze beam |
 
 **Boss SpriteFrames:** idle = 4 fps (4 frames loop), attack = 8 fps (2 frames, no loop)
 
