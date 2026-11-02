@@ -41,7 +41,7 @@ boss's formula, written out atom by atom, opens the gate without a key:
 |---|---|---|
 | Peroxis | Na · Na · O · O | A scorched lab note: "two of the salt, two of the breath" |
 | Chalcor | Cu · Fe · S · S | A miner's chalk tally on the Warden cave wall |
-| Aurium | Au · Cl · Cl · Cl · Cl · H | Scratched into a gold-flecked crystal: "one king, four guards, one servant" |
+| Aurium | H · Au · Cl · Cl · Cl · Cl | Scratched into a gold-flecked crystal: "one servant, one king, four guards" |
 | Azrael | Na · N · N · N | A torn airbag recall notice on Sky Island 2 |
 | Atacama | Cu · Cu · Cl · O · H · O · H · O · H | Barnacle pattern on the wreck's hull |
 | Uranox | U · O · O | Etched on the Ouroboros Ring plinth |
