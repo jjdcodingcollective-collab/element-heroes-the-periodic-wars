@@ -12,6 +12,7 @@ const PLAYER_SCENE := preload("res://scenes/player/player.tscn")
 const ENEMY_SCENE  := preload("res://scenes/world/enemy.tscn")
 const BOSS_SCENE   := preload("res://scenes/world/boss.tscn")
 const NPC_SCENE    := preload("res://scenes/world/npc.tscn")
+const WORLD_SCENE  := preload("res://scenes/world/world.tscn")
 const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 
 var _passed: int = 0
@@ -30,6 +31,7 @@ func _ready() -> void:
 	_test_save_migration()
 	_test_sprite_integration()
 	_test_audio_assets()
+	await _test_world_draw_order()
 
 	print("=== %d passed, %d failed ===" % [_passed, _failed])
 	# Let the audio server drop its playbacks before quitting, so the engine
@@ -428,6 +430,7 @@ func _test_sprite_integration() -> void:
 	var p: Node = PLAYER_SCENE.instantiate()
 	add_child(p)
 	_check("player with art has frames", p.animated_sprite.sprite_frames != null and p._placeholder == null)
+	_check_eq("16x24 feet sit on the tile", p.animated_sprite.offset.y, 8.0 - fs.y / 2.0)
 	p.velocity = Vector2(0, 50)
 	p.facing = Vector2.DOWN
 	p._update_animation()
@@ -467,3 +470,25 @@ func _test_audio_assets() -> void:
 	AudioManager.play_sfx("__missing__")   # must not error
 	_check("unknown sfx is ignored", true)
 	AudioManager.stop_music()
+
+# ── World draw order ──────────────────────────────────────────────────────────
+
+# Regression: tiles streamed in after the player used to draw over the player,
+# Aldric and scene-placed enemies, making them invisible.
+func _test_world_draw_order() -> void:
+	print("- world draw order")
+	var w: Node2D = WORLD_SCENE.instantiate()
+	add_child(w)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var player: Node2D = w.get_node("Player")
+	_check("world sorts by Y", w.y_sort_enabled)
+	_check("tiles were streamed", w.tile_nodes.size() > 0)
+	if w.tile_nodes.size() > 0:
+		var tile: CanvasItem = w.tile_nodes.values()[0]
+		_check("tiles draw beneath the player", tile.z_index < player.z_index)
+	var aldric: Node = w.get_node_or_null("Aldric")
+	if aldric:
+		_check_eq("Aldric's label shows his name", aldric._label.text, "Prof. Aldric Daedalus")
+	w.queue_free()
+	await get_tree().process_frame

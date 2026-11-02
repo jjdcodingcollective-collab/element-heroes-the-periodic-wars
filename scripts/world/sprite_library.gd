@@ -14,9 +14,9 @@ extends RefCounted
 
 const ROOT := "res://assets/sprites/"
 
-# Human/creature frame size. The 16×16 vs 16×24 decision is still open
-# (ART_STYLE.md); changing this one constant re-cuts every character sheet.
-const CHARACTER_FRAME := Vector2i(16, 16)
+# Human frame size: 16×24, Golden Sun proportions (decision D-013). Feet stay
+# on the 16×16 tile; the head overlaps the tile above. Collision is unchanged.
+const CHARACTER_FRAME := Vector2i(16, 24)
 
 # Each layout: frame size, one row per animation [name, frames, fps, loop],
 # and where the bottom edge of a frame sits relative to the node origin

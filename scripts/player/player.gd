@@ -125,8 +125,9 @@ func _visual() -> CanvasItem:
 func _spawn_placeholder() -> void:
 	_placeholder = ColorRect.new()
 	_placeholder.color = Color(0.9, 0.2, 0.6)
-	_placeholder.size = Vector2(12, 12)
-	_placeholder.position = Vector2(-6, -6)
+	# Same footprint as a 16×24 sprite: feet at +8, head 16px above the tile.
+	_placeholder.size = Vector2(10, 22)
+	_placeholder.position = Vector2(-5, -14)
 	_placeholder.name = "Placeholder"
 	add_child(_placeholder)
 
@@ -228,7 +229,7 @@ func _spawn_warning_label(message: String, world_pos: Vector2) -> void:
 	label.text = message
 	label.add_theme_font_size_override("font_size", 9)
 	label.modulate = Color(1.0, 0.3, 0.3)
-	label.position = world_pos + Vector2(-40, -16)
+	label.position = world_pos + Vector2(-40, -26)
 	label.z_index = 100
 	get_parent().add_child(label)
 	var tween: Tween = get_tree().create_tween()
@@ -243,7 +244,7 @@ func _spawn_pickup_label(symbol: String, amount: float, world_pos: Vector2) -> v
 	label.text = "+%.2f%s %s" % [amount, unit, symbol]
 	label.add_theme_font_size_override("font_size", 9)
 	label.modulate = Color(1.0, 1.0, 0.4)
-	label.position = world_pos + Vector2(-20, -16)
+	label.position = world_pos + Vector2(-20, -26)
 	label.z_index = 100
 	get_parent().add_child(label)
 	var tween: Tween = get_tree().create_tween()

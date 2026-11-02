@@ -7,7 +7,12 @@ extends StaticBody2D
 # (2-frame idle, SPRITE_SPEC.md). A static portrait_texture also still works.
 # Without either, the ColorRect placeholder is shown.
 
-@export var npc_name: String = "Villager"
+# world.gd renames Aldric after _ready(), so keep the floating label in sync.
+@export var npc_name: String = "Villager":
+	set(value):
+		npc_name = value
+		if _label != null:
+			_label.text = value
 @export var portrait_color: Color = Color(0.3, 0.5, 0.7)
 @export var portrait_texture: Texture2D = null   # assign in Inspector when ready
 @export var interact_radius: float = 32.0
@@ -48,15 +53,15 @@ func _spawn_visuals() -> void:
 		# Placeholder coloured rectangle
 		_placeholder = ColorRect.new()
 		_placeholder.color = portrait_color
-		_placeholder.size = Vector2(12, 16)
-		_placeholder.position = Vector2(-6, -16)
+		_placeholder.size = Vector2(12, 22)
+		_placeholder.position = Vector2(-6, -22)
 		_placeholder.name = "Placeholder"
 		add_child(_placeholder)
 
 	# Name label above NPC
 	_label = Label.new()
 	_label.text = npc_name
-	_label.position = Vector2(-20, -28)
+	_label.position = Vector2(-20, -36)
 	_label.add_theme_font_size_override("font_size", 8)
 	add_child(_label)
 
@@ -79,7 +84,7 @@ func use_sprite_sheet(sprite_id: String) -> bool:
 func _spawn_interact_indicator() -> void:
 	_indicator = Label.new()
 	_indicator.text = "[F]"
-	_indicator.position = Vector2(-8, -38)
+	_indicator.position = Vector2(-8, -46)
 	_indicator.add_theme_font_size_override("font_size", 8)
 	_indicator.modulate = Color.YELLOW
 	_indicator.visible = false

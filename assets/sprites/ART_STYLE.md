@@ -75,7 +75,7 @@ Only Tier 1 sets rules; the others contribute specific ideas.
 | Asset | Frame size | Notes |
 |-------|-----------|-------|
 | Tiles | 16×16 | One biome per row of the atlas |
-| Player / NPC | 16×16 per `SPRITE_SPEC.md` | **Open decision:** Golden Sun characters are about 16×24. We recommend 16×24 frames, with the feet in the bottom 16×16 tile, to get the reference look. Until that is approved, draw to 16×16. |
+| Player / NPC (humans) | **16×24** (D-013) | Golden Sun proportions. Feet sit in the bottom 16×16 of the frame on the tile; the head overlaps the tile above. Collision stays tile-sized. Comparison: `outputs/frame-size-comparison.png` |
 | Enemies | 16×16 | Larger enemies are allowed as 32×32 if the spec is updated |
 | Bosses | 48×48 | Mythical creatures (D-011). Top-heavy silhouettes with big upper bodies; read as large from a distance |
 | Dialogue portrait | 48×48 | GBA bust style (see the cross-stitch portraits): 3/4 face, big eyes |

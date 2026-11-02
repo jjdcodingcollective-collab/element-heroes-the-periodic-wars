@@ -111,7 +111,15 @@ const BIOME_TIER_WEIGHTS: Dictionary = {
 	"magma_layer":       [0.10, 0.35, 0.55],
 }
 
+# Ground tiles draw beneath everything that stands on them. Without this, tiles
+# streamed in after the player were drawn on top of the player, Aldric and the
+# scene-placed enemies, hiding them completely.
+const GROUND_Z: int = -5
+
 func _ready() -> void:
+	# Characters, enemies and props sort by Y, so a 16×24 character walking
+	# behind another overlaps it correctly.
+	y_sort_enabled = true
 	_generate_world()
 	_spawn_village()
 	# Wire HUD and CraftingUI after the full scene tree is loaded
@@ -305,6 +313,7 @@ func _materialise_tile(coords: Vector2i, td: Dictionary) -> void:
 	rect.color = col
 	rect.size = Vector2(TILE_SIZE, TILE_SIZE)
 	rect.position = Vector2(coords.x * TILE_SIZE, coords.y * TILE_SIZE)
+	rect.z_index = GROUND_Z
 	add_child(rect)
 	tile_nodes[coords] = rect
 
