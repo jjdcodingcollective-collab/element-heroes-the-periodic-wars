@@ -47,9 +47,20 @@ var _detail_stamp: Label
 var _use_button: Button
 
 var _tab: int = 0
-var _entries: Array = []         # [{id, name, count_text, icon, kind, text, stat, stamp, usable}]
+var _entries: Array = []         # [{id, key, name, count_text, icon, kind, type, text, stat, stamp, usable, hotbar}]
 var _selected: int = 0
 var _player: Node = null
+
+# Sorting (S or click): per tab, cycles Recent / Name / Type.
+const SORT_NAMES := ["Recent", "Name", "Type"]
+var _sort_mode: Dictionary = { "Elements": 0, "Equipment": 2, "Consumables": 0, "Key Items": 2 }
+var _sort_button: Button
+# "New" badges: keys that were unseen when this tab was opened. They keep their
+# mark while the tab stays open; the Bag already counts them as seen.
+var _shown_new: Dictionary = {}
+var _ribbon_dots: Array[Control] = []
+var _hotbar_row: Control
+var _hotbar_buttons: Array[Button] = []
 
 func _ready() -> void:
 	layer = 9
@@ -68,12 +79,16 @@ func toggle() -> void:
 	UIManager.toggle("journal")
 
 func show_tab(tab_name: String) -> void:
-	_tab = maxi(TAB_NAMES.find(tab_name), 0)
+	var tab: int = maxi(TAB_NAMES.find(tab_name), 0)
+	if tab != _tab:
+		_shown_new.clear()
+	_tab = tab
 	_selected = 0
 	refresh()
 
 # Called by UIManager.
 func _menu_set_open(open: bool) -> void:
+	_shown_new.clear()
 	_apply_visibility(open)
 	if open:
 		AudioManager.on_ui_open()
@@ -94,8 +109,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_select(_selected - 1)
 	elif event.is_action_pressed("ui_accept"):
 		_use_selected()
+	elif event is InputEventKey and event.pressed and event.shift_pressed and event.keycode >= KEY_1 and event.keycode <= KEY_4:
+		assign_selected_to_hotbar(event.keycode - KEY_1)
 	elif event is InputEventKey and event.pressed and event.keycode >= KEY_1 and event.keycode <= KEY_4:
 		show_tab(TAB_NAMES[event.keycode - KEY_1])
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_S:
+		cycle_sort()
 	else:
 		return
 	get_viewport().set_input_as_handled()
@@ -143,6 +162,15 @@ func _build() -> void:
 		r.pressed.connect(show_tab.bind(TAB_NAMES[i]))
 		_book.add_child(r)
 		_ribbons.append(r)
+		# Brass dot at the ribbon's tip: this tab holds unseen items.
+		var dot := Panel.new()
+		dot.add_theme_stylebox_override("panel", _box(BRASS, LEATHER_DARK, 2, 6))
+		dot.size = Vector2(12, 12)
+		dot.position = Vector2(-16, 11)
+		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		dot.visible = false
+		r.add_child(dot)
+		_ribbon_dots.append(dot)
 
 	# Leather cover with stitching and brass corners (drawn by JS.CoverDecor).
 	var cover := Panel.new()
@@ -170,9 +198,21 @@ func _build() -> void:
 	_page_title.size = Vector2(page_w, 30)
 	left.add_child(_page_title)
 	left.add_child(_ornament(Vector2(page_w / 2.0, 48)))
+	_sort_button = Button.new()
+	_sort_button.flat = true
+	_sort_button.focus_mode = Control.FOCUS_NONE
+	_sort_button.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_sort_button.add_theme_font_size_override("font_size", 12)
+	_sort_button.add_theme_color_override("font_color", INK_SOFT)
+	_sort_button.add_theme_color_override("font_hover_color", INK)
+	_sort_button.add_theme_color_override("font_pressed_color", INK)
+	_sort_button.position = Vector2(page_w - 170, 56)
+	_sort_button.size = Vector2(152, 20)
+	_sort_button.pressed.connect(cycle_sort)
+	left.add_child(_sort_button)
 	var scroll := ScrollContainer.new()
-	scroll.position = Vector2(18, 60)
-	scroll.size = Vector2(page_w - 36, page_h - 76)
+	scroll.position = Vector2(18, 78)
+	scroll.size = Vector2(page_w - 36, page_h - 94)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	left.add_child(scroll)
 	_list = VBoxContainer.new()
@@ -235,12 +275,32 @@ func _build() -> void:
 	_use_button.pressed.connect(_use_selected)
 	right.add_child(_use_button)
 
+	# Quick-slot row: put the selected consumable / Boss Key on hotbar 1–4.
+	_hotbar_row = HBoxContainer.new()
+	_hotbar_row.add_theme_constant_override("separation", 6)
+	_hotbar_row.position = Vector2(26, 394)
+	_hotbar_row.size = Vector2(page_w - 52, 22)
+	right.add_child(_hotbar_row)
+	var hb_label := _label("Quick slot", 13, INK_SOFT)
+	hb_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_hotbar_row.add_child(hb_label)
+	for i: int in 4:
+		var b := JS.button(str(i + 1), 12)
+		b.focus_mode = Control.FOCUS_NONE
+		b.custom_minimum_size = Vector2(26, 22)
+		b.tooltip_text = "Shift+%d" % (i + 1)
+		b.pressed.connect(assign_selected_to_hotbar.bind(i))
+		_hotbar_row.add_child(b)
+		_hotbar_buttons.append(b)
+
 	# Cover footer: Ashmarks (brass) and key hints.
 	_ashmarks_label = _label("", 16, BRASS)
 	_ashmarks_label.position = Vector2(40, BOOK_SIZE.y - 44)
 	_book.add_child(_ashmarks_label)
-	var hints := _label("[1–4] tabs   [↑↓] select   [Enter] use   [E / Esc] close", 12, STITCH)
-	hints.position = Vector2(BOOK_SIZE.x - 420, BOOK_SIZE.y - 42)
+	var hints := _label("[1–4] tabs   [Shift+1–4] quick slot   [S] sort   [↑↓] select   [Enter] use   [E / Esc] close", 12, STITCH)
+	hints.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	hints.size = Vector2(640, 20)
+	hints.position = Vector2(BOOK_SIZE.x - 40 - 640, BOOK_SIZE.y - 42)
 	_book.add_child(hints)
 
 func _make_page(pos: Vector2, page_size: Vector2, is_left: bool) -> Control:
@@ -286,6 +346,8 @@ func refresh() -> void:
 		"Consumables": _collect_consumables(bag)
 		"Key Items":   _collect_key_items(bag)
 	_page_title.text = "%s  (%d)" % [TAB_NAMES[_tab], _entries.size()]
+	_sort_entries(bag)
+	_update_new_marks(bag)
 
 	# Detach old rows now (not just queue_free) so row indices match _entries.
 	for c: Node in _list.get_children():
@@ -300,6 +362,98 @@ func refresh() -> void:
 func _on_bag_changed() -> void:
 	if is_open():
 		refresh()
+
+# ── Sorting, "new" badges and quick slots ─────────────────────────────────────
+
+func sort_mode_name() -> String:
+	return SORT_NAMES[int(_sort_mode.get(TAB_NAMES[_tab], 0))]
+
+func cycle_sort() -> void:
+	var tab: String = TAB_NAMES[_tab]
+	_sort_mode[tab] = (int(_sort_mode.get(tab, 0)) + 1) % SORT_NAMES.size()
+	_selected = 0
+	refresh()
+
+func entry_key(e: Dictionary) -> String:
+	return str(e.get("key", e.get("id", "")))
+
+# Recent: newest first. Name: A–Z. Type: by kind, keeping the journal's own
+# order (atomic number, boss order) inside each kind. Ties keep that order too.
+func _sort_entries(bag: Node) -> void:
+	for i: int in _entries.size():
+		_entries[i]["order"] = i
+	var tab: String = TAB_NAMES[_tab]
+	match sort_mode_name():
+		"Recent":
+			if bag == null:
+				return
+			for e: Dictionary in _entries:
+				e["recent"] = bag.acquired_stamp(tab, entry_key(e))
+			_entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+				if a["recent"] != b["recent"]:
+					return a["recent"] > b["recent"]
+				return a["order"] < b["order"])
+		"Name":
+			_entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+				var c: int = str(a["name"]).naturalnocasecmp_to(str(b["name"]))
+				return c < 0 if c != 0 else a["order"] < b["order"])
+		"Type":
+			_entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+				var ta: String = str(a.get("type", ""))
+				var tb: String = str(b.get("type", ""))
+				return ta < tb if ta != tb else a["order"] < b["order"])
+
+# Marks this tab's unseen items for the rows, then tells the Bag they are seen.
+func _update_new_marks(bag: Node) -> void:
+	var tab: String = TAB_NAMES[_tab]
+	if bag and is_open():
+		for e: Dictionary in _entries:
+			if bag.is_new(tab, entry_key(e)):
+				_shown_new[entry_key(e)] = true
+		bag.mark_tab_seen(tab)
+	for e: Dictionary in _entries:
+		e["new"] = _shown_new.has(entry_key(e))
+	_sort_button.text = "Sort: %s  [S]" % sort_mode_name()
+	for i: int in _ribbon_dots.size():
+		_ribbon_dots[i].visible = bag != null and i != _tab and bag.tab_has_new(TAB_NAMES[i])
+
+func ribbon_has_dot(tab_name: String) -> bool:
+	var i: int = TAB_NAMES.find(tab_name)
+	return i >= 0 and _ribbon_dots[i].visible
+
+func entry_ids() -> Array:
+	return _entries.map(func(e: Dictionary) -> String: return str(e["id"]))
+
+func select_id(id: String) -> void:
+	for i: int in _entries.size():
+		if str(_entries[i]["id"]) == id:
+			_select(i)
+			return
+
+# Puts the selected item in quick slot `slot`; pressing its own slot clears it.
+func assign_selected_to_hotbar(slot: int) -> bool:
+	if _entries.is_empty() or not bool(_entries[_selected].get("hotbar", false)):
+		return false
+	var bag: Node = _player.get_node_or_null("Bag") if _player else null
+	if bag == null:
+		return false
+	var id: String = str(_entries[_selected]["id"])
+	var ok: bool = bag.assign_hotbar(slot, "" if bag.hotbar_item(slot) == id else id)
+	_update_hotbar_row(_entries[_selected])
+	return ok
+
+func _update_hotbar_row(e: Dictionary) -> void:
+	var can: bool = bool(e.get("hotbar", false))
+	_hotbar_row.visible = can
+	if not can:
+		return
+	var bag: Node = _player.get_node_or_null("Bag") if _player else null
+	var at: int = bag.hotbar_slot_of(str(e["id"])) if bag else -1
+	for i: int in _hotbar_buttons.size():
+		var on: bool = i == at
+		_hotbar_buttons[i].add_theme_stylebox_override("normal",
+			_box(BRASS if on else LEATHER, LEATHER_DARK, 2, 4))
+		_hotbar_buttons[i].add_theme_color_override("font_color", INK if on else Color("#f4e8cc"))
 
 func _empty_hint() -> String:
 	match TAB_NAMES[_tab]:
@@ -329,6 +483,13 @@ func _make_row(i: int) -> Button:
 	name_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	h.add_child(name_l)
+	if bool(e.get("new", false)):
+		var new_l := _label(" new ", 11, STAMP_RED)
+		new_l.name = "NewMark"
+		new_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		new_l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		new_l.add_theme_stylebox_override("normal", _box(Color(0, 0, 0, 0), STAMP_RED, 1, 3))
+		h.add_child(new_l)
 	var count_l := _label(e["count_text"], 16, INK_SOFT)
 	count_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	h.add_child(count_l)
@@ -384,6 +545,7 @@ func _show_detail(e: Dictionary) -> void:
 	_detail_stamp.text = "  %s  " % e["stamp"] if e.get("stamp", "") != "" else ""
 	_detail_stamp.visible = e.get("stamp", "") != ""
 	_use_button.visible = bool(e.get("usable", false))
+	_update_hotbar_row(e)
 
 func _use_selected() -> void:
 	if _entries.is_empty() or not bool(_entries[_selected].get("usable", false)):
@@ -417,7 +579,7 @@ func _collect_elements() -> void:
 		var el: Dictionary = ElementDB.get_element(symbol)
 		var cat: String = str(el.get("category", ""))
 		_entries.append({
-			"id": symbol, "name": str(el.get("name", symbol)),
+			"id": symbol, "type": cat, "name": str(el.get("name", symbol)),
 			"count_text": inv.format_amount(symbol, float(all[symbol])),
 			"tile": Color(CATEGORY_COLOURS.get(cat, "#6a5a48")), "icon": null,
 			"kind": "No. %d · %s" % [int(el.get("atomic_number", 0)), cat.replace("_", " ").capitalize()],
@@ -430,19 +592,19 @@ func _collect_equipment() -> void:
 		return
 	var wpn: Node = _player.get_node_or_null("Weapon")
 	if wpn and wpn.has_weapon():
-		_entries.append({ "id": "weapon", "name": wpn.get_weapon_name().replace("_", " ").capitalize(), "count_text": "equipped",
+		_entries.append({ "id": "weapon", "key": wpn.get_weapon_name(), "type": "0 weapon", "name": wpn.get_weapon_name().replace("_", " ").capitalize(), "count_text": "equipped",
 			"icon": _icon("_weapon"), "kind": "Weapon", "text": "Your equipped weapon. Forge better ones from compounds at the crafting bench.",
 			"stat": "Tier %d %s" % [wpn.get_tier(), wpn.get_weapon_type()] })
 	var arm: Node = _player.get_node_or_null("Armor")
 	if arm and arm.has_method("has_armor") and arm.has_armor():
-		_entries.append({ "id": "armour", "name": arm.get_armor_name().replace("_", " ").capitalize(), "count_text": "worn",
+		_entries.append({ "id": "armour", "key": arm.get_armor_name(), "type": "1 armour", "name": arm.get_armor_name().replace("_", " ").capitalize(), "count_text": "worn",
 			"icon": _icon("_armour"), "kind": "Armour", "text": "Your worn armour.",
 			"stat": "%d%% damage reduction" % int(arm.get_damage_reduction() * 100.0) })
 	var eq: Node = _player.get_node_or_null("Equipment")
 	var items: Dictionary = eq.get_all() if eq else {}
 	for item: String in items:
 		var worn: bool = item in eq.REUSABLE
-		_entries.append({ "id": item, "name": item, "count_text": "worn" if worn else "×%d" % int(items[item]),
+		_entries.append({ "id": item, "type": "2 gear" if worn else "3 container", "name": item, "count_text": "worn" if worn else "×%d" % int(items[item]),
 			"icon": _icon("_gloves" if worn else "_container"), "kind": "Lab gear",
 			"text": "Protective gear for handling hazardous elements." if worn else "A container for one element sample. Used up when you collect.",
 			"stat": "" })
@@ -452,7 +614,7 @@ func _collect_consumables(bag: Node) -> void:
 		return
 	for id: String in bag.consumables:
 		var info: Dictionary = bag.item_info(id)
-		_entries.append({ "id": id, "name": str(info.get("name", id)), "count_text": "×%d" % bag.consumable_count(id),
+		_entries.append({ "id": id, "type": str(info.get("effect", "")), "hotbar": true, "name": str(info.get("name", id)), "count_text": "×%d" % bag.consumable_count(id),
 			"icon": _icon(id), "kind": "Consumable", "text": str(info.get("description", "")),
 			"stat": "Holding %d / %d" % [bag.consumable_count(id), bag.STACK_MAX], "usable": true })
 
@@ -470,12 +632,12 @@ func _collect_key_items(bag: Node) -> void:
 				else:
 					frags.append(id)
 		if key_id != "" and bag.has_key_item(key_id):
-			_entries.append({ "id": key_id, "name": str(cat[key_id].get("name", key_id)), "count_text": "★",
+			_entries.append({ "id": key_id, "type": "%d" % BOSS_ORDER.find(boss), "hotbar": true, "name": str(cat[key_id].get("name", key_id)), "count_text": "★",
 				"icon": _icon(key_id), "kind": "Boss Key · %s" % boss.to_upper(), "text": str(cat[key_id].get("description", "")),
 				"stat": "Opens %s's arena" % boss.capitalize(), "stamp": "KEY ITEM · PERMANENT" })
 			continue
 		var held: Array = frags.filter(func(f: String) -> bool: return bag.has_key_item(f))
 		for f: String in held:
-			_entries.append({ "id": f, "name": str(cat[f].get("name", f)), "count_text": "%d/%d" % [held.size(), frags.size()],
+			_entries.append({ "id": f, "type": "%d" % BOSS_ORDER.find(boss), "name": str(cat[f].get("name", f)), "count_text": "%d/%d" % [held.size(), frags.size()],
 				"icon": _icon(f), "kind": "Key Fragment · %s" % boss.to_upper(), "text": str(cat[f].get("description", "")),
 				"stat": "Set: %d of %d fragments" % [held.size(), frags.size()], "stamp": "KEY ITEM · PERMANENT" })
