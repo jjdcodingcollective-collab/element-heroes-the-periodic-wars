@@ -7,11 +7,18 @@
     "expert":       { "hp": 3.5,  "damage": 2.8,  "speed": 1.5,  "sight": 1.35, "xp": 60  }
   },
 
+  "loot": {
+    "_comment": "Ashmarks per kill by tier, multiplied by rarity ashmarks_mult. potion_chance is per kill; potions are drawn from potion_pool.",
+    "ashmarks": { "basic": 2, "intermediate": 4, "expert": 8 },
+    "potion_chance": 0.125,
+    "potion_pool": ["saline_tonic", "saline_tonic", "buffer_solution", "lead_draught"]
+  },
+
   "rarity": {
     "_comment": "Rolled per spawn by EncounterSystem (strong 1/10, shiny 1/100, prime 1/1000); stacks on top of tier. Strong and prime use each creature's strong_footprint in tiles [w, h]. signature_grams is bonus grams of the creature's first element.",
-    "strong": { "hp": 2.5, "damage": 1.5, "speed": 0.85, "drop_mult": 2, "signature_grams": [0, 0],   "footprint": true  },
-    "shiny":  { "hp": 1.5, "damage": 1.2, "speed": 1.0,  "drop_mult": 3, "signature_grams": [5, 10],  "footprint": false },
-    "prime":  { "hp": 3.0, "damage": 1.8, "speed": 1.1,  "drop_mult": 4, "signature_grams": [15, 25], "footprint": true  }
+    "strong": { "hp": 2.5, "damage": 1.5, "speed": 0.85, "drop_mult": 2, "ashmarks_mult": 2,  "signature_grams": [0, 0],   "footprint": true  },
+    "shiny":  { "hp": 1.5, "damage": 1.2, "speed": 1.0,  "drop_mult": 3, "ashmarks_mult": 5,  "signature_grams": [5, 10],  "footprint": false },
+    "prime":  { "hp": 3.0, "damage": 1.8, "speed": 1.1,  "drop_mult": 4, "ashmarks_mult": 20, "signature_grams": [15, 25], "footprint": true  }
   },
 
   "creatures": [

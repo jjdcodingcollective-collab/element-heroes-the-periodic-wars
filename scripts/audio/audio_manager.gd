@@ -47,7 +47,13 @@ var _current_track: String = ""
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
+# Headless runs (CI, tests) have no speaker and the dummy driver never frees a
+# stream that is still playing at quit, which the CI boot check reports as a
+# leak. So headless runs stay silent; tests flip this off to exercise playback.
+var silent: bool = false
+
 func _ready() -> void:
+	silent = DisplayServer.get_name() == "headless"
 	_load_streams()
 	_ensure_audio_buses()
 	_build_music_players()
@@ -131,6 +137,8 @@ func play_music(track_key: String, loop: bool = true) -> void:
 	var stream: AudioStream = MUSIC[track_key]
 	if stream is AudioStreamOggVorbis:
 		(stream as AudioStreamOggVorbis).loop = loop
+	if silent:
+		return
 	_crossfade_to(stream)
 
 func stop_music() -> void:
@@ -161,7 +169,8 @@ func play_sfx(sfx_key: String, volume_scale: float = 1.0) -> void:
 	player.stream    = SFX[sfx_key]
 	# Overall SFX volume lives on the SFX bus; this is only the per-call scale.
 	player.volume_db = linear_to_db(clampf(volume_scale, 0.01, 2.0))
-	player.play()
+	if not silent:
+		player.play()
 
 func set_sfx_volume(linear: float) -> void:
 	sfx_volume_db = linear_to_db(clampf(linear, 0.0, 1.0))

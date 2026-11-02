@@ -150,7 +150,7 @@ MAIN ×2–3 ─► STRONG (telegraphed) ─► RECOVERY PAUSE ─► repeat
 
 | Drop | Use | Source |
 |---|---|---|
-| **Ions** (currency) | Buy from Ashvale traders: potions, dyes, recipe hints | All enemies; ×2 strong, ×5 shiny, ×20 prime |
+| **Ashmarks** (currency, D-017) | Coins stamped by Ashvale after the Calamity. Buy from Ashvale traders: potions, dyes, recipe hints | Every kill: 2 / 4 / 8 by tier; ×2 strong, ×5 shiny, ×20 prime |
 | **Biome materials** (Plains Fibre, Mine Ore, Cavern Quartz, Sky Down, Sea Glass, Magma Slag) | Upgrade weapons (+damage, +dash-strike) and armour (+resistance) at Aldric's bench; also used for appearance upgrades | Each biome's enemies; strong ones drop more |
 | **Potions** | *Saline Tonic* (heal), *Buffer Solution* (clears corrode and poison), *Lead Draught* (clears irradiate) | About 1 in 8 kills |
 | **Cosmetics** | Jacket patches, goggle-lens tints, coat dyes, satchel badges for Orion (D-010 style) | Shiny kills (guaranteed) and rare drops; primes drop the Prime set (4a) |
@@ -173,5 +173,11 @@ All pieces are cosmetic only, so completionists stand out without unbalancing co
 
 ## 5. Open questions
 
-1. **Warden respawn:** Wardens stay beaten once killed. Should a lost fragment ever need re-earning?
-2. **Currency name:** "Ions" is a placeholder; shortlist under trial.
+None at present. Resolved: Wardens and their fragments are permanent once won (D-017); the
+currency is **Ashmarks** (D-017).
+
+## 6. Inventory screen
+
+**E** opens a tabbed inventory (built, D-017): **Elements**, **Equipment**, **Consumables**
+(usable from the tab) and **Key Items** (Boss Keys and fragments, grouped by boss, permanent).
+Ashmarks show in the header and on the HUD bar.

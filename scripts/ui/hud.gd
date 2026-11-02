@@ -43,6 +43,9 @@ func init(player: Node, world: Node) -> void:
 	var arm := player.get_node_or_null("Armor")
 	if arm:
 		arm.armor_changed.connect(_on_armor_changed)
+	var bag := player.get_node_or_null("Bag")
+	if bag:
+		bag.bag_changed.connect(_refresh_inventory_bar)
 	_refresh_inventory_bar()
 
 var _last_biome: String = ""
@@ -88,6 +91,9 @@ func _refresh_inventory_bar() -> void:
 		return
 	var all: Dictionary = inv.get_all()
 	var parts: Array = []
+	var bag := _player.get_node_or_null("Bag")
+	if bag:
+		parts.append("◈ %d Ashmarks" % bag.ashmarks)
 	# Elements
 	for symbol: String in all:
 		var amount: float = float(all[symbol])
@@ -115,7 +121,7 @@ func _refresh_inventory_bar() -> void:
 		parts.append("🛡 %s (%d%%)" % [arm.get_armor_name().replace("_", " "), dr_pct])
 
 	if parts.is_empty():
-		inv_label.text = "Inventory empty  |  E to toggle"
+		inv_label.text = "Inventory empty  |  E: inventory"
 	else:
 		inv_label.text = "  ".join(parts)
 

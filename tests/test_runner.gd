@@ -35,6 +35,7 @@ func _ready() -> void:
 	_test_enemy_rarity()
 	_test_dash()
 	_test_boss_scale()
+	_test_bag_and_inventory()
 
 	print("=== %d passed, %d failed ===" % [_passed, _failed])
 	# Let the audio server drop its playbacks before quitting, so the engine
@@ -467,6 +468,7 @@ func _test_audio_assets() -> void:
 		var fx: AudioStream = AudioManager.SFX[key]
 		if not (fx.get_length() > 0.02 and fx.get_length() < 2.0):
 			_check("sfx '%s' is a short one-shot" % key, false)
+	AudioManager.silent = false   # headless runs are silent by default
 	AudioManager.play_music("surface_plains")
 	_check("biome music loops", (AudioManager.MUSIC["surface_plains"] as AudioStreamOggVorbis).loop)
 	AudioManager.play_sfx("pickup")
@@ -475,6 +477,8 @@ func _test_audio_assets() -> void:
 	AudioManager.play_sfx("__missing__")   # must not error
 	_check("unknown sfx is ignored", true)
 	AudioManager.stop_music()
+	AudioManager.release_all()
+	AudioManager.silent = true
 
 # ── World draw order ──────────────────────────────────────────────────────────
 
@@ -655,3 +659,76 @@ func _find_visible_overlays(n: Node, out: Array) -> void:
 		out.append(n.get_path())
 	for c: Node in n.get_children():
 		_find_visible_overlays(c, out)
+
+# ── Bag, Ashmarks and the inventory screen ────────────────────────────────────
+
+func _test_bag_and_inventory() -> void:
+	print("- bag and inventory")
+	var p: Node = PLAYER_SCENE.instantiate()
+	add_child(p)
+	var bag: Node = p.get_node("Bag")
+	_check_eq("item catalogue has 24 key items", bag.catalogue().get("key_items", {}).size(), 24)
+
+	bag.add_ashmarks(30)
+	_check("can spend Ashmarks", bag.spend_ashmarks(12))
+	_check("cannot overspend", not bag.spend_ashmarks(100))
+	_check_eq("Ashmarks balance", bag.ashmarks, 18)
+
+	p.hp = 30.0
+	bag.add_consumable("saline_tonic", 2)
+	_check("tonic used", bag.use_consumable("saline_tonic"))
+	_check_eq("tonic heals 40", p.hp, 70.0)
+	_check_eq("one tonic left", bag.consumable_count("saline_tonic"), 1)
+	p.apply_armor_corrode(0.3, 10.0)
+	bag.add_consumable("buffer_solution")
+	bag.use_consumable("buffer_solution")
+	_check_eq("buffer clears corrosion", p._corrode_amount, 0.0)
+	_check("empty consumable cannot be used", not bag.use_consumable("lead_draught"))
+
+	# Boss Key needs all three fragments; fragments are absorbed, the key is permanent.
+	bag.add_key_item("carbon_ember")
+	bag.add_key_item("pressure_valve")
+	_check("key needs all fragments", not bag.try_combine_boss_key("co2_canister"))
+	bag.add_key_item("canister_shell")
+	_check("key combines", bag.try_combine_boss_key("co2_canister"))
+	_check("key held", bag.has_key_item("co2_canister"))
+	_check("fragments absorbed", not bag.has_key_item("carbon_ember"))
+	_check("cannot combine twice", not bag.try_combine_boss_key("co2_canister"))
+
+	var data: Dictionary = JSON.parse_string(JSON.stringify(bag.serialize()))
+	bag.deserialize({})
+	bag.deserialize(data)
+	_check("bag survives save/load", bag.has_key_item("co2_canister") and bag.ashmarks == 18 and bag.consumable_count("saline_tonic") == 1)
+	_check_eq("save version is 5", SaveSystem.SAVE_VERSION, 5)
+	_check("v4 save gains a bag", SaveSystem._migrate({"version": 4}, 4).has("bag"))
+
+	# Kills pay Ashmarks, scaled by rarity. Earlier tests' players may still be
+	# queued for deletion, so make sure loot goes to this one.
+	for other: Node in get_tree().get_nodes_in_group("player"):
+		if other != p:
+			other.remove_from_group("player")
+	bag.ashmarks = 0
+	var e: Node = _make_enemy("carbon_crawler")
+	e._take_damage_raw(99999.0)
+	var normal_pay: int = bag.ashmarks
+	bag.ashmarks = 0
+	var shiny: Node = _make_enemy("carbon_crawler", "basic", "shiny")
+	shiny._take_damage_raw(99999.0)
+	_check("kills pay Ashmarks", normal_pay > 0)
+	_check("shiny pays 5×", normal_pay > 0 and bag.ashmarks == normal_pay * 5)
+
+	# Screen: four tabs, hidden by default, and its backdrop never blocks clicks while closed.
+	var screen := CanvasLayer.new()
+	screen.set_script(load("res://scripts/ui/inventory_screen.gd"))
+	add_child(screen)
+	_check("inventory starts closed", not screen.is_open() and not screen._dim.visible)
+	_check_eq("four tabs", screen._tabs.get_tab_count(), 4)
+	_check_eq("tab names", [screen._tabs.get_tab_title(2), screen._tabs.get_tab_title(3)], ["Consumables", "Key Items"])
+	screen._player = p
+	screen.toggle()
+	_check("inventory opens", screen.is_open())
+	_check("Ashmarks in header", screen._ashmarks_label.text.begins_with("%d Ashmarks" % bag.ashmarks))
+	_check("key item listed", screen._lists["Key Items"].get_child_count() > 0)
+	screen.toggle()
+	screen.queue_free()
+	p.queue_free()

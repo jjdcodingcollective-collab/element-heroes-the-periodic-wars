@@ -159,6 +159,7 @@ func _init_ui() -> void:
 		# Phase 6 — Science mini-game desk in Aldric's workshop
 		_spawn_lab_desk()
 		_spawn_minigame_ui()
+		_spawn_inventory_screen()
 
 	# Set Aldric's dialogue via exported property override in code
 	# (avoids needing to open the editor to set the Inspector fields)
@@ -595,6 +596,12 @@ func _spawn_lab_desk() -> void:
 	var desk: Node2D = desk_scene.instantiate()
 	desk.position = Vector2(12 * TILE_SIZE + TILE_SIZE / 2.0, 11 * TILE_SIZE + TILE_SIZE / 2.0)
 	add_child(desk)
+
+func _spawn_inventory_screen() -> void:
+	var screen := CanvasLayer.new()
+	screen.set_script(load("res://scripts/ui/inventory_screen.gd"))
+	screen.name = "InventoryScreen"
+	add_child(screen)
 
 func _spawn_minigame_ui() -> void:
 	var ui_scene: PackedScene = load(MINIGAME_UI_SCENE)

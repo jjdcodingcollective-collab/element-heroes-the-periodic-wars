@@ -497,6 +497,8 @@ func _drop_elements() -> void:
 		if inv and inv.has_method("add_element"):
 			inv.add_element(symbol, snappedf(randf_range(0.1, 1.0), 0.01))
 
+	_drop_bag_loot(p)
+
 	# Shiny/prime bonus: a large sample of the creature's signature element
 	var sig: Array = _rarity_mult.get("signature_grams", [0, 0])
 	var sig_elements: Array = _data.get("elements", [])
@@ -512,6 +514,21 @@ func _drop_elements() -> void:
 		if equip and equip.has_method("add_item"):
 			equip.add_item(bonus, 1)
 			_spawn_drop_label(bonus)
+
+# Ashmarks every kill (tier × rarity) and an occasional potion (D-017).
+func _drop_bag_loot(p: Node) -> void:
+	var bag: Node = p.get_node_or_null("Bag")
+	if bag == null:
+		return
+	var loot: Dictionary = ElementDB.enemy_loot
+	var marks: int = int(loot.get("ashmarks", {}).get(tier, 2)) * int(_rarity_mult.get("ashmarks_mult", 1))
+	bag.add_ashmarks(marks)
+	_spawn_drop_label("+%d Ashmarks" % marks)
+	var pool: Array = loot.get("potion_pool", [])
+	if not pool.is_empty() and randf() < float(loot.get("potion_chance", 0.0)):
+		var potion: String = str(pool[randi() % pool.size()])
+		bag.add_consumable(potion)
+		_spawn_drop_label(str(bag.item_info(potion).get("name", potion)))
 
 # ── VFX helpers ───────────────────────────────────────────────────────────────
 

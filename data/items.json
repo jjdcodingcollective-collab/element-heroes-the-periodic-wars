@@ -1,0 +1,216 @@
+{
+  "_comment": "Items kept in the player's Bag (scripts/player/bag.gd). Consumables stack and are used up; key items are permanent story items and cannot be lost (D-017). Designs: BOSS_DESIGN.md.",
+  "consumables": {
+    "saline_tonic": {
+      "name": "Saline Tonic",
+      "description": "Salt-and-sugar rehydration drink. Restores 40 HP.",
+      "effect": "heal",
+      "amount": 40
+    },
+    "buffer_solution": {
+      "name": "Buffer Solution",
+      "description": "Holds pH steady. Clears corrosion and stun.",
+      "effect": "clear_debuffs"
+    },
+    "lead_draught": {
+      "name": "Lead Draught",
+      "description": "Shielding tonic brewed in a lead flask. Clears radiation sickness and grants 3 s of protection.",
+      "effect": "shield",
+      "duration": 3.0
+    }
+  },
+  "key_items": {
+    "carbon_ember": {
+      "name": "Carbon Ember",
+      "kind": "fragment",
+      "boss": "peroxis",
+      "warden": "ashburn_shambler",
+      "description": "Key Fragment for the CO₂ Canister. Combine all three at the Synthesizer."
+    },
+    "pressure_valve": {
+      "name": "Pressure Valve",
+      "kind": "fragment",
+      "boss": "peroxis",
+      "warden": "carbon_crawler",
+      "description": "Key Fragment for the CO₂ Canister. Combine all three at the Synthesizer."
+    },
+    "canister_shell": {
+      "name": "Canister Shell",
+      "kind": "fragment",
+      "boss": "peroxis",
+      "warden": "potash_poltergeist",
+      "description": "Key Fragment for the CO₂ Canister. Combine all three at the Synthesizer."
+    },
+    "co2_canister": {
+      "name": "CO₂ Canister",
+      "kind": "boss_key",
+      "boss": "peroxis",
+      "fragments": [
+        "carbon_ember",
+        "pressure_valve",
+        "canister_shell"
+      ],
+      "description": "Sodium peroxide absorbs carbon dioxide, which is how submarines clean their air. Opens Peroxis's arena and neutralises its core."
+    },
+    "frother_flask": {
+      "name": "Frother Flask",
+      "kind": "fragment",
+      "boss": "chalcor",
+      "warden": "iron_hulk",
+      "description": "Key Fragment for the Flotation Charge. Combine all three at the Synthesizer."
+    },
+    "collector_crystal": {
+      "name": "Collector Crystal",
+      "kind": "fragment",
+      "boss": "chalcor",
+      "warden": "copper_coil",
+      "description": "Key Fragment for the Flotation Charge. Combine all three at the Synthesizer."
+    },
+    "bellows_core": {
+      "name": "Bellows Core",
+      "kind": "fragment",
+      "boss": "chalcor",
+      "warden": "zinc_phantom",
+      "description": "Key Fragment for the Flotation Charge. Combine all three at the Synthesizer."
+    },
+    "flotation_charge": {
+      "name": "Flotation Charge",
+      "kind": "boss_key",
+      "boss": "chalcor",
+      "fragments": [
+        "frother_flask",
+        "collector_crystal",
+        "bellows_core"
+      ],
+      "description": "Froth flotation separates copper ore from rock. Opens Chalcor's arena and strips its armour."
+    },
+    "citrate_phial": {
+      "name": "Citrate Phial",
+      "kind": "fragment",
+      "boss": "aurium",
+      "warden": "silver_specter",
+      "description": "Key Fragment for the Reducing Lance. Combine all three at the Synthesizer."
+    },
+    "heating_coil": {
+      "name": "Heating Coil",
+      "kind": "fragment",
+      "boss": "aurium",
+      "warden": "gold_golem",
+      "description": "Key Fragment for the Reducing Lance. Combine all three at the Synthesizer."
+    },
+    "prism_lens": {
+      "name": "Prism Lens",
+      "kind": "fragment",
+      "boss": "aurium",
+      "warden": "prismatic_hound",
+      "description": "Key Fragment for the Reducing Lance. Combine all three at the Synthesizer."
+    },
+    "reducing_lance": {
+      "name": "Reducing Lance",
+      "kind": "boss_key",
+      "boss": "aurium",
+      "fragments": [
+        "citrate_phial",
+        "heating_coil",
+        "prism_lens"
+      ],
+      "description": "Citrate reduces chloroauric acid to solid gold. Opens Aurium's arena and hardens its necks."
+    },
+    "nitrite_salt": {
+      "name": "Nitrite Salt",
+      "kind": "fragment",
+      "boss": "azrael",
+      "warden": "alkali_hawk",
+      "description": "Key Fragment for the Nitrite Flask. Combine all three at the Synthesizer."
+    },
+    "acid_ampoule": {
+      "name": "Acid Ampoule",
+      "kind": "fragment",
+      "boss": "azrael",
+      "warden": "static_djinn",
+      "description": "Key Fragment for the Nitrite Flask. Combine all three at the Synthesizer."
+    },
+    "storm_feather": {
+      "name": "Storm Feather",
+      "kind": "fragment",
+      "boss": "azrael",
+      "warden": "stormwing",
+      "description": "Key Fragment for the Nitrite Flask. Combine all three at the Synthesizer."
+    },
+    "nitrite_flask": {
+      "name": "Nitrite Flask",
+      "kind": "boss_key",
+      "boss": "azrael",
+      "fragments": [
+        "nitrite_salt",
+        "acid_ampoule",
+        "storm_feather"
+      ],
+      "description": "Sodium nitrite and acid safely destroy azide. Opens Azrael's arena and defuses its charges."
+    },
+    "zinc_ingot": {
+      "name": "Zinc Ingot",
+      "kind": "fragment",
+      "boss": "atacama",
+      "warden": "brine_crawler",
+      "description": "Key Fragment for the Sacrificial Anode. Combine all three at the Synthesizer."
+    },
+    "copper_strap": {
+      "name": "Copper Strap",
+      "kind": "fragment",
+      "boss": "atacama",
+      "warden": "verdigris_lurker",
+      "description": "Key Fragment for the Sacrificial Anode. Combine all three at the Synthesizer."
+    },
+    "charged_coil": {
+      "name": "Charged Coil",
+      "kind": "fragment",
+      "boss": "atacama",
+      "warden": "deep_shocker",
+      "description": "Key Fragment for the Sacrificial Anode. Combine all three at the Synthesizer."
+    },
+    "sacrificial_anode": {
+      "name": "Sacrificial Anode",
+      "kind": "boss_key",
+      "boss": "atacama",
+      "fragments": [
+        "zinc_ingot",
+        "copper_strap",
+        "charged_coil"
+      ],
+      "description": "Zinc corrodes so a ship's hull doesn't. Opens Atacama's arena and drops its hull plates."
+    },
+    "boron_carbide_pellet": {
+      "name": "Boron Carbide Pellet",
+      "kind": "fragment",
+      "boss": "uranox",
+      "warden": "uranium_wraith",
+      "description": "Key Fragment for the Control Rods. Combine all three at the Synthesizer."
+    },
+    "cadmium_sleeve": {
+      "name": "Cadmium Sleeve",
+      "kind": "fragment",
+      "boss": "uranox",
+      "warden": "thorium_scorcher",
+      "description": "Key Fragment for the Control Rods. Combine all three at the Synthesizer."
+    },
+    "rod_housing": {
+      "name": "Rod Housing",
+      "kind": "fragment",
+      "boss": "uranox",
+      "warden": "platinum_sentinel",
+      "description": "Key Fragment for the Control Rods. Combine all three at the Synthesizer."
+    },
+    "control_rods": {
+      "name": "Control Rods",
+      "kind": "boss_key",
+      "boss": "uranox",
+      "fragments": [
+        "boron_carbide_pellet",
+        "cadmium_sleeve",
+        "rod_housing"
+      ],
+      "description": "Boron and cadmium soak up neutrons and slow a reactor. Opens Uranox's arena and stops its meltdown."
+    }
+  }
+}

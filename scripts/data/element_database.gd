@@ -10,6 +10,7 @@ var handling: Dictionary = {}  # { "Fe": { container, handling, hazards } }
 var enemies: Dictionary = {}   # { "ashburn_shambler": {...}, ... }
 var enemy_tier_multipliers: Dictionary = {}
 var enemy_rarity: Dictionary = {}
+var enemy_loot: Dictionary = {}
 
 # Maps container/handling keys to the in-game item name the player must carry
 const CONTAINER_ITEMS := {
@@ -195,6 +196,7 @@ func _load_enemies() -> void:
 	var data: Dictionary = json.data as Dictionary
 	enemy_tier_multipliers = data.get("tier_multipliers", {})
 	enemy_rarity = data.get("rarity", {})
+	enemy_loot = data.get("loot", {})
 	for c: Dictionary in (data.get("creatures", []) as Array):
 		enemies[str(c.get("id", ""))] = sanitize_nulls(c)
 

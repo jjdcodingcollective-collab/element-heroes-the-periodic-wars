@@ -137,6 +137,12 @@ func respawn(spawn_position: Vector2) -> void:
 	_visual().modulate = Color(1, 1, 1, 1)
 	emit_signal("respawned")
 
+# Buffer Solution / Lead Draught: clear stun and armour corrosion.
+func clear_debuffs() -> void:
+	_stun_timer = 0.0
+	_corrode_timer = 0.0
+	_corrode_amount = 0.0
+
 func apply_stun(duration: float) -> void:
 	_stun_timer = maxf(_stun_timer, duration)
 
@@ -236,7 +242,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("dash"):
 		try_dash()
 	elif event.is_action_pressed("open_inventory"):
-		get_tree().call_group("ui", "toggle_inventory")
+		get_tree().call_group("inventory_screen", "toggle")
 	elif event.is_action_pressed("open_compendium"):
 		get_tree().call_group("ui", "toggle_compendium")
 	elif event.is_action_pressed("interact"):

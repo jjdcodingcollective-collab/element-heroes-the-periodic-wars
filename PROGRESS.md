@@ -48,6 +48,7 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Save/load system | ✅ Done **tested** | Versioned (v3) with migration; inventory, equipment, weapon, armor, compendium, dug tiles, Act 3 progress |
 | Enemy system | ✅ Done | Patrol/chase AI, contact damage, element drops |
 | Enemy variants — 18 CHIMERA × 3 tiers | ✅ Done **tested** | 54 variants total, specials, auras, resistances |
+| Bag + inventory screen | ✅ Done **tested** | `Bag` on the player holds Ashmarks, consumables and key items (`data/items.json`: 3 potions, 18 Key Fragments, 6 Boss Keys). Tabbed inventory on E. Kills drop Ashmarks (×rarity) and 1-in-8 potions. Boss Keys combine from 3 fragments; Synthesizer hook and Warden drops not yet wired (D-017) |
 | Enemy rarity — strong / shiny / prime | ✅ Done **tested** | `EncounterSystem` autoload rolls every spawn: strong 1/10 (2×2, 2×1 or 1×2 tiles per creature), shiny 1/100 (gold shimmer, signature-element loot), prime 1/1000 (Prime Codex, collect all 18). Pity at 2× each rate. Defeated enemies respawn after 20 s so rolls keep coming (D-014). Prime Codex completion reward not yet defined |
 | Compendium UI | ✅ Done | 118-element grid, auto-discovers on first collect |
 | Weapon system — 10 weapons (T1–T5) | ✅ Done | Melee arc + ranged projectile, DoT effects |
@@ -159,7 +160,7 @@ element-heros---the-periodic-wars/
 | Left Click | Dig (within 48px) |
 | Right Click / Space | Attack |
 | Shift | Dash (Hades-style: i-frames, 0.5 s recharge; attack right after for a 1.5× dash-strike) |
-| E | Toggle inventory bar |
+| E | Inventory screen (Elements / Equipment / Consumables / Key Items tabs) |
 | C | Toggle crafting / Compendium |
 | F | NPC dialogue / Synthesizer / Lab desk |
 | X | Save game |
