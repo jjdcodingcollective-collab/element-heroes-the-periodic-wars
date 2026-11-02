@@ -172,6 +172,8 @@ func _init_ui() -> void:
 		_spawn_lab_desk()
 		_spawn_minigame_ui()
 		_spawn_inventory_screen()
+		_spawn_journal_menus()
+		_spawn_specimen_cabinet()
 		# A loaded save overwrites the starter kit and moves the player.
 		if SaveSystem.has_pending():
 			SaveSystem.apply_pending(player)
@@ -210,6 +212,13 @@ func _wire_player_lifecycle(player: Node, hud: Node) -> void:
 		player.died.connect(_on_player_died.bind(hud))
 	if hud.has_signal("respawn_requested") and not hud.respawn_requested.is_connected(_on_respawn_requested):
 		hud.respawn_requested.connect(_on_respawn_requested)
+	if player.has_signal("ashmarks_dropped") and not player.ashmarks_dropped.is_connected(_on_ashmarks_dropped):
+		player.ashmarks_dropped.connect(_on_ashmarks_dropped.bind(hud))
+
+# Keep Inventory off: the cache is placed by the player; just tell them.
+func _on_ashmarks_dropped(amount: int, _where: Vector2, hud: Node) -> void:
+	if hud and hud.has_method("show_toast"):
+		hud.show_toast("◈ Dropped %d Ashmarks where you fell" % amount, Color(0.84, 0.63, 0.25))
 
 func _on_player_died(hud: Node) -> void:
 	if hud and hud.has_method("show_death_screen"):
@@ -509,6 +518,7 @@ func _spawn_enemy_in_biome(enemy_scene: PackedScene, biome: Dictionary, index: i
 		enemy.tier = _pick_tier(tier_weights)
 		enemy.rarity = EncounterSystem.roll_rarity(enemy.creature_id)
 		add_child(enemy)
+		_watch_for_bestiary(enemy)
 		return enemy
 	return null
 
@@ -624,6 +634,33 @@ func _spawn_inventory_screen() -> void:
 	screen.set_script(load("res://scripts/ui/inventory_screen.gd"))
 	screen.name = "InventoryScreen"
 	add_child(screen)
+
+# Contents hub (Esc) and Bestiary pages of the journal.
+func _spawn_journal_menus() -> void:
+	for entry: Array in [["ContentsHub", "res://scripts/ui/contents_hub.gd"], ["Bestiary", "res://scripts/ui/bestiary_ui.gd"]]:
+		var menu := CanvasLayer.new()
+		menu.set_script(load(entry[1]))
+		menu.name = entry[0]
+		add_child(menu)
+	for enemy: Node in get_tree().get_nodes_in_group("enemy"):
+		_watch_for_bestiary(enemy)
+
+# Specimen Cabinet against the east wall inside Aldric's workshop (tiles 10–14 × 10–13).
+func _spawn_specimen_cabinet() -> void:
+	var cabinet := Node2D.new()
+	cabinet.set_script(load("res://scripts/world/specimen_cabinet.gd"))
+	cabinet.name = "SpecimenCabinet"
+	cabinet.position = Vector2(14 * TILE_SIZE + TILE_SIZE / 2.0, 12 * TILE_SIZE + TILE_SIZE / 2.0)
+	add_child(cabinet)
+
+# A creature counts as seen for the Bestiary once it comes on screen.
+func _watch_for_bestiary(enemy: Node) -> void:
+	if not ("creature_id" in enemy) or not (enemy is Node2D):
+		return
+	var eye := VisibleOnScreenNotifier2D.new()
+	eye.rect = Rect2(-16, -16, 32, 32)
+	eye.screen_entered.connect(func() -> void: EncounterSystem.mark_seen(enemy.creature_id), CONNECT_ONE_SHOT)
+	enemy.add_child(eye)
 
 func _spawn_minigame_ui() -> void:
 	var ui_scene: PackedScene = load(MINIGAME_UI_SCENE)

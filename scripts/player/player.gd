@@ -14,6 +14,7 @@ const DIG_MAX: float = 2.5    # maximum grams/mL yielded per dig
 const MAX_HP: float = 100.0
 
 const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
+const AshmarkCache := preload("res://scripts/world/ashmark_cache.gd")
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var inventory: Node = $Inventory
@@ -77,6 +78,7 @@ func _tick_dash(delta: float) -> void:
 
 signal died
 signal respawned
+signal ashmarks_dropped(amount: int, where: Vector2)
 
 var is_dead: bool = false
 
@@ -116,7 +118,25 @@ func _die() -> void:
 	_corrode_timer = 0.0
 	_corrode_amount = 0.0
 	_visual().modulate = Color(0.4, 0.4, 0.4, 0.6)
+	_drop_ashmarks_on_death()
 	emit_signal("died")
+
+# Options → Keep Inventory off (SYSTEMS_UX_REVIEW §3.5): drop half the
+# Ashmarks (rounded up) in a cache where you fell; walk over it to recover them.
+func _drop_ashmarks_on_death() -> void:
+	var opts := get_node_or_null("/root/OptionsMenu")
+	if opts == null or opts.keep_inventory:
+		return
+	var bag := get_node_or_null("Bag")
+	if bag == null or bag.ashmarks <= 0 or get_parent() == null:
+		return
+	var dropped: int = ceili(bag.ashmarks / 2.0)
+	bag.spend_ashmarks(dropped)
+	var cache := AshmarkCache.new()
+	cache.amount = dropped
+	cache.position = get_parent().to_local(global_position) if get_parent() is Node2D else global_position
+	get_parent().add_child.call_deferred(cache)
+	ashmarks_dropped.emit(dropped, global_position)
 
 # Zelda-style recovery: full health, debuffs cleared, inventory retained.
 # Progress is never destroyed — losing collected elements would punish the
@@ -245,6 +265,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_tree().call_group("npc",       "try_interact", global_position)
 		get_tree().call_group("synthesizer","try_interact", global_position)
 		get_tree().call_group("lab_desk",  "try_interact", global_position)
+		get_tree().call_group("specimen_cabinet", "try_interact", global_position)
 	elif event.is_action_pressed("save_game"):
 		SaveSystem.save_game(self)
 	else:

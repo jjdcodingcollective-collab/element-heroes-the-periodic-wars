@@ -143,6 +143,7 @@ AudioManager="*res://scripts/audio/audio_manager.gd"
 ResonanceSystem="*res://scripts/story/resonance_system.gd"
 EncounterSystem="*res://scripts/world/encounter_system.gd"
 UIManager="*res://scripts/ui/ui_manager.gd"
+OptionsMenu="*res://scripts/ui/options_menu.gd"
 
 [layer_names]
 

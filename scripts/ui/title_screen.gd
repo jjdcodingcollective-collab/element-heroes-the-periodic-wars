@@ -20,12 +20,15 @@ var _load_btn: Button
 var _options_btn: Button
 var _confirm_slot: String = ""   # New Game over an existing save needs a second click
 var _status: Label
+var _export_btn: Button   # journal transfer (web saves vanish with site data)
+var _import_btn: Button
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	get_tree().paused = false
 	_build()
 	_refresh_buttons()
+	UIManager.menu_closed.connect(_on_menu_closed)
 	if SaveSystem.save_exists():
 		_continue_btn.grab_focus()
 	else:
@@ -95,6 +98,20 @@ func _build() -> void:
 	footer.position = Vector2(40, BOOK_SIZE.y - 42)
 	book.add_child(footer)
 
+	# Export / Import journal (Options → Journal transfer), on the Load and New pages.
+	_export_btn = JS.button("Export journal", 13)
+	_export_btn.position = Vector2(BOOK_SIZE.x - 330, BOOK_SIZE.y - 47)
+	_export_btn.size = Vector2(140, 28)
+	_export_btn.pressed.connect(_on_transfer)
+	book.add_child(_export_btn)
+	_import_btn = JS.button("Import journal", 13)
+	_import_btn.position = Vector2(BOOK_SIZE.x - 180, BOOK_SIZE.y - 47)
+	_import_btn.size = Vector2(140, 28)
+	_import_btn.pressed.connect(_on_transfer)
+	book.add_child(_import_btn)
+	_export_btn.visible = false
+	_import_btn.visible = false
+
 func _menu_button(parent: Control, text: String, cb: Callable) -> Button:
 	var b := JS.button(text, 18)
 	b.custom_minimum_size = Vector2(220, 40)
@@ -118,6 +135,9 @@ func _set_mode(mode: int) -> void:
 		_cards.remove_child(c)
 		c.queue_free()
 	_right_title.text = { Mode.NEW: "New Game: choose a slot", Mode.LOAD: "Load a journal" }.get(mode, "")
+	var can_transfer := UIManager.has_menu("options") and UIManager.get_menu("options").has_method("show_transfer")
+	_export_btn.visible = can_transfer and mode == Mode.LOAD
+	_import_btn.visible = can_transfer and mode != Mode.NONE
 	if mode == Mode.NONE:
 		return
 	var slots: Array = SaveSystem.MANUAL_SLOTS.duplicate()
@@ -175,6 +195,15 @@ func _on_continue() -> void:
 
 func _on_options() -> void:
 	UIManager.open("options")
+
+func _on_transfer() -> void:
+	UIManager.get_menu("options").show_transfer()
+
+# An import may have filled a slot: refresh the buttons and cards.
+func _on_menu_closed(menu_name: String) -> void:
+	if menu_name == "options" and is_inside_tree():
+		_refresh_buttons()
+		_set_mode(_mode)
 
 func _start_new(slot: String) -> void:
 	SaveSystem.begin_new_game(slot)
