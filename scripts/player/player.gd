@@ -247,6 +247,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_tree().call_group("lab_desk",  "try_interact", global_position)
 	elif event.is_action_pressed("save_game"):
 		SaveSystem.save_game(self)
+	else:
+		for i: int in 4:
+			if event.is_action_pressed("hotbar_%d" % (i + 1)):
+				use_hotbar_slot(i)
+				get_viewport().set_input_as_handled()
+				return
+
+# Quick slots 1–4: used without pausing, never while a menu is open.
+func use_hotbar_slot(slot: int) -> bool:
+	if is_dead or UIManager.is_open():
+		return false
+	var bag := get_node_or_null("Bag")
+	return bag != null and bag.use_hotbar(slot)
 
 func _try_attack() -> void:
 	if _dash_strike_timer > 0.0:
