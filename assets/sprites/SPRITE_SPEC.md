@@ -5,6 +5,8 @@ All sprites are **16×16 pixels** unless noted. Export as PNG with transparent b
 **Status (2026-11-01):** none of these files exist yet; `assets/sprites/icon.png` is the only real art. The human style is locked (D-010, see `ART_STYLE.md` §3a). Enemy/boss style, tiles and the character frame size (16×16 vs 16×24) are still open.
 Godot import settings: Filter = **Nearest** (pixel art), Mipmaps = off.
 
+**Integration:** `scripts/world/sprite_library.gd` loads these sheets automatically. Save a PNG at the path below with exactly this row/column layout and it appears in game; no SpriteFrames editing is needed. A missing or undersized sheet falls back to the coloured placeholder. NPC sheets are a single 2-frame `idle` row. If character frames move to 16×24, change `CHARACTER_FRAME` in that script.
+
 ---
 
 ## Player — Orion (16×16 per frame)

@@ -53,6 +53,9 @@ var _fire_trail_timer: float = 0.0
 var _last_trail_pos: Vector2 = Vector2.ZERO
 
 var _placeholder: ColorRect = null
+var _sprite: AnimatedSprite2D = null
+
+const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 
 const ATTACK_COOLDOWN: float = 1.0
 const ATTACK_RANGE: float = 14.0
@@ -96,6 +99,15 @@ func _apply_stats() -> void:
 	_special_timer = float(sp.get("cooldown", 3.0))
 
 func _spawn_placeholder() -> void:
+	_sprite = SpriteLibrary.attach(self, SpriteLibrary.enemy_path(creature_id), "enemy")
+	if _sprite != null:
+		# Overbright modulate keeps tiers readable without repainting the art.
+		match tier:
+			"intermediate":
+				_sprite.modulate = Color(1.15, 1.15, 1.15)
+			"expert":
+				_sprite.modulate = Color(1.35, 1.35, 1.35)
+		return
 	_placeholder = ColorRect.new()
 	var col_hex: String = _data.get("color", "#CC2020")
 	_placeholder.color = Color(col_hex)
@@ -132,6 +144,20 @@ func _physics_process(delta: float) -> void:
 		"chase":  _do_chase(delta)
 
 	move_and_slide()
+	_update_sprite()
+
+# Two-direction walk cycle (SPRITE_SPEC.md): face the way we move, freeze the
+# cycle when standing still. Keeps the last facing when moving purely vertically.
+func _update_sprite() -> void:
+	if _sprite == null:
+		return
+	if velocity.length() < 1.0:
+		_sprite.pause()
+		return
+	if absf(velocity.x) > 0.5:
+		_sprite.play("walk_left" if velocity.x < 0.0 else "walk_right")
+	elif not _sprite.is_playing():
+		_sprite.play()
 
 func _tick_burn(delta: float) -> void:
 	if not has_meta("burn_timer"):

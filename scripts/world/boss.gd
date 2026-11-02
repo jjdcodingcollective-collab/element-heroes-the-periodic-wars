@@ -49,6 +49,9 @@ var _special_timer: float = 0.0
 var _phase_transitioning: bool = false
 
 var _placeholder: ColorRect = null
+var _sprite: AnimatedSprite2D = null
+
+const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 var _hp_label: Label = null
 
 const ATTACK_COOLDOWN: float = 1.2
@@ -104,9 +107,11 @@ func _apply_phase(phase_index: int) -> void:
 	if trigger != "on_hit":
 		_special_timer = float(sp_params.get("cooldown", 4.0))
 
-	# Update placeholder colour
+	# Update placeholder colour (real art carries its own palette; just clear the flash)
 	if _placeholder != null:
 		_placeholder.color = Color(ph.get("color", _data.get("color", "#FF2020")))
+	if _sprite != null:
+		_sprite.modulate = Color.WHITE
 
 	# Notify arena to change hazard rate
 	if _arena and _arena.has_method("set_hazard"):
@@ -114,12 +119,17 @@ func _apply_phase(phase_index: int) -> void:
 
 func _spawn_visuals() -> void:
 	var sz: int = int(_data.get("size", 32))
-	_placeholder = ColorRect.new()
-	_placeholder.color = Color(_data.get("color", "#FF2020"))
-	_placeholder.size  = Vector2(sz, sz)
-	_placeholder.position = Vector2(-sz / 2.0, -sz / 2.0)
-	_placeholder.z_index = 2
-	add_child(_placeholder)
+	_sprite = SpriteLibrary.attach(self, SpriteLibrary.boss_path(boss_id), "boss")
+	if _sprite != null:
+		_sprite.z_index = 2
+		_sprite.animation_finished.connect(func() -> void: _sprite.play("idle"))
+	else:
+		_placeholder = ColorRect.new()
+		_placeholder.color = Color(_data.get("color", "#FF2020"))
+		_placeholder.size  = Vector2(sz, sz)
+		_placeholder.position = Vector2(-sz / 2.0, -sz / 2.0)
+		_placeholder.z_index = 2
+		add_child(_placeholder)
 
 	# HP bar above boss
 	_hp_label = Label.new()
@@ -203,6 +213,7 @@ func _do_combat(delta: float) -> void:
 		if _player.has_method("take_damage"):
 			_player.take_damage(base_damage)
 		_attack_timer = ATTACK_COOLDOWN
+		_play_attack()
 		_spawn_damage_label(base_damage)
 
 func _tick_burn(delta: float) -> void:
@@ -268,6 +279,8 @@ func _transition_to_phase(phase_index: int) -> void:
 	# Flash white
 	if _placeholder:
 		_placeholder.color = Color.WHITE
+	if _sprite:
+		_sprite.modulate = Color(3, 3, 3)
 	var tween: Tween = get_tree().create_tween()
 	tween.tween_interval(0.5)
 	tween.tween_callback(func() -> void:
@@ -293,8 +306,14 @@ func _spawn_phase_label(phase_name: String) -> void:
 
 # ── Special abilities ─────────────────────────────────────────────────────────
 
+# Two-frame attack animation; animation_finished returns the sprite to idle.
+func _play_attack() -> void:
+	if _sprite != null:
+		_sprite.play("attack")
+
 func _trigger_special(special: String, sp: Dictionary, dist: float) -> void:
 	var cd: float = float(sp.get("cooldown", 4.0))
+	_play_attack()
 
 	match special:
 		"caustic_spray", "corrosive_spit":

@@ -3,8 +3,9 @@ extends StaticBody2D
 # NPC — interactable character.
 # Place in world scene. Set exported vars in the Inspector.
 #
-# SPRITE SWAP: assign a Texture2D to portrait_texture in the Inspector.
-# The Sprite2D child will display it. Delete the ColorRect placeholder then.
+# SPRITES: call use_sprite_sheet("aldric") to load assets/sprites/npc/aldric.png
+# (2-frame idle, SPRITE_SPEC.md). A static portrait_texture also still works.
+# Without either, the ColorRect placeholder is shown.
 
 @export var npc_name: String = "Villager"
 @export var portrait_color: Color = Color(0.3, 0.5, 0.7)
@@ -25,6 +26,9 @@ extends StaticBody2D
 
 var _placeholder: ColorRect = null
 var _sprite: Sprite2D = null
+var _anim_sprite: AnimatedSprite2D = null
+
+const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 var _label: Label = null
 var _indicator: Label = null
 
@@ -55,6 +59,22 @@ func _spawn_visuals() -> void:
 	_label.position = Vector2(-20, -28)
 	_label.add_theme_font_size_override("font_size", 8)
 	add_child(_label)
+
+# Swaps the placeholder for an animated sheet if one exists. Returns true on success.
+# Safe to call after _ready(), which is how world.gd configures Aldric.
+func use_sprite_sheet(sprite_id: String) -> bool:
+	if _anim_sprite != null:
+		return true
+	_anim_sprite = SpriteLibrary.attach(self, SpriteLibrary.npc_path(sprite_id), "npc")
+	if _anim_sprite == null:
+		return false
+	if _placeholder != null:
+		_placeholder.queue_free()
+		_placeholder = null
+	if _sprite != null:
+		_sprite.queue_free()
+		_sprite = null
+	return true
 
 func _spawn_interact_indicator() -> void:
 	_indicator = Label.new()

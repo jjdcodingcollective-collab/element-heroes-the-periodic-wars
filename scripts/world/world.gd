@@ -157,6 +157,7 @@ func _init_ui() -> void:
 		aldric.portrait_color = Color(0.25, 0.45, 0.65)
 		aldric.interact_radius = 40.0
 		aldric.handles_resonance_assembly = true
+		aldric.use_sprite_sheet("aldric")
 		aldric.dialogue = ([
 			"Orion! Just the person I needed. Come closer — these old ears aren't what they used to be.",
 			"You've seen it too, haven't you? The water. Three wells have gone black this week alone.",

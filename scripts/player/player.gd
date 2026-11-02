@@ -2,13 +2,9 @@ extends CharacterBody2D
 
 # Top-down 8-directional player controller.
 #
-# SPRITE SWAP GUIDE:
-#   Replace the ColorRect placeholder by:
-#   1. Add a SpriteFrames resource to the AnimatedSprite2D node in the editor
-#   2. Add animations named: "idle_down","idle_up","idle_left","idle_right",
-#      "walk_down","walk_up","walk_left","walk_right"
-#   3. Delete the _spawn_placeholder() call in _ready()
-#   The rest of the animation code is already wired up and will just work.
+# SPRITES: drop assets/sprites/player/orion.png (layout in SPRITE_SPEC.md) and
+# SpriteLibrary fills the AnimatedSprite2D at startup. Without the sheet the
+# ColorRect placeholder is used instead.
 
 const SPEED: float = 120.0
 const TILE_SIZE: int = 16
@@ -16,6 +12,8 @@ const DIG_RANGE: float = 48.0
 const DIG_MIN: float = 0.25   # minimum grams/mL yielded per dig
 const DIG_MAX: float = 2.5    # maximum grams/mL yielded per dig
 const MAX_HP: float = 100.0
+
+const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var inventory: Node = $Inventory
@@ -72,8 +70,7 @@ func _die() -> void:
 	_stun_timer = 0.0
 	_corrode_timer = 0.0
 	_corrode_amount = 0.0
-	if _placeholder:
-		_placeholder.modulate = Color(0.4, 0.4, 0.4, 0.6)
+	_visual().modulate = Color(0.4, 0.4, 0.4, 0.6)
 	emit_signal("died")
 
 # Zelda-style recovery: full health, debuffs cleared, inventory retained.
@@ -89,8 +86,7 @@ func respawn(spawn_position: Vector2) -> void:
 	_stun_timer = 0.0
 	_corrode_timer = 0.0
 	_corrode_amount = 0.0
-	if _placeholder:
-		_placeholder.modulate = Color(1, 1, 1, 1)
+	_visual().modulate = Color(1, 1, 1, 1)
 	emit_signal("respawned")
 
 func apply_stun(duration: float) -> void:
@@ -117,7 +113,14 @@ func get_equipped_armor() -> String:
 
 func _ready() -> void:
 	add_to_group("player")
-	_spawn_placeholder()
+	if SpriteLibrary.attach(self, SpriteLibrary.player_path(), "character", animated_sprite) == null:
+		_spawn_placeholder()
+
+# Whatever is currently drawing the player: the sprite, or the placeholder.
+func _visual() -> CanvasItem:
+	if animated_sprite.sprite_frames != null:
+		return animated_sprite
+	return _placeholder if _placeholder != null else animated_sprite
 
 func _spawn_placeholder() -> void:
 	_placeholder = ColorRect.new()
@@ -155,9 +158,6 @@ func _update_animation() -> void:
 	# Skip if no sprite frames loaded (placeholder mode)
 	if animated_sprite.sprite_frames == null:
 		return
-	# Hide placeholder once real sprites are loaded
-	if _placeholder:
-		_placeholder.visible = false
 
 	var moving = velocity.length() > 1.0
 	var prefix = "walk_" if moving else "idle_"

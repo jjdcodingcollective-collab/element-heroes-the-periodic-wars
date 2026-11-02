@@ -21,7 +21,7 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 > **How to read "Done".** Until 2026-07-26 this project had never been executed —
 > every status below meant "code was written", not "code works". The project has
 > now been booted and covered by an automated test suite (`tests/test_runner.tscn`,
-> 81 assertions), which immediately found four game-breaking defects in systems
+> 81 assertions at the time; 105 now), which immediately found four game-breaking defects in systems
 > marked ✅ Done: crafting never matched a recipe, all physical attacks dealt zero
 > damage, five recipes were silently dropped at load, and the endgame item was
 > unobtainable. Those are fixed. Treat ✅ as "written and boots"; only the rows
@@ -56,13 +56,13 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Science mini-game (quiz) | ✅ Done | Aldric's desk, 26 questions, element rewards, graded |
 | Player death / respawn | ✅ Done **tested** | Zelda-style: respawn in Ashvale, full HP, inventory retained |
 | Win condition — Resonance Engine | ✅ Done **tested** | 6 craftable components, assembled by Aldric, victory screen (Act 3) |
-| Automated test suite | ✅ Done | 81 assertions, `tests/test_runner.tscn`, runs headless |
+| Automated test suite | ✅ Done | 105 assertions, `tests/test_runner.tscn`, runs headless |
 | CI pipeline | ✅ Done | `.github/workflows/tests.yml` — asset validation, import, tests, boot check |
 | Asset validator | ✅ Done | `tools/validate_assets.py` — magic-byte check, blocks fake images |
 | Audio system | ✅ Done | AudioManager autoload, crossfade music, SFX pool — awaiting .ogg files |
 | Sprite spec | ✅ Done | Full animation spec in `assets/sprites/SPRITE_SPEC.md` |
 | Pixel art sprites — ALL | ❌ Not started | The 26 previously committed `.png` files were HTML pages, not images. Removed. See `assets/sprites/reference/README.md` |
-| Sprite integration layer | ❌ Not started | **No sprite is referenced by any scene or script.** Everything renders as ColorRect placeholders |
+| Sprite integration layer | ✅ Done **tested** | `scripts/world/sprite_library.gd` cuts sheets laid out per `SPRITE_SPEC.md` into SpriteFrames for player, enemies, bosses and NPCs; falls back to ColorRect placeholders when a sheet is missing. Character frame size is one constant (`CHARACTER_FRAME`) pending the 16×16 vs 16×24 decision. World objects, tiles and HUD icons not yet wired |
 | Pixel art sprites — NPCs | ⬜ Pending | Aldric Daedalus, villager_a, villager_b |
 | Pixel art sprites — world objects | ⬜ Pending | synthesizer, lab_desk, well, market_stall, projectile |
 | Pixel art sprites — HUD icons | ⬜ Pending | hearts, slots, weapon/armor/compendium icons |
@@ -308,7 +308,6 @@ Ordered by what unblocks the most downstream work, not by phase number.
 | **P0 — blocked on decision** | Choose target platform (HTML5 vs desktop) | Changes export config, input handling, and file-size budget. Recommendation: HTML5 first — the audience is schools, and Chromebooks cannot run a desktop binary |
 | ✅ Resolved 2026-07-29 | Naming split | Canon is now: **Orion** (protagonist), **Ashvale** (village), **Prof. Aldric Daedalus** (mentor), **Mira** (companion, unchanged), **Elder Sibyl**, **Talos** (Sky Islands companion), **The Lethean Order** / **The Archon** (villains). Space-age + Greco-Roman mythology, applied to humans/villains only — bosses and CHIMERA enemies stay element/chemistry-named by design. `STORY.md` and all dialogue/UI strings in code updated to match. See `context/DECISIONS.md` D-008 |
 | High | Play the game end to end as a human | The test suite proves systems work in isolation. Nobody has yet confirmed the game is *playable* — difficulty, pacing, whether the Resonance Engine hunt is discoverable |
-| High | Sprite integration layer | Even with finished art, no `AnimatedSprite2D`/`SpriteFrames` wiring exists. This code is identical regardless of who draws the pixels, so it can start before the art decision lands |
 | High | SFX + music files | `AudioManager` and all call sites are written; the folders are empty. jsfxr / BeepBox output dropped in and uncommented is the whole task |
 | Medium | Reduce `VIEW_RADIUS` in `world.gd` | Currently 50, which is 101×101 = **10,201** live ColorRects, not the "~1,500" the comment claims. ~35 is a cheap stopgap; the real fix is TileMap, which is coupled to the art decision |
 | Medium | Export presets | Depends on the platform decision above |

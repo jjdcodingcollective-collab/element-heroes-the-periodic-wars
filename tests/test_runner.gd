@@ -11,6 +11,8 @@ extends Node
 const PLAYER_SCENE := preload("res://scenes/player/player.tscn")
 const ENEMY_SCENE  := preload("res://scenes/world/enemy.tscn")
 const BOSS_SCENE   := preload("res://scenes/world/boss.tscn")
+const NPC_SCENE    := preload("res://scenes/world/npc.tscn")
+const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 
 var _passed: int = 0
 var _failed: int = 0
@@ -26,6 +28,7 @@ func _ready() -> void:
 	_test_resonance_data()
 	_test_resonance_assembly()
 	_test_save_migration()
+	_test_sprite_integration()
 
 	print("=== %d passed, %d failed ===" % [_passed, _failed])
 	get_tree().quit(1 if _failed > 0 else 0)
@@ -350,3 +353,88 @@ func _test_save_migration() -> void:
 	_check_eq("v2 preserves existing data", (migrated2.get("dug_tiles") as Array).size(), 1)
 
 	ResonanceSystem.reset()
+
+# ── Sprite integration ────────────────────────────────────────────────────────
+
+# Blank sheet of the given size; the cutter only cares about dimensions.
+func _sheet(w: int, h: int) -> Texture2D:
+	return ImageTexture.create_from_image(Image.create(w, h, false, Image.FORMAT_RGBA8))
+
+func _test_sprite_integration() -> void:
+	print("- sprite integration")
+	SpriteLibrary.clear_cache()
+	var fs: Vector2i = SpriteLibrary.CHARACTER_FRAME
+
+	# Sheet cutting follows SPRITE_SPEC.md
+	var player_frames := SpriteLibrary.frames_from_texture(_sheet(4 * fs.x, 8 * fs.y), "character")
+	_check("player sheet cuts", player_frames != null)
+	if player_frames:
+		_check_eq("player has 8 animations", player_frames.get_animation_names().size(), 8)
+		_check_eq("idle_down has 2 frames", player_frames.get_frame_count("idle_down"), 2)
+		_check_eq("walk_right has 4 frames", player_frames.get_frame_count("walk_right"), 4)
+		_check_eq("walk_right fps", player_frames.get_animation_speed("walk_right"), 8.0)
+		var region: Rect2 = (player_frames.get_frame_texture("walk_up", 3) as AtlasTexture).region
+		_check_eq("walk_up frame 3 region", region, Rect2(3 * fs.x, 5 * fs.y, fs.x, fs.y))
+	_check("undersized sheet rejected",
+		SpriteLibrary.frames_from_texture(_sheet(4 * fs.x, 7 * fs.y), "character") == null)
+
+	var boss_frames := SpriteLibrary.frames_from_texture(_sheet(192, 96), "boss")
+	_check("boss sheet cuts", boss_frames != null)
+	if boss_frames:
+		_check_eq("boss idle has 4 frames", boss_frames.get_frame_count("idle"), 4)
+		_check("boss attack does not loop", not boss_frames.get_animation_loop("attack"))
+
+	# Missing art keeps the placeholder (today's normal state)
+	_check("missing sheet returns null",
+		SpriteLibrary.load_frames("res://assets/sprites/enemies/__none__.png", "enemy") == null)
+	var e_ph: Node = _make_enemy("iron_hulk")
+	_check("enemy without art uses placeholder", e_ph._placeholder != null and e_ph._sprite == null)
+	e_ph.queue_free()
+
+	# With a sheet present, every entity type switches to an AnimatedSprite2D.
+	# Seed the cache directly so the test needs no imported PNGs.
+	SpriteLibrary._cache[SpriteLibrary.enemy_path("iron_hulk") + "|enemy"] = \
+		SpriteLibrary.frames_from_texture(_sheet(64, 32), "enemy")
+	SpriteLibrary._cache[SpriteLibrary.boss_path("peroxis") + "|boss"] = boss_frames
+	SpriteLibrary._cache[SpriteLibrary.player_path() + "|character"] = player_frames
+	SpriteLibrary._cache[SpriteLibrary.npc_path("aldric") + "|npc"] = \
+		SpriteLibrary.frames_from_texture(_sheet(2 * fs.x, fs.y), "npc")
+
+	var e: Node = _make_enemy("iron_hulk", "expert")
+	_check("enemy with art has sprite", e._sprite != null and e._placeholder == null)
+	if e._sprite:
+		e.velocity = Vector2(-20, 0)
+		e._update_sprite()
+		_check_eq("enemy faces its movement", e._sprite.animation, &"walk_left")
+		_check("expert tier is brightened", e._sprite.modulate.r > 1.0)
+	e.queue_free()
+
+	var b: Node = BOSS_SCENE.instantiate()
+	b.boss_id = "peroxis"
+	add_child(b)
+	_check("boss with art has sprite", b._sprite != null and b._placeholder == null)
+	if b._sprite:
+		_check_eq("boss starts idle", b._sprite.animation, &"idle")
+		b._play_attack()
+		_check_eq("boss plays attack", b._sprite.animation, &"attack")
+	b.queue_free()
+
+	var p: Node = PLAYER_SCENE.instantiate()
+	add_child(p)
+	_check("player with art has frames", p.animated_sprite.sprite_frames != null and p._placeholder == null)
+	p.velocity = Vector2(0, 50)
+	p.facing = Vector2.DOWN
+	p._update_animation()
+	_check_eq("player walks down", p.animated_sprite.animation, &"walk_down")
+	p.take_damage(9999.0)
+	_check("death greys out the sprite", p.animated_sprite.modulate.a < 1.0)
+	p.queue_free()
+
+	var n: Node = NPC_SCENE.instantiate()
+	add_child(n)
+	_check("npc starts on placeholder", n._placeholder != null)
+	_check("npc picks up sheet after _ready", n.use_sprite_sheet("aldric"))
+	_check("npc placeholder released", n._placeholder == null and n._anim_sprite != null)
+	n.queue_free()
+
+	SpriteLibrary.clear_cache()
