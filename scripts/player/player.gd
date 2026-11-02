@@ -30,6 +30,51 @@ var _corrode_timer: float = 0.0      # armor corrode debuff
 var _corrode_amount: float = 0.0     # DR reduction while corroded
 const I_FRAME_DURATION: float = 0.5
 
+# Hades-style dash: a short burst with invulnerability, then a brief cooldown.
+# Attacking just after a dash is a dash-strike for bonus damage.
+const DASH_SPEED: float = 380.0          # px/s, ~3.5 tiles per dash
+const DASH_TIME: float = 0.15
+const DASH_COOLDOWN: float = 0.35
+const DASH_STRIKE_WINDOW: float = 0.2    # seconds after a dash that count as a dash-strike
+const DASH_STRIKE_MULT: float = 1.5
+var dash_charges_max: int = 1            # kit/upgrades can raise this
+var _dash_charges: int = 1
+var _dash_timer: float = 0.0             # >0 while dashing
+var _dash_recharge: float = 0.0
+var _dash_dir: Vector2 = Vector2.DOWN
+var _dash_strike_timer: float = 0.0
+
+signal dashed
+
+func is_dashing() -> bool:
+	return _dash_timer > 0.0
+
+func try_dash() -> bool:
+	if is_dead or _stun_timer > 0.0 or _dash_charges <= 0 or is_dashing():
+		return false
+	var dir := Vector2(
+		Input.get_axis("move_left", "move_right"),
+		Input.get_axis("move_up",   "move_down")
+	).normalized()
+	_dash_dir = dir if dir != Vector2.ZERO else facing
+	facing = _dash_dir
+	_dash_charges -= 1
+	_dash_timer = DASH_TIME
+	_dash_strike_timer = DASH_TIME + DASH_STRIKE_WINDOW
+	if _dash_recharge <= 0.0:
+		_dash_recharge = DASH_COOLDOWN
+	emit_signal("dashed")
+	return true
+
+func _tick_dash(delta: float) -> void:
+	_dash_timer        = maxf(_dash_timer - delta, 0.0)
+	_dash_strike_timer = maxf(_dash_strike_timer - delta, 0.0)
+	if _dash_charges < dash_charges_max and _dash_timer <= 0.0:
+		_dash_recharge -= delta
+		if _dash_recharge <= 0.0:
+			_dash_charges += 1
+			_dash_recharge = DASH_COOLDOWN if _dash_charges < dash_charges_max else 0.0
+
 signal died
 signal respawned
 
@@ -44,7 +89,7 @@ func get_max_health() -> float:
 func take_damage(amount: float) -> void:
 	if is_dead:
 		return
-	if _invincible_timer > 0.0:
+	if _invincible_timer > 0.0 or is_dashing():
 		return
 	var dr: float = 0.0
 	if armor and armor.has_method("get_damage_reduction"):
@@ -83,6 +128,9 @@ func respawn(spawn_position: Vector2) -> void:
 	velocity = Vector2.ZERO
 	facing = Vector2.DOWN
 	_invincible_timer = I_FRAME_DURATION * 4.0  # grace period on respawn
+	_dash_timer = 0.0
+	_dash_strike_timer = 0.0
+	_dash_charges = dash_charges_max
 	_stun_timer = 0.0
 	_corrode_timer = 0.0
 	_corrode_amount = 0.0
@@ -141,7 +189,10 @@ func _physics_process(delta: float) -> void:
 	_corrode_timer    = maxf(_corrode_timer    - delta, 0.0)
 	if _corrode_timer <= 0.0:
 		_corrode_amount = 0.0
-	if _stun_timer <= 0.0:
+	_tick_dash(delta)
+	if is_dashing():
+		velocity = _dash_dir * DASH_SPEED
+	elif _stun_timer <= 0.0:
 		_handle_movement()
 	_update_animation()
 	move_and_slide()
@@ -182,6 +233,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("attack"):
 		_try_attack()
+	elif event.is_action_pressed("dash"):
+		try_dash()
 	elif event.is_action_pressed("open_inventory"):
 		get_tree().call_group("ui", "toggle_inventory")
 	elif event.is_action_pressed("open_compendium"):
@@ -194,8 +247,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		SaveSystem.save_game(self)
 
 func _try_attack() -> void:
+	if _dash_strike_timer > 0.0:
+		weapon.damage_mult = DASH_STRIKE_MULT
 	if not weapon.try_attack(facing):
+		weapon.damage_mult = 1.0
 		return
+	_dash_strike_timer = 0.0
 	if weapon.get_weapon_type() == "ranged":
 		AudioManager.on_attack_ranged()
 	else:

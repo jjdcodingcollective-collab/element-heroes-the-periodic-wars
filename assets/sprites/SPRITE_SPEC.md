@@ -52,6 +52,8 @@ Godot import settings: Filter = **Nearest** (pixel art), Mipmaps = off.
 Each enemy is a real animal fused with an element (D-011). "Reverted" subjects went through Project REVERSION and look golem-like, spectral or ooze-like, but keep a readable trace of their animal silhouette (D-012).
 
 Each enemy: 2 rows × 4 frames = 8 frames total.
+
+**Rarity sheets (optional, D-014):** `enemies/<id>_strong.png`, `<id>_shiny.png`, `<id>_prime.png` use the same 2×4 layout. Strong and prime frames are the creature's `strong_footprint` in tiles × 16 px (32×32, 32×16 or 16×32; see `data/enemy_data.json`); shiny frames are 16×16. Without a rarity sheet the game reuses the base sheet, scaled up for strong/prime and tinted gold (shiny) or iridescent (prime).
 Row 0 = walk left, Row 1 = walk right (or mirror).
 
 | File | Enemy | Base animal | Colour palette |
@@ -82,7 +84,7 @@ Row 0 = walk left, Row 1 = walk right (or mirror).
 
 ---
 
-## Bosses (48×48 per frame, 4-frame idle + 2-frame attack)
+## Bosses (one square frame per boss, 112–160 px, 4-frame idle + 2-frame attack)
 
 Bosses are **mythical creatures** fused with their compound (D-011); regular enemies are real animals.
 
@@ -95,7 +97,7 @@ Bosses are **mythical creatures** fused with their compound (D-011); regular ene
 | `bosses/atacama.png` | ATACAMA — Atacamite | Leviathan: verdigris bronze hull plates, barnacles, embedded cannon, emerald glow |
 | `bosses/uranox.png` | URANOX — Uraninite | Basilisk: black uraninite plates, green radioactive cracks, gaze beam |
 
-**Boss SpriteFrames:** idle = 4 fps (4 frames loop), attack = 8 fps (2 frames, no loop)
+**Boss SpriteFrames:** idle = 4 fps (4 frames loop), attack = 8 fps (2 frames, no loop). Frame size = the boss's `size` in `data/boss_data.json` (Peroxis 112, Chalcor 128, Aurium 128, Azrael 112, Atacama 144, Uranox 160), so a sheet is 4 × size wide and 2 × size tall (D-015).
 
 ---
 

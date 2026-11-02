@@ -34,7 +34,7 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Compound recipes (64) | ✅ Done **tested** | Base, weapons, polymers, armors, 6 Resonance Engine parts |
 | Lab handling data (118 elements) | ✅ Done **tested** | `data/element_handling.json` (duplicate `element_lab_handling.json` removed) |
 | World generation | ✅ Done | 6 biomes, tile-based, ore spawning |
-| Player controller | ✅ Done | 8-direction, top-down, i-frames |
+| Player controller | ✅ Done **tested** | 8-direction, top-down, i-frames, Hades-style dash + dash-strike (D-015) |
 | Element collection / digging | ✅ Done | Float grams/mL, range check |
 | Lab equipment system | ✅ Done | 5-tier container + glove hierarchy |
 | Inventory system | ✅ Done | Float amounts, inventory_changed signal |
@@ -48,11 +48,12 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Save/load system | ✅ Done **tested** | Versioned (v3) with migration; inventory, equipment, weapon, armor, compendium, dug tiles, Act 3 progress |
 | Enemy system | ✅ Done | Patrol/chase AI, contact damage, element drops |
 | Enemy variants — 18 CHIMERA × 3 tiers | ✅ Done **tested** | 54 variants total, specials, auras, resistances |
+| Enemy rarity — strong / shiny / prime | ✅ Done **tested** | `EncounterSystem` autoload rolls every spawn: strong 1/10 (2×2, 2×1 or 1×2 tiles per creature), shiny 1/100 (gold shimmer, signature-element loot), prime 1/1000 (Prime Codex, collect all 18). Pity at 2× each rate. Defeated enemies respawn after 20 s so rolls keep coming (D-014). Prime Codex completion reward not yet defined |
 | Compendium UI | ✅ Done | 118-element grid, auto-discovers on first collect |
 | Weapon system — 10 weapons (T1–T5) | ✅ Done | Melee arc + ranged projectile, DoT effects |
 | Armor system — 5 armors (T1–T5) | ✅ Done | Single slot, flat DR%, Zelda-style |
 | Synthesizer machine | ✅ Done | World object + UI, 5 polymer intermediates |
-| Boss encounters — 6 Compound Titans | ✅ Done | 3-phase fights, arena hazards, lore drops |
+| Boss encounters — 6 Compound Titans | ✅ Done | 3-phase fights, arena hazards, lore drops. Bosses are now 112–160 px (7–10 tiles), arenas scale with them, camera pulls back in fights (D-015). Attack radii and hazards not yet retuned for the bigger bodies; special-kit requirement not built |
 | Science mini-game (quiz) | ✅ Done | Aldric's desk, 26 questions, element rewards, graded |
 | Player death / respawn | ✅ Done **tested** | Zelda-style: respawn in Ashvale, full HP, inventory retained |
 | Win condition — Resonance Engine | ✅ Done **tested** | 6 craftable components, assembled by Aldric, victory screen (Act 3) |
@@ -157,6 +158,7 @@ element-heros---the-periodic-wars/
 | WASD | Move |
 | Left Click | Dig (within 48px) |
 | Right Click / Space | Attack |
+| Shift | Dash (Hades-style: i-frames, 0.5 s recharge; attack right after for a 1.5× dash-strike) |
 | E | Toggle inventory bar |
 | C | Toggle crafting / Compendium |
 | F | NPC dialogue / Synthesizer / Lab desk |

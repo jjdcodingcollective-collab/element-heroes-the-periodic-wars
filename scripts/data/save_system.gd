@@ -5,7 +5,7 @@ extends Node
 
 const SAVE_PATH: String = "user://savegame.json"
 
-const SAVE_VERSION: int = 3
+const SAVE_VERSION: int = 4
 
 func save_game(player: Node) -> void:
 	var equip_node := player.get_node_or_null("Equipment")
@@ -25,6 +25,7 @@ func save_game(player: Node) -> void:
 		"discovered": _get_compendium_discovered(),
 		"dug_tiles": world_node.serialize_dug_tiles() if world_node and world_node.has_method("serialize_dug_tiles") else [],
 		"resonance": ResonanceSystem.serialize(),
+		"encounters": EncounterSystem.serialize(),
 		"timestamp": Time.get_datetime_string_from_system()
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -75,6 +76,7 @@ func load_game(player: Node) -> bool:
 	if world_node and world_node.has_method("restore_dug_tiles") and dug.size() > 0:
 		world_node.restore_dug_tiles(dug)
 	ResonanceSystem.deserialize(data.get("resonance", {}) as Dictionary)
+	EncounterSystem.deserialize(data.get("encounters", {}) as Dictionary)
 	return true
 
 # Incrementally migrate old saves up to SAVE_VERSION.
@@ -93,6 +95,12 @@ func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 			d["resonance"] = { "is_assembled": false, "ready_announced": false }
 		d["version"] = 3
 		push_warning("SaveSystem: migrated save from v2 → v3")
+	if from_version < 4:
+		# v3 → v4: added encounter counters and the Prime Codex
+		if not d.has("encounters"):
+			d["encounters"] = {}
+		d["version"] = 4
+		push_warning("SaveSystem: migrated save from v3 → v4")
 	return d
 
 func _get_compendium_discovered() -> Dictionary:

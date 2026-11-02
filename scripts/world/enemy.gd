@@ -27,6 +27,8 @@ extends CharacterBody2D
 # ── Export properties set by spawner ─────────────────────────────────────────
 @export var creature_id: String = "ashburn_shambler"
 @export var tier: String = "basic"   # "basic" | "intermediate" | "expert"
+# Rolled by EncounterSystem at spawn; stacks on top of tier.
+@export var rarity: String = "normal"  # "normal" | "strong" | "shiny" | "prime"
 
 # ── Runtime state ─────────────────────────────────────────────────────────────
 var _data: Dictionary = {}
@@ -54,6 +56,9 @@ var _last_trail_pos: Vector2 = Vector2.ZERO
 
 var _placeholder: ColorRect = null
 var _sprite: AnimatedSprite2D = null
+var _rarity_mult: Dictionary = {}
+var footprint: Vector2i = Vector2i.ONE   # size in tiles; strong/prime use strong_footprint
+var _attack_range: float = 14.0
 
 const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 
@@ -72,6 +77,7 @@ func _ready() -> void:
 func _load_data() -> void:
 	_data = ElementDB.get_enemy_data(creature_id)
 	_tier_mult = ElementDB.get_enemy_tier_mult(tier)
+	_rarity_mult = ElementDB.get_enemy_rarity(rarity)
 
 func _apply_stats() -> void:
 	if _data.is_empty():
@@ -80,6 +86,10 @@ func _apply_stats() -> void:
 	var dm: float = float(_tier_mult.get("damage", 1.0))
 	var sm: float = float(_tier_mult.get("speed",  1.0))
 	var sgm: float= float(_tier_mult.get("sight",  1.0))
+
+	hm *= float(_rarity_mult.get("hp",     1.0))
+	dm *= float(_rarity_mult.get("damage", 1.0))
+	sm *= float(_rarity_mult.get("speed",  1.0))
 
 	max_hp       = float(_data.get("base_hp",     30))  * hm
 	base_damage  = float(_data.get("base_damage", 10))  * dm
@@ -98,8 +108,26 @@ func _apply_stats() -> void:
 	var sp: Dictionary = _data.get("special_params", {})
 	_special_timer = float(sp.get("cooldown", 3.0))
 
+	_apply_footprint()
+
+# Strong and prime enemies occupy 2×2, 2×1 or 1×2 tiles (strong_footprint).
+# The collision box and contact reach grow with them.
+func _apply_footprint() -> void:
+	footprint = Vector2i.ONE
+	if bool(_rarity_mult.get("footprint", false)):
+		var fp: Array = _data.get("strong_footprint", [1, 1])
+		footprint = Vector2i(int(fp[0]), int(fp[1]))
+	_attack_range = ATTACK_RANGE + float(maxi(footprint.x, footprint.y) - 1) * 8.0
+	if footprint == Vector2i.ONE:
+		return
+	var col := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if col:
+		var box := RectangleShape2D.new()
+		box.size = Vector2(footprint) * 16.0 - Vector2(6, 6)
+		col.shape = box
+
 func _spawn_placeholder() -> void:
-	_sprite = SpriteLibrary.attach(self, SpriteLibrary.enemy_path(creature_id), "enemy")
+	_sprite = _attach_sprite()
 	if _sprite != null:
 		# Overbright modulate keeps tiers readable without repainting the art.
 		match tier:
@@ -107,13 +135,17 @@ func _spawn_placeholder() -> void:
 				_sprite.modulate = Color(1.15, 1.15, 1.15)
 			"expert":
 				_sprite.modulate = Color(1.35, 1.35, 1.35)
+		_start_rarity_glow(_sprite)
 		return
 	_placeholder = ColorRect.new()
 	var col_hex: String = _data.get("color", "#CC2020")
 	_placeholder.color = Color(col_hex)
 	var sz: int = int(_data.get("size", 12))
-	_placeholder.size = Vector2(sz, sz)
-	_placeholder.position = Vector2(-sz / 2.0, -sz / 2.0)
+	var box := Vector2(sz, sz)
+	if footprint != Vector2i.ONE:
+		box = Vector2(footprint) * 16.0 - Vector2(4, 4)
+	_placeholder.size = box
+	_placeholder.position = -box / 2.0
 	# Tier tint: intermediate slightly brighter, expert glows
 	match tier:
 		"intermediate":
@@ -121,6 +153,34 @@ func _spawn_placeholder() -> void:
 		"expert":
 			_placeholder.color = _placeholder.color.lightened(0.4)
 	add_child(_placeholder)
+	_start_rarity_glow(_placeholder)
+
+# Sheet lookup: a dedicated <id>_<rarity>.png if drawn, otherwise the base
+# sheet (scaled up to the footprint for strong/prime).
+func _attach_sprite() -> AnimatedSprite2D:
+	if rarity != "normal":
+		var frame := footprint * 16
+		var own := SpriteLibrary.attach(self, SpriteLibrary.enemy_path("%s_%s" % [creature_id, rarity]), "enemy", null, frame)
+		if own != null:
+			return own
+	var spr := SpriteLibrary.attach(self, SpriteLibrary.enemy_path(creature_id), "enemy")
+	if spr != null and footprint != Vector2i.ONE:
+		spr.scale = Vector2(footprint)
+	return spr
+
+# Shiny enemies shimmer gold; primes cycle through an iridescent loop.
+func _start_rarity_glow(target: CanvasItem) -> void:
+	var colours: Array[Color] = []
+	match rarity:
+		"shiny":
+			colours = [Color(1.6, 1.35, 0.5), Color(1.1, 1.0, 0.7)]
+		"prime":
+			colours = [Color(1.5, 0.6, 1.5), Color(0.6, 1.5, 1.5), Color(1.5, 1.5, 0.6)]
+		_:
+			return
+	var tween := create_tween().set_loops()
+	for c: Color in colours:
+		tween.tween_property(target, "modulate", c, 0.5)
 
 # ── Physics loop ──────────────────────────────────────────────────────────────
 
@@ -241,7 +301,7 @@ func _do_chase(delta: float) -> void:
 		velocity = to_player * move_speed * float(sp.get("dive_multiplier", 2.5))
 
 	# Contact damage
-	if dist <= ATTACK_RANGE and _attack_timer <= 0.0:
+	if dist <= _attack_range and _attack_timer <= 0.0:
 		var final_dmg: float = base_damage
 		if _player.has_method("take_damage"):
 			_player.take_damage(final_dmg)
@@ -405,6 +465,9 @@ func _die() -> void:
 
 	AudioManager.on_enemy_die()
 	_drop_elements()
+	EncounterSystem.record_defeat(creature_id, rarity)
+	if get_parent() and get_parent().has_method("on_enemy_defeated"):
+		get_parent().on_enemy_defeated(self)
 	queue_free()
 
 func _drop_elements() -> void:
@@ -418,7 +481,7 @@ func _drop_elements() -> void:
 	var elements: Array = tier_drops.get("elements", [])
 	var dmin: int = int(tier_drops.get("min", 1))
 	var dmax: int = int(tier_drops.get("max", 2))
-	var count: int = randi_range(dmin, dmax)
+	var count: int = randi_range(dmin, dmax) * int(_rarity_mult.get("drop_mult", 1))
 
 	var players := get_tree().get_nodes_in_group("player")
 	if players.is_empty():
@@ -433,6 +496,14 @@ func _drop_elements() -> void:
 		_spawn_drop_label(symbol)
 		if inv and inv.has_method("add_element"):
 			inv.add_element(symbol, snappedf(randf_range(0.1, 1.0), 0.01))
+
+	# Shiny/prime bonus: a large sample of the creature's signature element
+	var sig: Array = _rarity_mult.get("signature_grams", [0, 0])
+	var sig_elements: Array = _data.get("elements", [])
+	if float(sig[1]) > 0.0 and not sig_elements.is_empty() and inv and inv.has_method("add_element"):
+		var grams: float = snappedf(randf_range(float(sig[0]), float(sig[1])), 0.1)
+		inv.add_element(str(sig_elements[0]), grams)
+		_spawn_drop_label("%s ×%.1fg" % [sig_elements[0], grams])
 
 	# Bonus item drop (equipment items for expert tier)
 	var bonus: String = tier_drops.get("bonus_item", "")

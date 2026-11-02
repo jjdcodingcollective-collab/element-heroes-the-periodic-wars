@@ -7,9 +7,17 @@
     "expert":       { "hp": 3.5,  "damage": 2.8,  "speed": 1.5,  "sight": 1.35, "xp": 60  }
   },
 
+  "rarity": {
+    "_comment": "Rolled per spawn by EncounterSystem (strong 1/10, shiny 1/100, prime 1/1000); stacks on top of tier. Strong and prime use each creature's strong_footprint in tiles [w, h]. signature_grams is bonus grams of the creature's first element.",
+    "strong": { "hp": 2.5, "damage": 1.5, "speed": 0.85, "drop_mult": 2, "signature_grams": [0, 0],   "footprint": true  },
+    "shiny":  { "hp": 1.5, "damage": 1.2, "speed": 1.0,  "drop_mult": 3, "signature_grams": [5, 10],  "footprint": false },
+    "prime":  { "hp": 3.0, "damage": 1.8, "speed": 1.1,  "drop_mult": 4, "signature_grams": [15, 25], "footprint": true  }
+  },
+
   "creatures": [
     {
       "id": "ashburn_shambler",
+      "strong_footprint": [2, 2],
       "name": "Ashburn Shambler",
       "biome": "surface_plains",
       "elements": ["Na", "K", "C"],
@@ -32,6 +40,7 @@
     },
     {
       "id": "carbon_crawler",
+      "strong_footprint": [2, 1],
       "name": "Carbon Crawler",
       "biome": "surface_plains",
       "elements": ["C", "Na", "K"],
@@ -55,6 +64,7 @@
     },
     {
       "id": "potash_poltergeist",
+      "strong_footprint": [1, 2],
       "name": "Potash Poltergeist",
       "biome": "surface_plains",
       "elements": ["K", "Na", "C"],
@@ -78,6 +88,7 @@
 
     {
       "id": "iron_hulk",
+      "strong_footprint": [2, 1],
       "name": "Iron Hulk",
       "biome": "underground_mines",
       "elements": ["Fe", "Cu", "Zn"],
@@ -102,6 +113,7 @@
     },
     {
       "id": "copper_coil",
+      "strong_footprint": [1, 2],
       "name": "Copper Coil",
       "biome": "underground_mines",
       "elements": ["Cu", "Zn", "Fe"],
@@ -124,6 +136,7 @@
     },
     {
       "id": "zinc_phantom",
+      "strong_footprint": [1, 2],
       "name": "Zinc Phantom",
       "biome": "underground_mines",
       "elements": ["Zn", "Cu", "Fe"],
@@ -147,6 +160,7 @@
 
     {
       "id": "silver_specter",
+      "strong_footprint": [2, 1],
       "name": "Silver Specter",
       "biome": "crystal_caverns",
       "elements": ["Ag", "Au"],
@@ -169,6 +183,7 @@
     },
     {
       "id": "gold_golem",
+      "strong_footprint": [2, 2],
       "name": "Gold Golem",
       "biome": "crystal_caverns",
       "elements": ["Au", "Ag"],
@@ -193,6 +208,7 @@
     },
     {
       "id": "prismatic_hound",
+      "strong_footprint": [2, 1],
       "name": "Prismatic Hound",
       "biome": "crystal_caverns",
       "elements": ["Ag", "Au"],
@@ -216,6 +232,7 @@
 
     {
       "id": "alkali_hawk",
+      "strong_footprint": [2, 1],
       "name": "Alkali Hawk",
       "biome": "sky_islands",
       "elements": ["K", "Na"],
@@ -238,6 +255,7 @@
     },
     {
       "id": "static_djinn",
+      "strong_footprint": [1, 2],
       "name": "Static Djinn",
       "biome": "sky_islands",
       "elements": ["Na", "K"],
@@ -260,6 +278,7 @@
     },
     {
       "id": "stormwing",
+      "strong_footprint": [2, 1],
       "name": "Stormwing",
       "biome": "sky_islands",
       "elements": ["K", "Na"],
@@ -283,6 +302,7 @@
 
     {
       "id": "brine_crawler",
+      "strong_footprint": [2, 1],
       "name": "Brine Crawler",
       "biome": "ocean_floor",
       "elements": ["Cu", "Zn"],
@@ -306,6 +326,7 @@
     },
     {
       "id": "verdigris_lurker",
+      "strong_footprint": [2, 2],
       "name": "Verdigris Lurker",
       "biome": "ocean_floor",
       "elements": ["Zn", "Cu"],
@@ -328,6 +349,7 @@
     },
     {
       "id": "deep_shocker",
+      "strong_footprint": [1, 2],
       "name": "Deep Shocker",
       "biome": "ocean_floor",
       "elements": ["Cu", "Zn"],
@@ -351,6 +373,7 @@
 
     {
       "id": "uranium_wraith",
+      "strong_footprint": [2, 2],
       "name": "Uranium Wraith",
       "biome": "magma_layer",
       "elements": ["U", "Th", "Pt"],
@@ -373,6 +396,7 @@
     },
     {
       "id": "thorium_scorcher",
+      "strong_footprint": [2, 1],
       "name": "Thorium Scorcher",
       "biome": "magma_layer",
       "elements": ["Th", "U", "Pt"],
@@ -395,6 +419,7 @@
     },
     {
       "id": "platinum_sentinel",
+      "strong_footprint": [1, 2],
       "name": "Platinum Sentinel",
       "biome": "magma_layer",
       "elements": ["Pt", "U", "Th"],

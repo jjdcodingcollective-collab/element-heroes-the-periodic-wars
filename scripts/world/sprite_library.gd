@@ -77,15 +77,19 @@ static func npc_path(sprite_id: String) -> String:
 
 # Cached SpriteFrames for a sheet on disk, or null if the file is absent or the
 # wrong size. Missing art is the normal state today, so it is silent.
-static func load_frames(path: String, layout_name: String) -> SpriteFrames:
+# `frame` overrides the layout's frame size (strong enemies use 32×16, 16×32 or
+# 32×32 frames on the same row layout).
+static func load_frames(path: String, layout_name: String, frame := Vector2i.ZERO) -> SpriteFrames:
 	var key := "%s|%s" % [path, layout_name]
+	if frame != Vector2i.ZERO:
+		key += "|%dx%d" % [frame.x, frame.y]
 	if _cache.has(key):
 		return _cache[key]
 	var frames: SpriteFrames = null
 	if ResourceLoader.exists(path):
 		var tex := load(path) as Texture2D
 		if tex != null:
-			frames = frames_from_texture(tex, layout_name)
+			frames = frames_from_texture(tex, layout_name, frame)
 			if frames == null:
 				push_warning("SpriteLibrary: %s is too small for the '%s' layout" % [path, layout_name])
 	_cache[key] = frames
@@ -93,9 +97,9 @@ static func load_frames(path: String, layout_name: String) -> SpriteFrames:
 
 # Cuts a sheet into animations, one row per animation, left to right.
 # Returns null when the texture cannot hold every frame the layout needs.
-static func frames_from_texture(tex: Texture2D, layout_name: String) -> SpriteFrames:
+static func frames_from_texture(tex: Texture2D, layout_name: String, frame := Vector2i.ZERO) -> SpriteFrames:
 	var layout: Dictionary = LAYOUTS[layout_name]
-	var fs: Vector2i = layout["frame"]
+	var fs: Vector2i = frame if frame != Vector2i.ZERO else layout["frame"]
 	var rows: Array = layout["rows"]
 	var widest: int = 0
 	for row: Array in rows:
@@ -122,8 +126,8 @@ static func frames_from_texture(tex: Texture2D, layout_name: String) -> SpriteFr
 # Adds (or fills) an AnimatedSprite2D on owner when the sheet exists.
 # Pass an existing node as `sprite` to reuse it (the player scene has one).
 static func attach(owner: Node2D, path: String, layout_name: String,
-		sprite: AnimatedSprite2D = null) -> AnimatedSprite2D:
-	var frames := load_frames(path, layout_name)
+		sprite: AnimatedSprite2D = null, frame := Vector2i.ZERO) -> AnimatedSprite2D:
+	var frames := load_frames(path, layout_name, frame)
 	if frames == null:
 		return null
 	if sprite == null:
@@ -135,7 +139,7 @@ static func attach(owner: Node2D, path: String, layout_name: String,
 	sprite.centered = true
 	var bottom: Variant = LAYOUTS[layout_name]["bottom"]
 	if bottom != null:
-		var fh: float = float(LAYOUTS[layout_name]["frame"].y)
+		var fh: float = float(frame.y if frame != Vector2i.ZERO else LAYOUTS[layout_name]["frame"].y)
 		sprite.offset = Vector2(0.0, float(bottom) - fh / 2.0)
 	sprite.play(LAYOUTS[layout_name]["rows"][0][0])
 	return sprite

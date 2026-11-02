@@ -89,6 +89,8 @@ const BIOME_BOSSES: Dictionary = {
 
 # How many enemies to spawn per biome at world start
 const ENEMIES_PER_BIOME: int = 6
+const RESPAWN_DELAY: float = 20.0       # seconds before a defeated enemy is replaced
+const RESPAWN_MIN_DIST: float = 12.0 * 16.0   # replacements appear off-screen
 
 # Creature IDs per biome (order: basic preferred → expert preferred)
 const BIOME_CREATURES: Dictionary = {
@@ -134,6 +136,7 @@ func _init_ui() -> void:
 		hud.init(player, self)
 		_wire_player_lifecycle(player, hud)
 		_wire_resonance(player, hud)
+		_wire_encounters(hud)
 		# Wire streaming — player position now known, do initial tile stream
 		set_player_ref(player as Node2D)
 		# Give CraftingUI a reference to the player inventory
@@ -201,6 +204,30 @@ func _on_respawn_requested() -> void:
 		set_player_ref(player as Node2D)
 
 # ── Act 3 — Resonance Engine ─────────────────────────────────────────────────
+
+# Banners for rare enemies and Prime Codex progress.
+func _wire_encounters(hud: Node) -> void:
+	if not EncounterSystem.rare_spawned.is_connected(_on_rare_spawned):
+		EncounterSystem.rare_spawned.connect(_on_rare_spawned.bind(hud))
+	if not EncounterSystem.prime_recorded.is_connected(_on_prime_recorded):
+		EncounterSystem.prime_recorded.connect(_on_prime_recorded.bind(hud))
+	if not EncounterSystem.prime_codex_completed.is_connected(_on_prime_codex_completed):
+		EncounterSystem.prime_codex_completed.connect(_on_prime_codex_completed.bind(hud))
+
+func _on_rare_spawned(creature_id: String, rarity: String, hud: Node) -> void:
+	var creature_name: String = ElementDB.get_enemy_data(creature_id).get("name", creature_id)
+	match rarity:
+		"shiny":
+			hud.show_banner("A shiny %s has appeared nearby..." % creature_name, Color(1.0, 0.85, 0.35))
+		"prime":
+			hud.show_banner("Something ancient stirs: a PRIME %s!" % creature_name, Color(0.9, 0.6, 1.0))
+
+func _on_prime_recorded(creature_id: String, collected: int, total: int, hud: Node) -> void:
+	var creature_name: String = ElementDB.get_enemy_data(creature_id).get("name", creature_id)
+	hud.show_banner("Prime Codex: %s recorded (%d/%d)" % [creature_name, collected, total], Color(0.9, 0.6, 1.0))
+
+func _on_prime_codex_completed(hud: Node) -> void:
+	hud.show_banner("PRIME CODEX COMPLETE: every CHIMERA Prime recorded!", Color(1.0, 0.9, 0.5))
 
 func _wire_resonance(_player: Node, hud: Node) -> void:
 	if not ResonanceSystem.part_acquired.is_connected(_on_resonance_part):
@@ -428,44 +455,63 @@ func _spawn_enemies() -> void:
 	var enemy_scene: PackedScene = load(ENEMY_SCENE)
 	if enemy_scene == null:
 		return
+	for biome: Dictionary in BIOMES:
+		for i: int in range(ENEMIES_PER_BIOME):
+			_spawn_enemy_in_biome(enemy_scene, biome, i, Vector2.INF)
+
+# Places one enemy at a random passable tile in the biome, outside the village
+# and (for respawns) at least RESPAWN_MIN_DIST from the player. Every spawn is
+# one encounter: EncounterSystem rolls its rarity (strong / shiny / prime).
+func _spawn_enemy_in_biome(enemy_scene: PackedScene, biome: Dictionary, index: int, avoid: Vector2) -> Node:
 	# Village safe zone
 	const SAFE_X_MIN: int = 8
 	const SAFE_X_MAX: int = 24
 	const SAFE_Y_MIN: int = 8
 	const SAFE_Y_MAX: int = 24
-
-	for biome: Dictionary in BIOMES:
-		var biome_name: String = biome.get("name", "")
-		var bx_start: int = int(biome.x_start)
-		var bx_end:   int = int(biome.x_end)
-		var creature_ids: Array = BIOME_CREATURES.get(biome_name, [])
-		if creature_ids.is_empty():
+	var biome_name: String = biome.get("name", "")
+	var creature_ids: Array = BIOME_CREATURES.get(biome_name, [])
+	if creature_ids.is_empty():
+		return null
+	var tier_weights: Array = BIOME_TIER_WEIGHTS.get(biome_name, [0.6, 0.3, 0.1])
+	for _attempt: int in range(30):
+		var tx: int = randi_range(int(biome.x_start), int(biome.x_end))
+		var ty: int = randi_range(0, WORLD_HEIGHT - 1)
+		if tx >= SAFE_X_MIN and tx <= SAFE_X_MAX and ty >= SAFE_Y_MIN and ty <= SAFE_Y_MAX:
 			continue
-		var tier_weights: Array = BIOME_TIER_WEIGHTS.get(biome_name, [0.6, 0.3, 0.1])
+		var td: Dictionary = tile_data.get(Vector2i(tx, ty), {})
+		if not td.get("passable", false):
+			continue
+		var pos := Vector2(tx * TILE_SIZE + TILE_SIZE / 2.0, ty * TILE_SIZE + TILE_SIZE / 2.0)
+		if avoid != Vector2.INF and pos.distance_to(avoid) < RESPAWN_MIN_DIST:
+			continue
+		var enemy: CharacterBody2D = enemy_scene.instantiate()
+		enemy.position = pos
+		# Cycle through the biome's creatures for variety
+		enemy.creature_id = creature_ids[index % creature_ids.size()]
+		enemy.tier = _pick_tier(tier_weights)
+		enemy.rarity = EncounterSystem.roll_rarity(enemy.creature_id)
+		add_child(enemy)
+		return enemy
+	return null
 
-		for _i: int in range(ENEMIES_PER_BIOME):
-			var attempts: int = 0
-			while attempts < 30:
-				attempts += 1
-				var tx: int = randi_range(bx_start, bx_end)
-				var ty: int = randi_range(0, WORLD_HEIGHT - 1)
-				if tx >= SAFE_X_MIN and tx <= SAFE_X_MAX and ty >= SAFE_Y_MIN and ty <= SAFE_Y_MAX:
-					continue
-				var td: Dictionary = tile_data.get(Vector2i(tx, ty), {})
-				if not td.get("passable", false):
-					continue
+# Called by enemy.gd on death: a replacement appears in the same biome after a
+# delay, so the population (and the rare-spawn rolls) never run out.
+func on_enemy_defeated(enemy: Node) -> void:
+	var biome_name: String = get_biome_at((enemy as Node2D).global_position)
+	var creature_id: String = enemy.creature_id
+	get_tree().create_timer(RESPAWN_DELAY).timeout.connect(func() -> void:
+		_respawn_enemy(biome_name, creature_id))
 
-				var enemy: CharacterBody2D = enemy_scene.instantiate()
-				enemy.position = Vector2(tx * TILE_SIZE + TILE_SIZE / 2.0, ty * TILE_SIZE + TILE_SIZE / 2.0)
-
-				# Pick creature type — cycle through all three for variety
-				enemy.creature_id = creature_ids[_i % creature_ids.size()]
-
-				# Pick tier via weighted random
-				enemy.tier = _pick_tier(tier_weights)
-
-				add_child(enemy)
-				break
+func _respawn_enemy(biome_name: String, creature_id: String) -> void:
+	var enemy_scene: PackedScene = load(ENEMY_SCENE)
+	for biome: Dictionary in BIOMES:
+		if biome.get("name", "") != biome_name:
+			continue
+		var ids: Array = BIOME_CREATURES.get(biome_name, [])
+		var player := get_node_or_null("Player") as Node2D
+		var avoid: Vector2 = player.global_position if player else Vector2.INF
+		_spawn_enemy_in_biome(enemy_scene, biome, maxi(ids.find(creature_id), 0), avoid)
+		return
 
 func _pick_tier(weights: Array) -> String:
 	var r: float = randf()
@@ -512,11 +558,13 @@ func _spawn_bosses() -> void:
 			arena.set_script(load("res://scripts/world/boss_arena.gd"))
 			arena.name = "Arena_%s" % boss_id
 			add_child(arena)
-			if arena.has_method("init"):
-				arena.init(boss.position, 160.0)
 			boss._arena = arena
 
 			add_child(boss)
+			# Arena scales with the boss (size is known once its data loads):
+			# room to dash around a huge body.
+			if arena.has_method("init"):
+				arena.init(boss.position, maxf(160.0, boss.body_size * 2.5))
 			placed = true
 
 func _spawn_synthesizer_ui(player: Node) -> void:

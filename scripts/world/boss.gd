@@ -55,7 +55,9 @@ const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 var _hp_label: Label = null
 
 const ATTACK_COOLDOWN: float = 1.2
-const ATTACK_RANGE: float = 20.0
+const ATTACK_RANGE: float = 20.0   # reach beyond the boss's body edge
+var _attack_range: float = ATTACK_RANGE
+var body_size: float = 128.0       # px; bosses are huge (6–10 tiles), set from data "size"
 const IDLE_WANDER_SPEED: float = 20.0
 
 # ── Init ──────────────────────────────────────────────────────────────────────
@@ -91,6 +93,7 @@ func _apply_phase(phase_index: int) -> void:
 	base_damage  = float(_data.get("base_damage", 22))
 	move_speed   = float(_data.get("base_speed",  55))
 	sight_range  = float(_data.get("sight_range", 140))
+	_apply_body_size()
 	resistances  = _data.get("resistances", {})
 	min_weapon_tier = int(_data.get("min_weapon_tier", 1))
 
@@ -117,9 +120,32 @@ func _apply_phase(phase_index: int) -> void:
 	if _arena and _arena.has_method("set_hazard"):
 		_arena.set_hazard(ph.get("arena_hazard", ""), float(ph.get("hazard_interval", 3.0)))
 
+# Bosses are several tiles across (Hades-scale). Collision, reach and sight
+# grow with the body. Terrain is ignored (mask = player only) so a huge body
+# cannot wedge in rock; _leash_to_arena() keeps it inside its arena instead.
+func _apply_body_size() -> void:
+	body_size = float(_data.get("size", 128))
+	_attack_range = body_size / 2.0 + ATTACK_RANGE
+	sight_range = maxf(sight_range, body_size * 1.5)
+	collision_mask = 2
+	var col := get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if col:
+		var circle := CircleShape2D.new()
+		circle.radius = body_size * 0.4
+		col.shape = circle
+
+func _leash_to_arena() -> void:
+	if _arena == null or not "_arena_center" in _arena:
+		return
+	var limit: float = maxf(float(_arena._arena_radius) - body_size / 2.0, 0.0)
+	var offset: Vector2 = global_position - _arena._arena_center
+	if offset.length() > limit and velocity.dot(offset) > 0.0:
+		velocity = velocity.slide(offset.normalized())
+
 func _spawn_visuals() -> void:
 	var sz: int = int(_data.get("size", 32))
-	_sprite = SpriteLibrary.attach(self, SpriteLibrary.boss_path(boss_id), "boss")
+	# Boss sheets use one square frame per boss, sized by data "size" (px).
+	_sprite = SpriteLibrary.attach(self, SpriteLibrary.boss_path(boss_id), "boss", null, Vector2i(sz, sz))
 	if _sprite != null:
 		_sprite.z_index = 2
 		_sprite.animation_finished.connect(func() -> void: _sprite.play("idle"))
@@ -172,6 +198,7 @@ func _physics_process(delta: float) -> void:
 		"idle":   _do_wander(delta)
 		"combat": _do_combat(delta)
 
+	_leash_to_arena()
 	move_and_slide()
 
 func _find_player() -> void:
@@ -185,6 +212,7 @@ func _find_player() -> void:
 	if dist <= sight_range and _state != "combat":
 		if _state == "idle":
 			AudioManager.on_boss_fight_start()
+			get_tree().call_group("game_camera", "set_boss_zoom", true)
 		_state = "combat"
 
 func _do_wander(delta: float) -> void:
@@ -209,7 +237,7 @@ func _do_combat(delta: float) -> void:
 			_trigger_special(special, ph.get("special_params", {}), dist)
 
 	# Contact damage
-	if dist <= ATTACK_RANGE and _attack_timer <= 0.0:
+	if dist <= _attack_range and _attack_timer <= 0.0:
 		if _player.has_method("take_damage"):
 			_player.take_damage(base_damage)
 		_attack_timer = ATTACK_COOLDOWN
@@ -525,6 +553,7 @@ func _take_damage_raw(amount: float) -> void:
 func _die() -> void:
 	_state = "dead"
 	velocity = Vector2.ZERO
+	get_tree().call_group("game_camera", "set_boss_zoom", false)
 	if _arena and _arena.has_method("clear_hazards"):
 		_arena.clear_hazards()
 	_drop_loot()

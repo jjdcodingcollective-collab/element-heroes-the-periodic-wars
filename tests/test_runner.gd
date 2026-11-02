@@ -32,6 +32,9 @@ func _ready() -> void:
 	_test_sprite_integration()
 	_test_audio_assets()
 	await _test_world_draw_order()
+	_test_enemy_rarity()
+	_test_dash()
+	_test_boss_scale()
 
 	print("=== %d passed, %d failed ===" % [_passed, _failed])
 	# Let the audio server drop its playbacks before quitting, so the engine
@@ -185,10 +188,11 @@ func _test_null_sanitization() -> void:
 	_check_eq("array null sanitized", (nested["d"] as Array)[0], "")
 	_check_eq("non-null preserved", (nested["d"] as Array)[1], 1)
 
-func _make_enemy(creature_id: String, tier: String = "basic") -> Node:
+func _make_enemy(creature_id: String, tier: String = "basic", rarity: String = "normal") -> Node:
 	var e: Node = ENEMY_SCENE.instantiate()
 	e.creature_id = creature_id
 	e.tier = tier
+	e.rarity = rarity
 	add_child(e)
 	return e
 
@@ -403,7 +407,8 @@ func _test_sprite_integration() -> void:
 	# Seed the cache directly so the test needs no imported PNGs.
 	SpriteLibrary._cache[SpriteLibrary.enemy_path("iron_hulk") + "|enemy"] = \
 		SpriteLibrary.frames_from_texture(_sheet(64, 32), "enemy")
-	SpriteLibrary._cache[SpriteLibrary.boss_path("peroxis") + "|boss"] = boss_frames
+	SpriteLibrary._cache[SpriteLibrary.boss_path("peroxis") + "|boss|112x112"] = \
+		SpriteLibrary.frames_from_texture(_sheet(4 * 112, 2 * 112), "boss", Vector2i(112, 112))
 	SpriteLibrary._cache[SpriteLibrary.player_path() + "|character"] = player_frames
 	SpriteLibrary._cache[SpriteLibrary.npc_path("aldric") + "|npc"] = \
 		SpriteLibrary.frames_from_texture(_sheet(2 * fs.x, fs.y), "npc")
@@ -487,8 +492,166 @@ func _test_world_draw_order() -> void:
 	if w.tile_nodes.size() > 0:
 		var tile: CanvasItem = w.tile_nodes.values()[0]
 		_check("tiles draw beneath the player", tile.z_index < player.z_index)
+	# Regression: the quiz's dim backdrop was visible from startup, darkening the
+	# whole screen and swallowing mouse clicks (left-click digging).
+	var overlays: Array = []
+	_find_visible_overlays(w, overlays)
+	_check("no full-screen overlay at startup", overlays.is_empty())
 	var aldric: Node = w.get_node_or_null("Aldric")
 	if aldric:
 		_check_eq("Aldric's label shows his name", aldric._label.text, "Prof. Aldric Daedalus")
 	w.queue_free()
 	await get_tree().process_frame
+
+# ── Enemy rarity (strong / shiny / prime) ─────────────────────────────────────
+
+func _test_enemy_rarity() -> void:
+	print("- enemy rarity")
+	var saved: Dictionary = EncounterSystem.serialize()
+	EncounterSystem.reset()
+
+	# Rates: with a roll that never hits, pity guarantees each rarity at 2× its rate.
+	var never := func() -> float: return 0.99
+	var first_strong := -1
+	for i: int in range(25):
+		if EncounterSystem.roll_rarity("", never) == "strong" and first_strong < 0:
+			first_strong = i + 1
+	_check_eq("strong guaranteed by encounter 20", first_strong, 20)
+
+	EncounterSystem.reset()
+	var counts := { "normal": 0, "strong": 0, "shiny": 0, "prime": 0 }
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 42
+	var roll := func() -> float: return rng.randf()
+	for i: int in range(20000):
+		var r: String = EncounterSystem.roll_rarity("", roll)
+		counts[r] += 1
+	# Expected ≈ 1 in 10 / 100 / 1000 (pity nudges each slightly higher).
+	_check("strong ≈ 1 in 10", counts["strong"] > 1600 and counts["strong"] < 2400)
+	_check("shiny ≈ 1 in 100", counts["shiny"] > 140 and counts["shiny"] < 280)
+	_check("prime ≈ 1 in 1000", counts["prime"] >= 12 and counts["prime"] <= 40)
+	_check_eq("encounters counted", EncounterSystem.encounters, 20000)
+
+	# Strong enemies are bigger, tougher and reach further.
+	var normal: Node = _make_enemy("iron_hulk")
+	var strong: Node = _make_enemy("iron_hulk", "basic", "strong")
+	_check_eq("rhino strong footprint is 2×1", strong.footprint, Vector2i(2, 1))
+	_check("strong has more HP", strong.max_hp > normal.max_hp * 2.0)
+	_check("strong reaches further", strong._attack_range > normal._attack_range)
+	var shape: Shape2D = strong.get_node("CollisionShape2D").shape
+	_check("strong collision grows", shape is RectangleShape2D and (shape as RectangleShape2D).size.x > 20.0)
+	_check_eq("normal stays 1×1", normal.footprint, Vector2i.ONE)
+	var gorilla: Node = _make_enemy("gold_golem", "basic", "prime")
+	_check_eq("gorilla prime footprint is 2×2", gorilla.footprint, Vector2i(2, 2))
+	var shiny: Node = _make_enemy("zinc_phantom", "basic", "shiny")
+	_check_eq("shiny keeps normal size", shiny.footprint, Vector2i.ONE)
+	for e: Node in [normal, strong, gorilla, shiny]:
+		e.queue_free()
+
+	# Every creature has a valid strong footprint.
+	var bad: Array = []
+	for c: String in ElementDB.enemies:
+		var fp: Array = ElementDB.enemies[c].get("strong_footprint", [])
+		if fp.size() != 2 or not ([1, 2] as Array).has(int(fp[0])) or not ([1, 2] as Array).has(int(fp[1])) or (int(fp[0]) == 1 and int(fp[1]) == 1):
+			bad.append(c)
+	_check("all 18 have a 2×2, 2×1 or 1×2 footprint", bad.is_empty())
+
+	# Shiny loot: signature element bonus on top of normal drops.
+	var player: Node = PLAYER_SCENE.instantiate()
+	add_child(player)
+	var inv: Node = player.get_node("Inventory")
+	var before: float = float(inv.get_amount("Zn")) if inv.has_method("get_amount") else 0.0
+	var s2: Node = _make_enemy("zinc_phantom", "basic", "shiny")
+	s2._take_damage_raw(99999.0)
+	var after: float = float(inv.get_amount("Zn")) if inv.has_method("get_amount") else 0.0
+	_check("shiny drops ≥5 g of its signature element", after - before >= 5.0)
+
+	# Prime Codex: duplicates ignored, completion fires once at 18.
+	EncounterSystem.reset()
+	var completed := [0]
+	var on_done := func() -> void: completed[0] += 1
+	EncounterSystem.prime_codex_completed.connect(on_done)
+	EncounterSystem.record_defeat("iron_hulk", "prime")
+	EncounterSystem.record_defeat("iron_hulk", "prime")
+	_check_eq("duplicate prime counted once", EncounterSystem.prime_codex.size(), 1)
+	for c: String in ElementDB.enemies:
+		EncounterSystem.record_defeat(c, "prime")
+	_check_eq("codex completes once", completed[0], 1)
+	_check("codex survives save/load", _roundtrip_codex())
+	EncounterSystem.prime_codex_completed.disconnect(on_done)
+
+	player.queue_free()
+	EncounterSystem.deserialize(saved)
+
+func _roundtrip_codex() -> bool:
+	var data: Dictionary = JSON.parse_string(JSON.stringify(EncounterSystem.serialize()))
+	EncounterSystem.reset()
+	EncounterSystem.deserialize(data)
+	return EncounterSystem.prime_codex.size() == ElementDB.enemies.size() and EncounterSystem.codex_completed
+
+# ── Hades-style dash ──────────────────────────────────────────────────────────
+
+func _test_dash() -> void:
+	print("- dash")
+	var p: Node = PLAYER_SCENE.instantiate()
+	add_child(p)
+	_check("dash starts", p.try_dash())
+	_check("dashing", p.is_dashing())
+	_check("no second dash with one charge", not p.try_dash())
+	var hp_before: float = p.hp
+	p.take_damage(50.0)
+	_check_eq("dash has i-frames", p.hp, hp_before)
+	# Run the dash out and through the cooldown.
+	for i: int in range(40):
+		p._tick_dash(1.0 / 60.0)
+	_check("dash ends", not p.is_dashing())
+	_check("dash recharges", p.try_dash())
+	# Dash-strike: attacking right after a dash multiplies damage once.
+	p.equip_weapon("bronze_sword")
+	_check("test sword equipped", p.weapon.has_weapon())
+	var target: Node = _make_enemy("iron_hulk")
+	target.global_position = p.global_position + Vector2(0, 12)
+	p.facing = Vector2.DOWN
+	var hp0: float = target.hp
+	p.weapon._cooldown_timer = 0.0
+	p._dash_strike_timer = 0.0   # the recharge test above just dashed
+	p._try_attack()
+	var plain: float = hp0 - target.hp
+	target.hp = hp0
+	target.global_position = p.global_position + Vector2(0, 12)   # undo knockback
+	p.weapon._cooldown_timer = 0.0
+	p._dash_strike_timer = 0.1
+	p._try_attack()
+	var strike: float = hp0 - target.hp
+	_check("dash-strike hits harder", plain > 0.0 and strike > plain * 1.4)
+	_check_eq("dash-strike bonus is used up", p.weapon.damage_mult, 1.0)
+	target.queue_free()
+	_check("dash action is bound", InputMap.has_action("dash"))
+	p.queue_free()
+
+# ── Boss scale ────────────────────────────────────────────────────────────────
+
+func _test_boss_scale() -> void:
+	print("- boss scale")
+	var smallest: float = 9999.0
+	for id: String in ["peroxis", "chalcor", "aurium", "azrael", "atacama", "uranox"]:
+		var b: Node = BOSS_SCENE.instantiate()
+		b.boss_id = id
+		add_child(b)
+		smallest = minf(smallest, b.body_size)
+		if id == "uranox":
+			_check("Uranox is the largest (≥160 px)", b.body_size >= 160.0)
+			var shape: Shape2D = b.get_node("CollisionShape2D").shape
+			_check("boss collision matches body", shape is CircleShape2D and (shape as CircleShape2D).radius >= 60.0)
+			_check("boss reach covers its body", b._attack_range > b.body_size / 2.0)
+		b.queue_free()
+	_check("every boss is at least 7 tiles across", smallest >= 112.0)
+
+func _find_visible_overlays(n: Node, out: Array) -> void:
+	if n is CanvasItem and not (n as CanvasItem).visible:
+		return
+	if n is ColorRect and (n as ColorRect).size.x >= 1000.0 and (n as ColorRect).size.y >= 600.0 \
+			and (n as ColorRect).z_index > -10 and (n as ColorRect).color.a > 0.2:
+		out.append(n.get_path())
+	for c: Node in n.get_children():
+		_find_visible_overlays(c, out)

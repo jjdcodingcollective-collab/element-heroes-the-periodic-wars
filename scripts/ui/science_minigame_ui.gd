@@ -44,13 +44,14 @@ var _current_idx: int         = 0
 var _score: int               = 0
 var _player: Node             = null
 var _answered: bool           = false
+var _dim: ColorRect           = null
 
 # ── Lifecycle ──────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
 	add_to_group("science_minigame_ui")
 	_build_ui()
-	_root_panel.visible = false
+	_set_open(false)
 	_load_questions()
 
 func _load_questions() -> void:
@@ -79,10 +80,14 @@ func open_minigame(player: Node) -> void:
 	_score         = 0
 	_current_idx   = 0
 	_session_pool  = _pick_session_questions()
-	_root_panel.visible = true
+	_set_open(true)
 	AudioManager.on_ui_open()
 	get_tree().paused = false   # don't pause physics — Aldric's office is safe
 	_show_question()
+
+func _set_open(open: bool) -> void:
+	_root_panel.visible = open
+	_dim.visible = open
 
 func is_open() -> bool:
 	return _root_panel.visible
@@ -231,11 +236,12 @@ func _format_category(cat: String) -> String:
 func _build_ui() -> void:
 	layer = 10  # above HUD (layer 5), below nothing
 
-	# Semi-transparent dim background
-	var dim := ColorRect.new()
-	dim.color = Color(0, 0, 0, 0.55)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(dim)
+	# Semi-transparent dim background (shown only while the quiz is open; when
+	# it was always visible it darkened the whole game and swallowed mouse clicks)
+	_dim = ColorRect.new()
+	_dim.color = Color(0, 0, 0, 0.55)
+	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_dim)
 
 	# Main panel — centred, 640×420
 	_root_panel = PanelContainer.new()
@@ -366,7 +372,7 @@ func _set_button_color(btn: Button, color: Color) -> void:
 	btn.add_theme_stylebox_override("disabled", s)
 
 func _on_close_pressed() -> void:
-	_root_panel.visible = false
+	_set_open(false)
 	AudioManager.on_ui_close()
 	emit_signal("minigame_closed")
 

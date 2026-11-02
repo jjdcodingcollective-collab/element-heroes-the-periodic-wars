@@ -61,6 +61,9 @@ func get_weapon_type() -> String:
 	return str(_stats.get("type", "melee"))
 
 # Called by player on attack input. Returns true if attack fired.
+# Set by the player for a single attack (dash-strike bonus); reset after use.
+var damage_mult: float = 1.0
+
 func try_attack(player_facing: Vector2) -> bool:
 	if _stats.is_empty() or _cooldown_timer > 0.0:
 		return false
@@ -77,8 +80,9 @@ func try_attack(player_facing: Vector2) -> bool:
 func _do_melee(facing: Vector2) -> void:
 	var player: Node2D = get_parent() as Node2D
 	var range_px: float = float(_stats.get("range", 48.0))
-	var damage: float   = float(_stats.get("damage", 10.0))
+	var damage: float   = float(_stats.get("damage", 10.0)) * damage_mult
 	var kb: float       = float(_stats.get("knockback", 60.0))
+	damage_mult = 1.0
 
 	# Flash the swing rect in facing direction
 	_swing_rect.visible = true
@@ -109,7 +113,8 @@ func _do_ranged(facing: Vector2) -> void:
 	proj.global_position = player.global_position + facing * 10.0
 
 	# Pass stats to projectile
-	proj.set_meta("damage",          float(_stats.get("damage", 10.0)))
+	proj.set_meta("damage",          float(_stats.get("damage", 10.0)) * damage_mult)
+	damage_mult = 1.0
 	proj.set_meta("speed",           float(_stats.get("projectile_speed", 180.0)))
 	proj.set_meta("max_range",       float(_stats.get("range", 200.0)))
 	proj.set_meta("direction",       facing)

@@ -9,6 +9,7 @@ var compounds_by_formula: Dictionary = {}  # { "Fe·C": {...} } first match wins
 var handling: Dictionary = {}  # { "Fe": { container, handling, hazards } }
 var enemies: Dictionary = {}   # { "ashburn_shambler": {...}, ... }
 var enemy_tier_multipliers: Dictionary = {}
+var enemy_rarity: Dictionary = {}
 
 # Maps container/handling keys to the in-game item name the player must carry
 const CONTAINER_ITEMS := {
@@ -193,6 +194,7 @@ func _load_enemies() -> void:
 		return
 	var data: Dictionary = json.data as Dictionary
 	enemy_tier_multipliers = data.get("tier_multipliers", {})
+	enemy_rarity = data.get("rarity", {})
 	for c: Dictionary in (data.get("creatures", []) as Array):
 		enemies[str(c.get("id", ""))] = sanitize_nulls(c)
 
@@ -201,6 +203,10 @@ func get_enemy_data(creature_id: String) -> Dictionary:
 
 func get_enemy_tier_mult(tier: String) -> Dictionary:
 	return enemy_tier_multipliers.get(tier, { "hp": 1.0, "damage": 1.0, "speed": 1.0, "sight": 1.0 })
+
+# Multipliers for a rarity ("strong" | "shiny" | "prime"); empty for "normal".
+func get_enemy_rarity(rarity: String) -> Dictionary:
+	return enemy_rarity.get(rarity, {})
 
 func get_elements_by_biome(biome: String) -> Array:
 	var result: Array = []
