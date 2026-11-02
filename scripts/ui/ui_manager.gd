@@ -32,12 +32,19 @@ func _ready() -> void:
 
 func register(menu_name: String, menu: Node) -> void:
 	_menus[menu_name] = menu
-	menu.tree_exiting.connect(func() -> void:
-		if _menus.get(menu_name) == menu:
-			_menus.erase(menu_name)
-			if _open_name == menu_name:
-				_open_name = ""
-				_set_paused(false))
+	# Bound method + instance id, not a lambda capturing `menu`: a lambda
+	# holding a freed menu made the engine report "slot >= slot_max" when
+	# the next world was built.
+	menu.tree_exiting.connect(_on_menu_exiting.bind(menu_name, menu.get_instance_id()))
+
+func _on_menu_exiting(menu_name: String, menu_id: int) -> void:
+	var current: Variant = _menus.get(menu_name)
+	if current == null or not is_instance_valid(current) or current.get_instance_id() != menu_id:
+		return
+	_menus.erase(menu_name)
+	if _open_name == menu_name:
+		_open_name = ""
+		_set_paused(false)
 
 func has_menu(menu_name: String) -> bool:
 	return _menus.has(menu_name) and is_instance_valid(_menus[menu_name])
