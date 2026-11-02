@@ -99,6 +99,7 @@ func try_interact(player_pos: Vector2) -> void:
 	if dialogue_ui == null or dialogue_ui.is_open():
 		return
 
+	AudioManager.on_interact()
 	if handles_resonance_assembly and _try_assemble_engine(dialogue_ui):
 		return
 

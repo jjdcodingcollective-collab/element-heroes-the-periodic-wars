@@ -29,8 +29,14 @@ func _ready() -> void:
 	_test_resonance_assembly()
 	_test_save_migration()
 	_test_sprite_integration()
+	_test_audio_assets()
 
 	print("=== %d passed, %d failed ===" % [_passed, _failed])
+	# Let the audio server drop its playbacks before quitting, so the engine
+	# does not report the test's sounds as leaked resources.
+	AudioManager.release_all()
+	await get_tree().process_frame
+	await get_tree().process_frame
 	get_tree().quit(1 if _failed > 0 else 0)
 
 # ── Assertions ────────────────────────────────────────────────────────────────
@@ -438,3 +444,26 @@ func _test_sprite_integration() -> void:
 	n.queue_free()
 
 	SpriteLibrary.clear_cache()
+
+# ── Audio ─────────────────────────────────────────────────────────────────────
+
+func _test_audio_assets() -> void:
+	print("- audio assets")
+	_check_eq("all music tracks load", AudioManager.MUSIC.size(), AudioManager.MUSIC_KEYS.size())
+	_check_eq("all sfx load", AudioManager.SFX.size(), AudioManager.SFX_KEYS.size())
+	for key: String in AudioManager.MUSIC:
+		var m: AudioStream = AudioManager.MUSIC[key]
+		if not (m is AudioStreamOggVorbis and m.get_length() > 10.0):
+			_check("music '%s' is a real loop" % key, false)
+	for key: String in AudioManager.SFX:
+		var fx: AudioStream = AudioManager.SFX[key]
+		if not (fx.get_length() > 0.02 and fx.get_length() < 2.0):
+			_check("sfx '%s' is a short one-shot" % key, false)
+	AudioManager.play_music("surface_plains")
+	_check("biome music loops", (AudioManager.MUSIC["surface_plains"] as AudioStreamOggVorbis).loop)
+	AudioManager.play_sfx("pickup")
+	var playing := AudioManager._sfx_pool.any(func(pl: AudioStreamPlayer) -> bool: return pl.playing)
+	_check("sfx plays through the pool", playing)
+	AudioManager.play_sfx("__missing__")   # must not error
+	_check("unknown sfx is ignored", true)
+	AudioManager.stop_music()

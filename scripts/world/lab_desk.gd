@@ -58,4 +58,5 @@ func try_interact(player_pos: Vector2) -> void:
 	if dialogue_ui and dialogue_ui.is_open():
 		return
 	var player := get_tree().get_first_node_in_group("player")
+	AudioManager.on_interact()
 	get_tree().call_group("science_minigame_ui", "open_minigame", player)

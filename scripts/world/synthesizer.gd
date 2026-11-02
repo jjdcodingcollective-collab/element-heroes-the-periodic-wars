@@ -32,4 +32,5 @@ func _spawn_placeholder() -> void:
 # Called by player _unhandled_input via call_group("synthesizer", "try_interact", pos)
 func try_interact(player_pos: Vector2) -> void:
 	if global_position.distance_to(player_pos) <= INTERACT_RADIUS:
+		AudioManager.on_interact()
 		get_tree().call_group("synthesizer_ui", "toggle_visible")

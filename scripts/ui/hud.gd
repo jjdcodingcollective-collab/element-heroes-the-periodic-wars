@@ -126,12 +126,20 @@ func toggle_compendium() -> void:
 	var compendium := $Compendium
 	if compendium:
 		compendium.visible = not compendium.visible
+		_play_toggle_sfx(compendium.visible)
 
 func toggle_crafting() -> void:
 	# CraftingUI is a sibling CanvasLayer instanced into world.tscn
 	var crafting := get_tree().get_first_node_in_group("crafting_ui")
 	if crafting:
 		crafting.visible = not crafting.visible
+		_play_toggle_sfx(crafting.visible)
+
+func _play_toggle_sfx(opened: bool) -> void:
+	if opened:
+		AudioManager.on_ui_open()
+	else:
+		AudioManager.on_ui_close()
 
 func set_crafting_inventory(inv: Node) -> void:
 	var crafting := get_tree().get_first_node_in_group("crafting_ui")

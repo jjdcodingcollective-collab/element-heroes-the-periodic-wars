@@ -276,6 +276,7 @@ func _check_phase_transition() -> void:
 
 func _transition_to_phase(phase_index: int) -> void:
 	_phase_transitioning = true
+	AudioManager.on_boss_phase()
 	# Flash white
 	if _placeholder:
 		_placeholder.color = Color.WHITE
@@ -518,6 +519,8 @@ func _take_damage_raw(amount: float) -> void:
 	_refresh_hp_label()
 	if hp <= 0.0:
 		_die()
+	else:
+		AudioManager.on_boss_hit()
 
 func _die() -> void:
 	_state = "dead"

@@ -80,6 +80,7 @@ func open_minigame(player: Node) -> void:
 	_current_idx   = 0
 	_session_pool  = _pick_session_questions()
 	_root_panel.visible = true
+	AudioManager.on_ui_open()
 	get_tree().paused = false   # don't pause physics — Aldric's office is safe
 	_show_question()
 
@@ -366,6 +367,7 @@ func _set_button_color(btn: Button, color: Color) -> void:
 
 func _on_close_pressed() -> void:
 	_root_panel.visible = false
+	AudioManager.on_ui_close()
 	emit_signal("minigame_closed")
 
 func _unhandled_input(event: InputEvent) -> void:

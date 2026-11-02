@@ -41,6 +41,7 @@ func _ready() -> void:
 
 func toggle_visible() -> void:
 	visible = not visible
+	_play_toggle_sfx(visible)
 	if visible:
 		_refresh_output()
 
@@ -96,3 +97,9 @@ func _on_craft_pressed() -> void:
 		player_equipment.add_item(item, 1)
 	result_label.text = "Synthesized: %s!" % str(crafted.get("name", ""))
 	clear_grid()
+
+func _play_toggle_sfx(opened: bool) -> void:
+	if opened:
+		AudioManager.on_ui_open()
+	else:
+		AudioManager.on_ui_close()

@@ -390,6 +390,8 @@ func _take_damage_raw(amount: float) -> void:
 	_spawn_hit_label(amount)
 	if hp <= 0.0:
 		_die()
+	else:
+		AudioManager.on_enemy_hit()
 
 func _die() -> void:
 	_state = "dead"
