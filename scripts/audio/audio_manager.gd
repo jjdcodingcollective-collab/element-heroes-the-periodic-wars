@@ -54,6 +54,8 @@ var silent: bool = false
 
 func _ready() -> void:
 	silent = DisplayServer.get_name() == "headless"
+	# Menus pause the game; music and UI sounds should keep playing.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_load_streams()
 	_ensure_audio_buses()
 	_build_music_players()

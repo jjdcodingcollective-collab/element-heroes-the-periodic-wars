@@ -11,6 +11,7 @@ extends Node
 signal bag_changed
 
 const ITEMS_PATH := "res://data/items.json"
+const STACK_MAX: int = 99   # consumables stack to 99 (D-018)
 
 var ashmarks: int = 0
 var consumables: Dictionary = {}   # id -> count
@@ -52,7 +53,7 @@ func add_consumable(id: String, count: int = 1) -> void:
 	if not catalogue().get("consumables", {}).has(id):
 		push_warning("Bag: unknown consumable '%s'" % id)
 		return
-	consumables[id] = int(consumables.get(id, 0)) + count
+	consumables[id] = mini(int(consumables.get(id, 0)) + count, STACK_MAX)
 	bag_changed.emit()
 
 func consumable_count(id: String) -> int:

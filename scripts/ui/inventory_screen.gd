@@ -1,30 +1,66 @@
 extends CanvasLayer
 
-# Inventory screen (E). Four tabs:
-#   Elements    — collected element samples (Inventory)
-#   Equipment   — weapon, armour and lab gear (Weapon / Armor / Equipment)
-#   Consumables — potions, usable from here (Bag)
-#   Key Items   — Boss Keys and Key Fragments, grouped by boss; permanent (Bag)
-# Ashmarks are shown in the header. Built in code, like the other UIs.
+# Inventory — Orion's leatherbound field journal (E). D-018.
+#
+# A two-page spread: the left page lists items vertically (icon, name, count),
+# the right page shows the selected item large with its notes. Ribbon bookmarks
+# down the left edge switch between four tabs:
+#   Elements · Equipment · Consumables · Key Items
+# Counts: stackable items show ×N (cap 99); Key Fragments show their set
+# progress (1/3, 2/3); Boss Keys show a star. Ashmarks sit on the cover.
+# The game pauses while the journal is open.
+#
+# Item icons: assets/sprites/items/<id>.png (tools/generate_item_icons.py).
 
 const TAB_NAMES := ["Elements", "Equipment", "Consumables", "Key Items"]
+const RIBBON_COLOURS := [Color("#7a2e2a"), Color("#3f6b3a"), Color("#2f4f7a"), Color("#a8822e")]
 const BOSS_ORDER := ["peroxis", "chalcor", "aurium", "azrael", "atacama", "uranox"]
+const ICON_DIR := "res://assets/sprites/items/"
+
+# Palette: tooled leather, brass, parchment and ink.
+const LEATHER      := Color("#5b3520")
+const LEATHER_DARK := Color("#2e1a0e")
+const STITCH       := Color("#c9a26b")
+const BRASS        := Color("#d6a040")
+const PAGE         := Color("#efe3c6")
+const PAGE_EDGE    := Color("#c9b58c")
+const INK          := Color("#3b2a1a")
+const INK_SOFT     := Color("#7a6248")
+const STAMP_RED    := Color("#9a3324")
+
+const BOOK_SIZE := Vector2(900, 540)
 
 var _dim: ColorRect
-var _panel: PanelContainer
-var _tabs: TabContainer
+var _book: Control
+var _ribbons: Array[Button] = []
+var _list: VBoxContainer
+var _page_title: Label
 var _ashmarks_label: Label
-var _lists: Dictionary = {}   # tab name -> VBoxContainer
+var _detail_icon: TextureRect
+var _detail_tile: Label          # element tile shown instead of an icon
+var _detail_name: Label
+var _detail_kind: Label
+var _detail_text: Label
+var _detail_stat: Label
+var _detail_stamp: Label
+var _use_button: Button
+
+var _tab: int = 0
+var _entries: Array = []         # [{id, name, count_text, icon, kind, text, stat, stamp, usable}]
+var _selected: int = 0
 var _player: Node = null
 
 func _ready() -> void:
 	layer = 9
+	process_mode = Node.PROCESS_MODE_ALWAYS   # keeps working while the game is paused
 	add_to_group("inventory_screen")
-	_build_ui()
+	_build()
 	_set_open(false)
 
+# ── Open / close ──────────────────────────────────────────────────────────────
+
 func is_open() -> bool:
-	return _panel.visible
+	return _book.visible
 
 func toggle() -> void:
 	_set_open(not is_open())
@@ -35,175 +71,459 @@ func toggle() -> void:
 		AudioManager.on_ui_close()
 
 func show_tab(tab_name: String) -> void:
-	_tabs.current_tab = maxi(TAB_NAMES.find(tab_name), 0)
+	_tab = maxi(TAB_NAMES.find(tab_name), 0)
+	_selected = 0
+	refresh()
 
 func _set_open(open: bool) -> void:
-	_panel.visible = open
-	_dim.visible = open   # hidden overlays must not block clicks (see quiz bug)
+	_book.visible = open
+	_dim.visible = open   # hidden overlays must never block clicks (quiz bug, D-015)
+	if is_inside_tree():
+		get_tree().paused = open
 
 func _unhandled_input(event: InputEvent) -> void:
-	if is_open() and event.is_action_pressed("ui_cancel"):
+	if not is_open():
+		return
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("open_inventory"):
 		toggle()
-		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_down"):
+		_select(_selected + 1)
+	elif event.is_action_pressed("ui_up"):
+		_select(_selected - 1)
+	elif event.is_action_pressed("ui_accept"):
+		_use_selected()
+	elif event is InputEventKey and event.pressed and event.keycode >= KEY_1 and event.keycode <= KEY_4:
+		show_tab(TAB_NAMES[event.keycode - KEY_1])
+	else:
+		return
+	get_viewport().set_input_as_handled()
 
-# ── Building ──────────────────────────────────────────────────────────────────
+# ── Building the book ─────────────────────────────────────────────────────────
 
-func _build_ui() -> void:
+func _box(bg: Color, border: Color, border_w: int, radius: int) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = bg
+	s.border_color = border
+	s.set_border_width_all(border_w)
+	s.set_corner_radius_all(radius)
+	return s
+
+func _label(text: String, size: int, colour: Color) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", colour)
+	return l
+
+func _build() -> void:
 	_dim = ColorRect.new()
-	_dim.color = Color(0, 0, 0, 0.5)
+	_dim.color = Color(0, 0, 0, 0.55)
 	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_dim)
 
-	_panel = PanelContainer.new()
-	_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_panel.custom_minimum_size = Vector2(720, 460)
-	_panel.offset_left = -360.0
-	_panel.offset_right = 360.0
-	_panel.offset_top = -230.0
-	_panel.offset_bottom = 230.0
-	add_child(_panel)
+	_book = Control.new()
+	_book.set_anchors_preset(Control.PRESET_CENTER)
+	_book.size = BOOK_SIZE
+	_book.position = -BOOK_SIZE / 2.0
+	add_child(_book)
 
-	var root := VBoxContainer.new()
-	_panel.add_child(root)
+	# Ribbon bookmarks, tucked behind the left edge of the cover.
+	for i: int in TAB_NAMES.size():
+		var r := Button.new()
+		r.text = TAB_NAMES[i]
+		r.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		r.add_theme_font_size_override("font_size", 13)
+		r.add_theme_color_override("font_color", Color("#f4e8cc"))
+		r.add_theme_color_override("font_hover_color", Color.WHITE)
+		r.focus_mode = Control.FOCUS_NONE
+		r.size = Vector2(118, 34)
+		r.position = Vector2(-96, 70 + i * 46)
+		r.pressed.connect(show_tab.bind(TAB_NAMES[i]))
+		_book.add_child(r)
+		_ribbons.append(r)
 
-	var header := HBoxContainer.new()
-	root.add_child(header)
-	var title := Label.new()
-	title.text = "Inventory"
-	title.add_theme_font_size_override("font_size", 20)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(title)
-	_ashmarks_label = Label.new()
-	_ashmarks_label.add_theme_font_size_override("font_size", 16)
-	_ashmarks_label.modulate = Color(0.95, 0.75, 0.4)
-	header.add_child(_ashmarks_label)
-	var hint := Label.new()
-	hint.text = "   [E / Esc] close"
-	hint.modulate = Color(0.7, 0.7, 0.7)
-	header.add_child(hint)
+	# Leather cover with stitching and brass corners (drawn by _CoverDecor).
+	var cover := Panel.new()
+	cover.size = BOOK_SIZE
+	var leather := _box(LEATHER, LEATHER_DARK, 4, 16)
+	leather.shadow_color = Color(0, 0, 0, 0.5)
+	leather.shadow_size = 12
+	cover.add_theme_stylebox_override("panel", leather)
+	_book.add_child(cover)
+	var decor := _CoverDecor.new()
+	decor.size = BOOK_SIZE
+	decor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_book.add_child(decor)
 
-	_tabs = TabContainer.new()
-	_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(_tabs)
-	for tab_name: String in TAB_NAMES:
-		var scroll := ScrollContainer.new()
-		scroll.name = tab_name
-		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-		_tabs.add_child(scroll)
-		var list := VBoxContainer.new()
-		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		scroll.add_child(list)
-		_lists[tab_name] = list
+	# Pages.
+	var page_w: float = (BOOK_SIZE.x - 64.0) / 2.0
+	var page_h: float = BOOK_SIZE.y - 76.0
+	var left := _make_page(Vector2(28, 24), Vector2(page_w, page_h), true)
+	var right := _make_page(Vector2(36 + page_w, 24), Vector2(page_w, page_h), false)
+
+	# Left page: title and the vertical item list.
+	_page_title = _label("", 20, INK)
+	_page_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_page_title.position = Vector2(0, 12)
+	_page_title.size = Vector2(page_w, 30)
+	left.add_child(_page_title)
+	left.add_child(_ornament(Vector2(page_w / 2.0, 48)))
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(18, 60)
+	scroll.size = Vector2(page_w - 36, page_h - 76)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	left.add_child(scroll)
+	_list = VBoxContainer.new()
+	_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_list.add_theme_constant_override("separation", 4)
+	scroll.add_child(_list)
+
+	# Right page: large icon, name, notes, stamp.
+	var frame := Panel.new()
+	frame.add_theme_stylebox_override("panel", _box(Color("#e4d4ae"), PAGE_EDGE, 3, 6))
+	frame.size = Vector2(120, 120)
+	frame.position = Vector2((page_w - 120) / 2.0, 22)
+	right.add_child(frame)
+	_detail_icon = TextureRect.new()
+	_detail_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_detail_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_detail_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_detail_icon.position = Vector2(12, 12)
+	_detail_icon.size = Vector2(96, 96)
+	frame.add_child(_detail_icon)
+	_detail_tile = _label("", 40, Color.WHITE)
+	_detail_tile.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_detail_tile.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_detail_tile.position = Vector2(12, 12)
+	_detail_tile.size = Vector2(96, 96)
+	frame.add_child(_detail_tile)
+
+	_detail_name = _label("", 22, INK)
+	_detail_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_detail_name.position = Vector2(0, 150)
+	_detail_name.size = Vector2(page_w, 30)
+	right.add_child(_detail_name)
+	_detail_kind = _label("", 13, INK_SOFT)
+	_detail_kind.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_detail_kind.position = Vector2(0, 180)
+	_detail_kind.size = Vector2(page_w, 20)
+	right.add_child(_detail_kind)
+	right.add_child(_ornament(Vector2(page_w / 2.0, 210)))
+	_detail_text = _label("", 15, INK)
+	_detail_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_detail_text.position = Vector2(26, 224)
+	_detail_text.size = Vector2(page_w - 52, 140)
+	right.add_child(_detail_text)
+	_detail_stat = _label("", 15, Color("#4a5d2a"))
+	_detail_stat.position = Vector2(26, 368)
+	_detail_stat.size = Vector2(page_w - 52, 24)
+	right.add_child(_detail_stat)
+	_detail_stamp = _label("", 13, STAMP_RED)
+	_detail_stamp.add_theme_stylebox_override("normal", _box(Color(0, 0, 0, 0), STAMP_RED, 2, 3))
+	_detail_stamp.position = Vector2(26, page_h - 46)
+	right.add_child(_detail_stamp)
+	_use_button = Button.new()
+	_use_button.text = "Use  [Enter]"
+	_use_button.add_theme_stylebox_override("normal", _box(LEATHER, LEATHER_DARK, 2, 4))
+	_use_button.add_theme_stylebox_override("hover", _box(LEATHER.lightened(0.15), LEATHER_DARK, 2, 4))
+	_use_button.add_theme_color_override("font_color", Color("#f4e8cc"))
+	_use_button.focus_mode = Control.FOCUS_NONE
+	_use_button.position = Vector2(page_w - 150, page_h - 50)
+	_use_button.size = Vector2(124, 32)
+	_use_button.pressed.connect(_use_selected)
+	right.add_child(_use_button)
+
+	# Cover footer: Ashmarks (brass) and key hints.
+	_ashmarks_label = _label("", 16, BRASS)
+	_ashmarks_label.position = Vector2(40, BOOK_SIZE.y - 44)
+	_book.add_child(_ashmarks_label)
+	var hints := _label("[1–4] tabs   [↑↓] select   [Enter] use   [E / Esc] close", 12, STITCH)
+	hints.position = Vector2(BOOK_SIZE.x - 420, BOOK_SIZE.y - 42)
+	_book.add_child(hints)
+
+func _make_page(pos: Vector2, page_size: Vector2, is_left: bool) -> Control:
+	var page := Panel.new()
+	page.position = pos
+	page.size = page_size
+	page.add_theme_stylebox_override("panel", _box(PAGE, PAGE_EDGE, 2, 4))
+	_book.add_child(page)
+	var grid := _PageDecor.new()
+	grid.size = page_size
+	grid.spine_on_right = is_left
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	page.add_child(grid)
+	return page
+
+func _ornament(centre: Vector2) -> Control:
+	var o := _Ornament.new()
+	o.position = centre - Vector2(90, 4)
+	o.size = Vector2(180, 8)
+	o.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return o
 
 # ── Content ───────────────────────────────────────────────────────────────────
 
 func refresh() -> void:
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player")
-	if _player == null:
-		return
-	var bag: Node = _player.get_node_or_null("Bag")
+	var bag: Node = _player.get_node_or_null("Bag") if _player else null
 	if bag and not bag.bag_changed.is_connected(_on_bag_changed):
 		bag.bag_changed.connect(_on_bag_changed)
-	_ashmarks_label.text = "%d Ashmarks" % (bag.ashmarks if bag else 0)
-	for tab_name: String in TAB_NAMES:
-		for c: Node in _lists[tab_name].get_children():
-			c.queue_free()
-	_fill_elements()
-	_fill_equipment()
-	_fill_consumables(bag)
-	_fill_key_items(bag)
+	_ashmarks_label.text = "◈  %d Ashmarks" % (bag.ashmarks if bag else 0)
+	for i: int in _ribbons.size():
+		var active: bool = i == _tab
+		var col: Color = RIBBON_COLOURS[i] if active else RIBBON_COLOURS[i].darkened(0.35)
+		_ribbons[i].add_theme_stylebox_override("normal", _box(col, col.darkened(0.4), 2, 3))
+		_ribbons[i].add_theme_stylebox_override("hover", _box(col.lightened(0.1), col.darkened(0.4), 2, 3))
+		_ribbons[i].position.x = -110 if active else -92
+
+	_entries = []
+	match TAB_NAMES[_tab]:
+		"Elements":    _collect_elements()
+		"Equipment":   _collect_equipment()
+		"Consumables": _collect_consumables(bag)
+		"Key Items":   _collect_key_items(bag)
+	_page_title.text = "%s  (%d)" % [TAB_NAMES[_tab], _entries.size()]
+
+	# Detach old rows now (not just queue_free) so row indices match _entries.
+	for c: Node in _list.get_children():
+		_list.remove_child(c)
+		c.queue_free()
+	for i: int in _entries.size():
+		_list.add_child(_make_row(i))
+	if _entries.is_empty():
+		_list.add_child(_label(_empty_hint(), 14, INK_SOFT))
+	_select(clampi(_selected, 0, maxi(_entries.size() - 1, 0)))
 
 func _on_bag_changed() -> void:
 	if is_open():
 		refresh()
 
-func _row(tab_name: String, text: String, colour := Color.WHITE) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.modulate = colour
-	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_lists[tab_name].add_child(l)
-	return l
+func _empty_hint() -> String:
+	match TAB_NAMES[_tab]:
+		"Elements":    return "No samples yet.\nDig ore tiles to collect elements."
+		"Consumables": return "No consumables yet.\nEnemies sometimes drop potions."
+		"Key Items":   return "No key items yet.\nDefeat a Warden to earn a Key Fragment."
+	return "Nothing here yet."
 
-func _fill_elements() -> void:
-	var inv: Node = _player.get_node_or_null("Inventory")
-	var all: Dictionary = inv.get_all() if inv else {}
-	if all.is_empty():
-		_row("Elements", "No samples yet. Dig ore tiles to collect elements.", Color(0.7, 0.7, 0.7))
+func _make_row(i: int) -> Button:
+	var e: Dictionary = _entries[i]
+	var row := Button.new()
+	row.custom_minimum_size = Vector2(0, 44)
+	row.focus_mode = Control.FOCUS_NONE
+	row.add_theme_stylebox_override("normal", _box(Color(0, 0, 0, 0), Color(0, 0, 0, 0), 0, 4))
+	row.add_theme_stylebox_override("hover", _box(Color(0.36, 0.22, 0.12, 0.10), Color(0, 0, 0, 0), 0, 4))
+	row.add_theme_stylebox_override("pressed", _box(Color(0.36, 0.22, 0.12, 0.18), Color(0, 0, 0, 0), 0, 4))
+	row.pressed.connect(_select.bind(i))
+	var h := HBoxContainer.new()
+	h.set_anchors_preset(Control.PRESET_FULL_RECT)
+	h.offset_left = 6
+	h.offset_right = -8
+	h.add_theme_constant_override("separation", 10)
+	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(h)
+	h.add_child(_small_icon(e))
+	var name_l := _label(e["name"], 16, INK)
+	name_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	h.add_child(name_l)
+	var count_l := _label(e["count_text"], 16, INK_SOFT)
+	count_l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	h.add_child(count_l)
+	return row
+
+func _small_icon(e: Dictionary) -> Control:
+	var frame := Panel.new()
+	frame.custom_minimum_size = Vector2(40, 40)
+	frame.add_theme_stylebox_override("panel", _box(Color("#e4d4ae"), PAGE_EDGE, 2, 4))
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if e.has("tile"):
+		frame.add_theme_stylebox_override("panel", _box(e["tile"], e["tile"].darkened(0.4), 2, 3))
+		var t := _label(e["id"], 15, Color.WHITE)
+		t.set_anchors_preset(Control.PRESET_FULL_RECT)
+		t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		t.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		frame.add_child(t)
+	elif e["icon"] != null:
+		var tr := TextureRect.new()
+		tr.texture = e["icon"]
+		tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.position = Vector2(4, 4)
+		tr.size = Vector2(32, 32)
+		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		frame.add_child(tr)
+	return frame
+
+func _select(i: int) -> void:
+	if _entries.is_empty():
+		_selected = 0
+		_show_detail({})
 		return
-	var symbols: Array = all.keys()
-	symbols.sort()
-	for symbol: String in symbols:
-		_row("Elements", "%s   %s" % [symbol, inv.format_amount(symbol, float(all[symbol]))])
+	_selected = clampi(i, 0, _entries.size() - 1)
+	for r: int in _list.get_child_count():
+		var row := _list.get_child(r) as Button
+		if row:
+			var on: bool = r == _selected
+			row.add_theme_stylebox_override("normal", _box(Color(0.36, 0.22, 0.12, 0.16) if on else Color(0, 0, 0, 0),
+				Color(0.36, 0.22, 0.12, 0.5) if on else Color(0, 0, 0, 0), 1 if on else 0, 4))
+	_show_detail(_entries[_selected])
 
-func _fill_equipment() -> void:
+func _show_detail(e: Dictionary) -> void:
+	_detail_icon.texture = e.get("icon", null) if not e.has("tile") else null
+	_detail_tile.visible = e.has("tile")
+	if e.has("tile"):
+		_detail_tile.text = e["id"]
+		_detail_tile.add_theme_stylebox_override("normal", _box(e["tile"], e["tile"].darkened(0.4), 3, 4))
+	_detail_name.text = e.get("name", "")
+	_detail_kind.text = e.get("kind", "")
+	_detail_text.text = e.get("text", "")
+	_detail_stat.text = e.get("stat", "")
+	_detail_stamp.text = "  %s  " % e["stamp"] if e.get("stamp", "") != "" else ""
+	_detail_stamp.visible = e.get("stamp", "") != ""
+	_use_button.visible = bool(e.get("usable", false))
+
+func _use_selected() -> void:
+	if _entries.is_empty() or not bool(_entries[_selected].get("usable", false)):
+		return
+	var bag: Node = _player.get_node_or_null("Bag")
+	if bag:
+		bag.use_consumable(_entries[_selected]["id"])   # bag_changed → refresh
+
+# ── Entry builders ────────────────────────────────────────────────────────────
+
+static func _icon(id: String) -> Texture2D:
+	var path := ICON_DIR + id + ".png"
+	return load(path) as Texture2D if ResourceLoader.exists(path) else null
+
+# Keys match data/elements.json "category".
+const CATEGORY_COLOURS := {
+	"alkali_metal": "#c0563a", "alkaline_earth": "#c98a2c", "transition_metal": "#5a7fa0",
+	"post_transition": "#6f8f7a", "metalloid": "#7a8a3c", "nonmetal": "#3f8f5a",
+	"halogen": "#3a8a8a", "noble_gas": "#7a5aa8", "lanthanide": "#a85a7a", "actinide": "#4f9a3a",
+}
+
+func _collect_elements() -> void:
+	var inv: Node = _player.get_node_or_null("Inventory") if _player else null
+	if inv == null:
+		return
+	var all: Dictionary = inv.get_all()
+	var symbols: Array = all.keys()
+	symbols.sort_custom(func(a: String, b: String) -> bool:
+		return int(ElementDB.get_element(a).get("atomic_number", 0)) < int(ElementDB.get_element(b).get("atomic_number", 0)))
+	for symbol: String in symbols:
+		var el: Dictionary = ElementDB.get_element(symbol)
+		var cat: String = str(el.get("category", ""))
+		_entries.append({
+			"id": symbol, "name": str(el.get("name", symbol)),
+			"count_text": inv.format_amount(symbol, float(all[symbol])),
+			"tile": Color(CATEGORY_COLOURS.get(cat, "#6a5a48")), "icon": null,
+			"kind": "No. %d · %s" % [int(el.get("atomic_number", 0)), cat.replace("_", " ").capitalize()],
+			"text": str(el.get("fun_fact", "")),
+			"stat": "Atomic mass %s" % str(el.get("mass", "?")),
+		})
+
+func _collect_equipment() -> void:
+	if _player == null:
+		return
 	var wpn: Node = _player.get_node_or_null("Weapon")
+	if wpn and wpn.has_weapon():
+		_entries.append({ "id": "weapon", "name": wpn.get_weapon_name().replace("_", " ").capitalize(), "count_text": "equipped",
+			"icon": _icon("_weapon"), "kind": "Weapon", "text": "Your equipped weapon. Forge better ones from compounds at the crafting bench.",
+			"stat": "Tier %d %s" % [wpn.get_tier(), wpn.get_weapon_type()] })
 	var arm: Node = _player.get_node_or_null("Armor")
-	var eq: Node = _player.get_node_or_null("Equipment")
-	var w_name: String = wpn.get_weapon_name().replace("_", " ").capitalize() if wpn and wpn.has_weapon() else "none"
-	_row("Equipment", "Weapon:  %s" % w_name, Color(1.0, 0.9, 0.6))
-	var a_name: String = "none"
 	if arm and arm.has_method("has_armor") and arm.has_armor():
-		a_name = "%s (%d%% damage reduction)" % [arm.get_armor_name().replace("_", " ").capitalize(), int(arm.get_damage_reduction() * 100.0)]
-	_row("Equipment", "Armour:  %s" % a_name, Color(0.7, 0.9, 1.0))
-	_row("Equipment", "")
-	_row("Equipment", "Lab gear", Color(0.8, 0.8, 0.8))
+		_entries.append({ "id": "armour", "name": arm.get_armor_name().replace("_", " ").capitalize(), "count_text": "worn",
+			"icon": _icon("_armour"), "kind": "Armour", "text": "Your worn armour.",
+			"stat": "%d%% damage reduction" % int(arm.get_damage_reduction() * 100.0) })
+	var eq: Node = _player.get_node_or_null("Equipment")
 	var items: Dictionary = eq.get_all() if eq else {}
-	if items.is_empty():
-		_row("Equipment", "  none", Color(0.6, 0.6, 0.6))
 	for item: String in items:
 		var worn: bool = item in eq.REUSABLE
-		_row("Equipment", "  %s%s" % [item, "  (worn)" if worn else "  ×%d" % int(items[item])])
+		_entries.append({ "id": item, "name": item, "count_text": "worn" if worn else "×%d" % int(items[item]),
+			"icon": _icon("_gloves" if worn else "_container"), "kind": "Lab gear",
+			"text": "Protective gear for handling hazardous elements." if worn else "A container for one element sample. Used up when you collect.",
+			"stat": "" })
 
-func _fill_consumables(bag: Node) -> void:
-	if bag == null or bag.consumables.is_empty():
-		_row("Consumables", "No consumables. Enemies sometimes drop potions.", Color(0.7, 0.7, 0.7))
+func _collect_consumables(bag: Node) -> void:
+	if bag == null:
 		return
 	for id: String in bag.consumables:
 		var info: Dictionary = bag.item_info(id)
-		var line := HBoxContainer.new()
-		_lists["Consumables"].add_child(line)
-		var l := Label.new()
-		l.text = "%s ×%d\n  %s" % [info.get("name", id), bag.consumable_count(id), info.get("description", "")]
-		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		line.add_child(l)
-		var use := Button.new()
-		use.text = "Use"
-		use.pressed.connect(func() -> void: bag.use_consumable(id))
-		line.add_child(use)
+		_entries.append({ "id": id, "name": str(info.get("name", id)), "count_text": "×%d" % bag.consumable_count(id),
+			"icon": _icon(id), "kind": "Consumable", "text": str(info.get("description", "")),
+			"stat": "Holding %d / %d" % [bag.consumable_count(id), bag.STACK_MAX], "usable": true })
 
-func _fill_key_items(bag: Node) -> void:
-	var cat: Dictionary = bag.catalogue().get("key_items", {}) if bag else {}
-	var any: bool = false
+func _collect_key_items(bag: Node) -> void:
+	if bag == null:
+		return
+	var cat: Dictionary = bag.catalogue().get("key_items", {})
 	for boss: String in BOSS_ORDER:
 		var key_id: String = ""
 		var frags: Array = []
 		for id: String in cat:
-			if cat[id].get("boss", "") != boss:
-				continue
-			if cat[id].get("kind", "") == "boss_key":
-				key_id = id
-			else:
-				frags.append(id)
-		if key_id == "":
-			continue
-		var boss_name: String = boss.to_upper()
-		if bag.has_key_item(key_id):
-			any = true
-			_row("Key Items", "★ %s  (Boss Key: %s)" % [cat[key_id].get("name", key_id), boss_name], Color(1.0, 0.85, 0.4))
-			_row("Key Items", "   " + str(cat[key_id].get("description", "")), Color(0.8, 0.8, 0.8))
+			if cat[id].get("boss", "") == boss:
+				if cat[id].get("kind", "") == "boss_key":
+					key_id = id
+				else:
+					frags.append(id)
+		if key_id != "" and bag.has_key_item(key_id):
+			_entries.append({ "id": key_id, "name": str(cat[key_id].get("name", key_id)), "count_text": "★",
+				"icon": _icon(key_id), "kind": "Boss Key · %s" % boss.to_upper(), "text": str(cat[key_id].get("description", "")),
+				"stat": "Opens %s's arena" % boss.capitalize(), "stamp": "KEY ITEM · PERMANENT" })
 			continue
 		var held: Array = frags.filter(func(f: String) -> bool: return bag.has_key_item(f))
-		if held.is_empty():
-			continue
-		any = true
-		_row("Key Items", "%s fragments: %d / %d" % [boss_name, held.size(), frags.size()], Color(0.85, 0.75, 1.0))
 		for f: String in held:
-			_row("Key Items", "   • %s" % cat[f].get("name", f))
-	if not any:
-		_row("Key Items", "No key items yet. Defeat a Warden to earn a Key Fragment.", Color(0.7, 0.7, 0.7))
-	else:
-		_row("Key Items", "")
-		_row("Key Items", "Key items are permanent: once earned, they are yours.", Color(0.6, 0.6, 0.6))
+			_entries.append({ "id": f, "name": str(cat[f].get("name", f)), "count_text": "%d/%d" % [held.size(), frags.size()],
+				"icon": _icon(f), "kind": "Key Fragment · %s" % boss.to_upper(), "text": str(cat[f].get("description", "")),
+				"stat": "Set: %d of %d fragments" % [held.size(), frags.size()], "stamp": "KEY ITEM · PERMANENT" })
+
+# ── Decorative drawing ────────────────────────────────────────────────────────
+
+# Stitching just inside the cover edge, brass corner caps and a spine groove.
+class _CoverDecor extends Control:
+	func _draw() -> void:
+		var inset := 9.0
+		var r := Rect2(Vector2(inset, inset), size - Vector2(inset, inset) * 2.0)
+		for edge: Array in [[r.position, Vector2(r.end.x, r.position.y)], [Vector2(r.end.x, r.position.y), r.end],
+				[r.end, Vector2(r.position.x, r.end.y)], [Vector2(r.position.x, r.end.y), r.position]]:
+			draw_dashed_line(edge[0], edge[1], Color("#c9a26b"), 1.5, 6.0)
+		var brass := Color("#d6a040")
+		var dark := Color("#8c6022")
+		for c: Vector2 in [Vector2.ZERO, Vector2(size.x, 0), size, Vector2(0, size.y)]:
+			var sx: float = 1.0 if c.x == 0.0 else -1.0
+			var sy: float = 1.0 if c.y == 0.0 else -1.0
+			var tri := PackedVector2Array([c, c + Vector2(34 * sx, 0), c + Vector2(0, 34 * sy)])
+			draw_colored_polygon(tri, brass)
+			draw_polyline(PackedVector2Array([c + Vector2(34 * sx, 0), c + Vector2(0, 34 * sy)]), dark, 2.0)
+			draw_circle(c + Vector2(11 * sx, 11 * sy), 3.0, dark)
+		var mid := size.x / 2.0
+		draw_rect(Rect2(mid - 4, 14, 8, size.y - 60), Color(0, 0, 0, 0.35))
+
+# Faint graph-paper grid (Orion's lab notebook) and a shadow toward the spine.
+class _PageDecor extends Control:
+	var spine_on_right: bool = true
+	func _draw() -> void:
+		var line := Color(0.48, 0.38, 0.24, 0.10)
+		var step := 14.0
+		var x := step
+		while x < size.x:
+			draw_line(Vector2(x, 4), Vector2(x, size.y - 4), line, 1.0)
+			x += step
+		var y := step
+		while y < size.y:
+			draw_line(Vector2(4, y), Vector2(size.x - 4, y), line, 1.0)
+			y += step
+		for i: int in 10:
+			var a: float = 0.16 * (1.0 - i / 10.0)
+			var px: float = size.x - 2 - i * 2 if spine_on_right else 2 + i * 2
+			draw_line(Vector2(px, 2), Vector2(px, size.y - 2), Color(0.25, 0.15, 0.05, a), 2.0)
+
+# A small inked divider: line, diamond, line.
+class _Ornament extends Control:
+	func _draw() -> void:
+		var ink := Color("#7a6248")
+		var c := size / 2.0
+		draw_line(Vector2(0, c.y), Vector2(c.x - 10, c.y), ink, 1.5)
+		draw_line(Vector2(c.x + 10, c.y), Vector2(size.x, c.y), ink, 1.5)
+		draw_colored_polygon(PackedVector2Array([c + Vector2(0, -5), c + Vector2(6, 0), c + Vector2(0, 5), c + Vector2(-6, 0)]), ink)
