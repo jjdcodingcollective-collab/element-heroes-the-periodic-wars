@@ -54,7 +54,10 @@ func _test_save_load_roundtrip(t: Node) -> void:
 	await _frames(3)
 	var p: Node = w.get_node("Player")
 	var seed_before: int = w.world_seed
-	p.global_position = Vector2(300, 260)
+	# Stand on a walkable tile: a fixed point can be rock on some seeds, and
+	# physics would then push the player out (this made the test flaky).
+	var spot: Vector2 = _walkable_spot(w)
+	p.global_position = spot
 	p.get_node("Bag").add_ashmarks(77)
 	p.get_node("Bag").add_key_item("carbon_ember")
 	p.get_node("Inventory").add_element("Cu", 3.5)
@@ -75,15 +78,40 @@ func _test_save_load_roundtrip(t: Node) -> void:
 	await _frames(3)
 	var p2: Node = w2.get_node("Player")
 	t._check_eq("same world seed after load", w2.world_seed, seed_before)
-	t._check("position restored", p2.global_position.distance_to(Vector2(300, 260)) < 1.0)
+	t._check("position restored", p2.global_position.distance_to(spot) < 1.0)
 	t._check_eq("Ashmarks restored", p2.get_node("Bag").ashmarks, 77)
 	t._check("key item restored", p2.get_node("Bag").has_key_item("carbon_ember"))
 	t._check("defeated boss stays beaten", "peroxis" in w2.defeated_bosses and not _boss_present(w2, "peroxis"))
 	var comp2: Node = get_tree().get_first_node_in_group("compendium")
 	t._check("compendium restored", comp2.discovered.has("Cu"))
 	t._check("pending load consumed", not SaveSystem.has_pending())
+	# A dropped Ashmark cache survives a save and reload.
+	var cache: Node2D = load("res://scripts/world/ashmark_cache.gd").new()
+	cache.amount = 21
+	cache.global_position = p2.global_position + Vector2(200, 0)
+	w2.add_child(cache)
+	SaveSystem.save_game(p2, "slot3")
+	cache.queue_free()
+	await _frames(1)
+	SaveSystem.apply_data(p2, SaveSystem.read_slot("slot3"))
+	await _frames(1)
+	var restored: Array = get_tree().get_nodes_in_group("ashmark_cache").filter(func(c: Node) -> bool: return not c.is_queued_for_deletion())
+	t._check("dropped Ashmarks survive save/load", restored.size() == 1 and int(restored[0].amount) == 21)
+	SaveSystem.delete_slot("slot3")
 	w2.queue_free()
 	await _frames(2)
+
+func _walkable_spot(w: Node) -> Vector2:
+	for y: int in range(16, 30):
+		for x: int in range(16, 30):
+			var td: Dictionary = w.tile_data.get(Vector2i(x, y), {})
+			var around_clear := true
+			for d: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				if not w.tile_data.get(Vector2i(x, y) + d, {}).get("passable", false):
+					around_clear = false
+			if td.get("passable", false) and around_clear:
+				return Vector2(x * 16 + 8, y * 16 + 8)
+	return Vector2(300, 260)
 
 func _boss_present(w: Node, id: String) -> bool:
 	for c: Node in w.get_children():
@@ -95,6 +123,9 @@ func _test_slots_and_title(t: Node) -> void:
 	var info := SaveSystem.slot_summary("slot2")
 	t._check("slot card summary", info.get("ashmarks", 0) == 77 and str(info.get("timestamp", "")) != "")
 	t._check("empty slot has no summary", SaveSystem.slot_summary("slot3").is_empty())
+	# The earlier worlds may have autosaved (station discovery); that would
+	# rightly be newest, so set the scene up with slot 2 as the newest save.
+	SaveSystem.delete_slot("autosave")
 	t._check_eq("continue picks newest save", SaveSystem.most_recent_slot(), "slot2")
 	SaveSystem.write_slot("suspend", SaveSystem.read_slot("slot2"))
 	t._check_eq("continue prefers a suspend", SaveSystem.most_recent_slot(), "suspend")

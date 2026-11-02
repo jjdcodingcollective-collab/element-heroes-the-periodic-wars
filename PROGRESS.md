@@ -40,14 +40,15 @@ A 2D pixel-art top-down adventure game (Godot 4 / GDScript) built around the 118
 | Inventory system | ✅ Done | Float amounts, inventory_changed signal |
 | HUD | ✅ Done | Health, inventory bar, minimap, biome, weapon + armor display |
 | Minimap | ✅ Done | Live player position overlay |
-| Crafting UI | ⚠️ Unreachable | 3×3 grid, auto-equips weapons/armor on craft — but no key opens it (C only opens the Compendium); see `SYSTEMS_UX_REVIEW.md` |
+| Crafting UI | ✅ Done **tested** | R opens a field-journal crafting book: element picker, stacked squares, Recipe Book (auto-fill, formulas, locked hints), 2×2 pocket grid anywhere / 3×3 at a bench (Aldric's desk, Field Stations), stat compare before crafting |
 | Crafting system | ✅ Done **tested** | Recipe matching, item-ingredient support |
 | Dialogue system | ✅ Done | Multi-line NPC typewriter dialogue |
 | NPC — Aldric Daedalus | ✅ Done | Placed in Ashvale village, full quest intro dialogue |
 | Camera | ✅ Done | World-bounds clamping |
-| Save/load system | ⚠️ Save only **tested** | Versioned (v3) with migration; inventory, equipment, weapon, armor, compendium, dug tiles, Act 3 progress. **Saves are never loaded** (no title screen / Continue); world seed, defeated bosses and compendium are not restored. See `SYSTEMS_UX_REVIEW.md` |
+| Save/load system | ✅ Done **tested** | Save v6: 3 slots + Autosave + Suspend; title screen Continue / New / Load; world seed, defeated bosses, compendium, stations and dropped Ashmarks persist; export/import codes (web-safe) |
 | Enemy system | ✅ Done | Patrol/chase AI, contact damage, element drops |
 | Enemy variants — 18 CHIMERA × 3 tiers | ✅ Done **tested** | 54 variants total, specials, auras, resistances |
+| Menus & systems UX (SYSTEMS_UX_REVIEW P0–P2) | ✅ Done **tested** | UIManager (one menu at a time, all menus pause, Esc), title screen + slots, Field Stations (save/rest/travel; Ashvale, every biome, every boss), autosave, Suspend, Map, Contents hub, Options (volume, text speed, Keep Inventory), Bestiary + Prime Codex, Specimen Cabinet, hotbar, journal "new" badges + sorting, ore container hint (D-019) |
 | Bag + inventory screen | ✅ Done **tested** | `Bag` on the player holds Ashmarks, consumables and key items (`data/items.json`: 3 potions, 18 Key Fragments, 6 Boss Keys). Leatherbound field-journal inventory on E with a pixel icon for every item (D-018). Kills drop Ashmarks (×rarity) and 1-in-8 potions. Boss Keys combine from 3 fragments; Synthesizer hook and Warden drops not yet wired (D-017) |
 | Enemy rarity — strong / shiny / prime | ✅ Done **tested** | `EncounterSystem` autoload rolls every spawn: strong 1/10 (2×2, 2×1 or 1×2 tiles per creature), shiny 1/100 (gold shimmer, signature-element loot), prime 1/1000 (Prime Codex, collect all 18). Pity at 2× each rate. Defeated enemies respawn after 20 s so rolls keep coming (D-014). Prime Codex completion reward not yet defined |
 | Compendium UI | ✅ Done | 118-element grid, auto-discovers on first collect |
@@ -161,10 +162,13 @@ element-heros---the-periodic-wars/
 | Right Click / Space | Attack |
 | Shift | Dash (Hades-style: i-frames, 0.5 s recharge; attack right after for a 1.5× dash-strike) |
 | E | Field journal inventory (game pauses): ribbons for Elements / Equipment / Consumables / Key Items; 1–4 switch tabs, ↑↓ select, Enter uses |
-| C | Compendium (crafting has no key yet — bug) |
-| F | NPC dialogue / Synthesizer / Lab desk |
-| X | Save game (one slot, no on-screen confirmation; saves are not loaded yet) |
-| ESC | Closes the journal and quiz only (Compendium, crafting, Synthesizer don't — bug) |
+| C | Compendium |
+| R | Crafting book |
+| M | Map (fast travel when at a Field Station) |
+| 1–4 | Hotbar quick slots (Shift+1–4 in the journal assigns) |
+| F | Talk / Synthesizer / Lab desk / Field Station / Specimen Cabinet |
+| X | Quick save to the current journal slot (shows "Journal saved") |
+| ESC | Closes any open menu; with nothing open, opens the Contents hub (Items, Crafting, Compendium, Bestiary, Map, Options, Save & Quit) |
 
 ---
 

@@ -88,6 +88,7 @@ func build_save_data(player: Node) -> Dictionary:
 		"defeated_bosses": world_node.defeated_bosses.duplicate() if world_node and "defeated_bosses" in world_node else [],
 		# Optional field (no version bump): older saves load with none discovered.
 		"stations": world_node.serialize_stations() if world_node and world_node.has_method("serialize_stations") else [],
+		"ashmark_caches": _serialize_caches(),
 		"inventory": player.get_node("Inventory").serialize(),
 		"equipment": equip_node.serialize() if equip_node else {},
 		"weapon": weapon_node.get_weapon_name() if weapon_node and weapon_node.has_method("get_weapon_name") else "",
@@ -256,6 +257,7 @@ func apply_data(player: Node, data: Dictionary) -> bool:
 		world_node.restore_dug_tiles(dug)
 	if world_node and world_node.has_method("restore_stations"):
 		world_node.restore_stations(data.get("stations", []) as Array)
+	_restore_caches(world_node, data.get("ashmark_caches", []) as Array)
 	var compendium := get_tree().get_first_node_in_group("compendium")
 	if compendium and compendium.has_method("restore_discovered"):
 		compendium.restore_discovered(data.get("discovered", {}) as Dictionary)
@@ -321,3 +323,28 @@ func _get_compendium_discovered() -> Dictionary:
 	if compendium and compendium.has_method("serialize_discovered"):
 		return compendium.serialize_discovered()
 	return {}
+
+# Dropped Ashmark caches (Keep Inventory off) survive save and load, so a
+# recovery run is never lost by quitting. Optional field: older saves have none.
+func _serialize_caches() -> Array:
+	var out: Array = []
+	for c: Node in get_tree().get_nodes_in_group("ashmark_cache"):
+		if c.is_queued_for_deletion() or int(c.amount) <= 0:
+			continue
+		out.append({ "x": (c as Node2D).global_position.x, "y": (c as Node2D).global_position.y, "amount": int(c.amount) })
+	return out
+
+func _restore_caches(world_node: Node, caches: Array) -> void:
+	if world_node == null:
+		return
+	for c: Node in get_tree().get_nodes_in_group("ashmark_cache"):
+		c.queue_free()
+	var cache_script: Script = load("res://scripts/world/ashmark_cache.gd")
+	for entry in caches:
+		if not (entry is Dictionary) or int(entry.get("amount", 0)) <= 0:
+			continue
+		var cache: Node2D = cache_script.new()
+		cache.amount = int(entry["amount"])
+		cache.global_position = Vector2(float(entry.get("x", 0)), float(entry.get("y", 0)))
+		world_node.add_child(cache)
+

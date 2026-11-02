@@ -362,9 +362,12 @@ func show_banner(text: String, color: Color = Color(0.7, 0.9, 1.0)) -> void:
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	label.offset_top = 70.0
+	# Stack under banners still showing, so simultaneous ones stay readable.
+	var showing: int = get_tree().get_nodes_in_group("hud_banner").size()
+	label.offset_top = 70.0 + 26.0 * showing
 	label.custom_minimum_size = Vector2(560, 0)
 	label.z_index = 210
+	label.add_to_group("hud_banner")
 	add_child(label)
 
 	var tween := create_tween()

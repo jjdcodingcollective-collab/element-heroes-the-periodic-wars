@@ -1,6 +1,6 @@
 # Systems & Player-Interaction Review — saving, menus, management, storage
 
-**Date:** 2026-11-02 · **Status:** review and proposal; nothing here is built yet except where stated.
+**Date:** 2026-11-02 · **Status:** P0–P2 all built and tested the same day (D-019). Section 1 describes the state *before* the fixes.
 Method: read the code, then drove the running game headless (key presses, file checks).
 References: the games on our reference board and from chat (Golden Sun, Zelda, Octopath
 Traveler, Dragon Quest, Chrono Trigger, Digimon World, Genshin, Hades) plus Minecraft.
@@ -117,3 +117,18 @@ Ashmarks where they fell (Minecraft-style recovery run).
 | **P1** | Recipe Book · hotbar quick slots | Medium |
 | **P2** | Fast travel between stations · equipment compare · new badges and sorting · container warnings | Medium |
 | **P2** | Save export / import for the web build · Specimen Cabinet | Small |
+
+---
+
+## 5. Build notes (2026-11-02)
+
+Everything in §4 is built. Where the build differs from the proposal:
+- **Field Stations:** 12 in total (Ashvale doubles as the Plains station; one per other biome; one
+  lair camp per boss, 14–29 tiles out because arenas are 17–25 tiles across). Discovery autosaves.
+- **Autosave** waits while dead or in a boss fight and then fires; any save restarts the 5-minute clock.
+- **X** stays as a quick save to the current slot (with the toast); the Contents hub's Save needs a station.
+- **Crafting squares stack**: six recipes need more than 9 units. A recipe chosen in the Recipe Book
+  wins over another recipe with the same ingredients (Steel vs Steel Sword).
+- **Known issue:** building a new world straight after freeing one (tests; quit to title then load)
+  can print an engine `slot >= slot_max` error. Timing-dependent, harmless, not yet traced.
+
