@@ -20,6 +20,7 @@ const SAVE_VERSION: int = 6
 const MANUAL_SLOTS: Array[String] = ["slot1", "slot2", "slot3"]
 const ALL_SLOTS: Array[String] = ["slot1", "slot2", "slot3", "autosave", "suspend"]
 const LEGACY_PATH := "user://savegame.json"
+const TITLE_SCENE := "res://scenes/ui/title_screen.tscn"
 
 var save_dir: String = "user://saves/"
 var active_slot: String = "slot1"     # the manual slot this playthrough saves to
@@ -27,6 +28,7 @@ var play_seconds: float = 0.0          # this playthrough's play time
 var in_game: bool = false              # world sets this; play time only counts in game
 var pending_data: Dictionary = {}      # loaded save waiting to be applied to a new world
 var pending_slot: String = ""
+var title_scene: String = TITLE_SCENE  # where Suspend goes ("" = stay; tests use this)
 
 func _ready() -> void:
 	var override := OS.get_environment("EH_SAVE_DIR")
@@ -84,6 +86,8 @@ func build_save_data(player: Node) -> Dictionary:
 		},
 		"world_seed": world_node.world_seed if world_node and "world_seed" in world_node else -1,
 		"defeated_bosses": world_node.defeated_bosses.duplicate() if world_node and "defeated_bosses" in world_node else [],
+		# Optional field (no version bump): older saves load with none discovered.
+		"stations": world_node.serialize_stations() if world_node and world_node.has_method("serialize_stations") else [],
 		"inventory": player.get_node("Inventory").serialize(),
 		"equipment": equip_node.serialize() if equip_node else {},
 		"weapon": weapon_node.get_weapon_name() if weapon_node and weapon_node.has_method("get_weapon_name") else "",
@@ -106,6 +110,18 @@ func save_game(player: Node, slot: String = "") -> bool:
 
 func autosave(player: Node) -> bool:
 	return save_game(player, "autosave")
+
+# Suspend (the classroom-bell button): save to the "suspend" slot and go back
+# to the title. Continue resumes it once, then it is deleted (apply_pending).
+func suspend_and_quit(player: Node) -> bool:
+	var ok := save_game(player, "suspend")
+	if not ok:
+		return false
+	UIManager.close_all()
+	get_tree().paused = false
+	if title_scene != "":
+		get_tree().change_scene_to_file.call_deferred(title_scene)
+	return true
 
 func write_slot(slot: String, data: Dictionary) -> bool:
 	_ensure_dir()
@@ -238,6 +254,8 @@ func apply_data(player: Node, data: Dictionary) -> bool:
 	var dug: Array = data.get("dug_tiles", []) as Array
 	if world_node and world_node.has_method("restore_dug_tiles") and dug.size() > 0:
 		world_node.restore_dug_tiles(dug)
+	if world_node and world_node.has_method("restore_stations"):
+		world_node.restore_stations(data.get("stations", []) as Array)
 	var compendium := get_tree().get_first_node_in_group("compendium")
 	if compendium and compendium.has_method("restore_discovered"):
 		compendium.restore_discovered(data.get("discovered", {}) as Dictionary)

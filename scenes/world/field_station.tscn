@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://field_station_world"]
+
+[ext_resource type="Script" path="res://scripts/world/field_station.gd" id="1_station"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(30, 10)
+
+[node name="FieldStation" type="StaticBody2D"]
+script = ExtResource("1_station")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -2)
+shape = SubResource("RectangleShape2D_1")

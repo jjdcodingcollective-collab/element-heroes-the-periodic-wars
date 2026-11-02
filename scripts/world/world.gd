@@ -76,6 +76,7 @@ const SYNTH_SCENE:      String = "res://scenes/world/synthesizer.tscn"
 const SYNTH_UI_SCENE:   String = "res://scenes/ui/synthesizer_ui.tscn"
 const LAB_DESK_SCENE:   String = "res://scenes/world/lab_desk.tscn"
 const MINIGAME_UI_SCENE: String = "res://scenes/ui/science_minigame_ui.tscn"
+const STATION_SCENE:    String = "res://scenes/world/field_station.tscn"
 
 # One boss per biome — placed near the far end of each biome zone
 const BIOME_BOSSES: Dictionary = {
@@ -121,6 +122,9 @@ const GROUND_Z: int = -5
 # Persisted so a loaded save gets the same map (SYSTEMS_UX_REVIEW §3.1).
 var world_seed: int = -1
 var defeated_bosses: Array = []   # boss_id strings; these never respawn
+var boss_tiles: Dictionary = {}   # boss_id -> Vector2i, fixed by the seed
+var stations: Dictionary = {}     # station_id -> FieldStation node
+var discovered_stations: Array = []   # station_id strings (saved)
 
 func _ready() -> void:
 	# Characters, enemies and props sort by Y, so a 16×24 character walking
@@ -136,6 +140,8 @@ func _ready() -> void:
 	_generate_world()
 	randomize()               # everything after generation stays random
 	_spawn_village()
+	_plan_boss_tiles()
+	_spawn_stations()
 	# Wire HUD and CraftingUI after the full scene tree is loaded
 	call_deferred("_init_ui")
 	call_deferred("_spawn_enemies")
@@ -172,11 +178,13 @@ func _init_ui() -> void:
 		_spawn_lab_desk()
 		_spawn_minigame_ui()
 		_spawn_inventory_screen()
+		_spawn_station_ui()
 		# A loaded save overwrites the starter kit and moves the player.
 		if SaveSystem.has_pending():
 			SaveSystem.apply_pending(player)
 			set_player_ref(player as Node2D)
 		hud.connect_save_feedback()
+		_spawn_autosave(player)
 
 	# Set Aldric's dialogue via exported property override in code
 	# (avoids needing to open the editor to set the Inspector fields)
@@ -550,45 +558,31 @@ func _spawn_bosses() -> void:
 		if boss_id == "" or boss_id in defeated_bosses:
 			continue
 
-		var bx_start: int = int(biome.x_start)
-		var bx_end:   int = int(biome.x_end)
+		# Lair chosen by _plan_boss_tiles() (seeded, so its Field Station matches)
+		if not boss_tiles.has(boss_id):
+			continue
+		var boss: CharacterBody2D = boss_scene.instantiate()
+		boss.boss_id  = boss_id
+		boss.position = _tile_centre(boss_tiles[boss_id])
 
-		# Place boss in the far two-thirds of the biome (away from the entrance)
-		var boss_x_min: int = bx_start + (bx_end - bx_start) * 2 / 3
-		var boss_x_max: int = bx_end - 2
+		# Create and wire the arena node
+		var arena := Node2D.new()
+		arena.set_script(load("res://scripts/world/boss_arena.gd"))
+		arena.name = "Arena_%s" % boss_id
+		add_child(arena)
+		boss._arena = arena
 
-		var placed: bool = false
-		var attempts: int = 0
-		while not placed and attempts < 50:
-			attempts += 1
-			var tx: int = randi_range(boss_x_min, boss_x_max)
-			var ty: int = randi_range(10, WORLD_HEIGHT - 10)
-			var td: Dictionary = tile_data.get(Vector2i(tx, ty), {})
-			if not td.get("passable", false):
-				continue
-
-			var boss: CharacterBody2D = boss_scene.instantiate()
-			boss.boss_id  = boss_id
-			boss.position = Vector2(tx * TILE_SIZE + TILE_SIZE / 2.0, ty * TILE_SIZE + TILE_SIZE / 2.0)
-
-			# Create and wire the arena node
-			var arena := Node2D.new()
-			arena.set_script(load("res://scripts/world/boss_arena.gd"))
-			arena.name = "Arena_%s" % boss_id
-			add_child(arena)
-			boss._arena = arena
-
-			add_child(boss)
-			# Arena scales with the boss (size is known once its data loads):
-			# room to dash around a huge body.
-			if arena.has_method("init"):
-				arena.init(boss.position, maxf(160.0, boss.body_size * 2.5))
-			placed = true
+		add_child(boss)
+		# Arena scales with the boss (size is known once its data loads):
+		# room to dash around a huge body.
+		if arena.has_method("init"):
+			arena.init(boss.position, maxf(160.0, boss.body_size * 2.5))
 
 # Called by boss.gd when a boss dies; saved so it stays beaten.
 func on_boss_defeated(boss_id: String) -> void:
 	if not boss_id in defeated_bosses:
 		defeated_bosses.append(boss_id)
+	_request_autosave("boss")
 
 func _spawn_synthesizer_ui(player: Node) -> void:
 	# Spawn Synthesizer world object near village (tile 22,12 — east of workshop)
@@ -631,3 +625,205 @@ func _spawn_minigame_ui() -> void:
 		return
 	var ui: Node = ui_scene.instantiate()
 	add_child(ui)
+
+# ── Field Stations, fast travel, autosave (SYSTEMS_UX_REVIEW §3.1) ────────────
+
+const STATION_GAP: float = 40.0   # px between a boss arena's edge and its station
+const VILLAGE_STATION_TILE := Vector2i(18, 21)   # south of the Ashvale houses
+
+func _tile_centre(t: Vector2i) -> Vector2:
+	return Vector2(t.x * TILE_SIZE + TILE_SIZE / 2.0, t.y * TILE_SIZE + TILE_SIZE / 2.0)
+
+# Each boss's lair, picked from the world seed so the boss (and the station
+# outside its arena) is in the same place after every load.
+func _plan_boss_tiles() -> void:
+	boss_tiles.clear()
+	for biome: Dictionary in BIOMES:
+		var boss_id: String = BIOME_BOSSES.get(biome.get("name", ""), "")
+		if boss_id == "":
+			continue
+		var bx_start: int = int(biome.x_start)
+		var bx_end: int = int(biome.x_end)
+		# Far two-thirds of the biome, away from the entrance
+		@warning_ignore("integer_division")
+		var x_min: int = bx_start + (bx_end - bx_start) * 2 / 3
+		var x_max: int = bx_end - 2
+		var rng := RandomNumberGenerator.new()
+		rng.seed = hash("%d:%s" % [world_seed, boss_id])
+		for _attempt: int in range(50):
+			var t := Vector2i(rng.randi_range(x_min, x_max), rng.randi_range(10, WORLD_HEIGHT - 10))
+			if tile_data.get(t, {}).get("passable", false):
+				boss_tiles[boss_id] = t
+				break
+
+# Arena radius in px for a boss, as _spawn_bosses() will size it.
+func boss_arena_radius(boss_id: String) -> float:
+	var f := FileAccess.open("res://data/boss_data.json", FileAccess.READ)
+	if f == null:
+		return 160.0
+	var parsed: Variant = JSON.parse_string(f.get_as_text())
+	f.close()
+	if parsed is Dictionary:
+		for b: Dictionary in (parsed as Dictionary).get("bosses", []):
+			if b.get("id", "") == boss_id:
+				return maxf(160.0, float(b.get("size", 128)) * 2.5)
+	return 160.0
+
+func _spawn_stations() -> void:
+	var scene: PackedScene = load(STATION_SCENE)
+	if scene == null:
+		return
+	_clear_plot(VILLAGE_STATION_TILE)
+	_add_station(scene, "ashvale", "Ashvale Field Station", VILLAGE_STATION_TILE)
+	for biome: Dictionary in BIOMES:
+		var biome_name: String = biome.get("name", "")
+		# Surface Plains' entrance station is the one in Ashvale.
+		if int(biome.x_start) > 0:
+			var t := _find_station_tile(Vector2i(int(biome.x_start) + 4, 20), biome, 0.0)
+			_add_station(scene, "entrance_" + biome_name, "%s Camp" % biome_name.capitalize(), t)
+		var boss_id: String = BIOME_BOSSES.get(biome_name, "")
+		if boss_tiles.has(boss_id):
+			var dist: float = boss_arena_radius(boss_id) + STATION_GAP
+			var t := _find_station_tile(boss_tiles[boss_id], biome, dist)
+			_add_station(scene, "boss_" + boss_id, "%s Lair Camp" % boss_id.capitalize(), t)
+
+func _add_station(scene: PackedScene, id: String, title: String, t: Vector2i) -> void:
+	var st: Node2D = scene.instantiate()
+	st.name = "Station_%s" % id
+	st.station_id = id
+	st.display_name = title
+	st.position = _tile_centre(t)
+	add_child(st)
+	stations[id] = st
+	if id in discovered_stations:
+		st.set_discovered(true)
+
+# A spot whose 5×5 plot is open ground. dist == 0: nearest to `origin`;
+# dist > 0: on a ring that far (px) from `origin`, preferring the side facing
+# the biome's entrance (west), and staying inside the biome.
+func _find_station_tile(origin: Vector2i, biome: Dictionary, dist: float) -> Vector2i:
+	var x_lo: int = maxi(int(biome.x_start) + 2, 2)
+	var x_hi: int = mini(int(biome.x_end) - 2, WORLD_WIDTH - 3)
+	var candidates: Array[Vector2i] = []
+	if dist <= 0.0:
+		for r: int in range(0, 40):
+			for dx: int in range(-r, r + 1):
+				for dy: int in range(-r, r + 1):
+					if maxi(absi(dx), absi(dy)) == r:
+						candidates.append(origin + Vector2i(dx, dy))
+	else:
+		var r_tiles: float = dist / TILE_SIZE
+		for deg: float in [180.0, 150.0, 210.0, 120.0, 240.0, 90.0, 270.0, 60.0, 300.0, 30.0, 330.0, 0.0]:
+			var dir := Vector2.from_angle(deg_to_rad(deg))
+			for extra: int in range(0, 6):
+				var p: Vector2 = Vector2(origin) + dir * (r_tiles + extra)
+				candidates.append(Vector2i(roundi(p.x), roundi(p.y)))
+	var fallback := Vector2i(-1, -1)
+	for c: Vector2i in candidates:
+		if c.x < x_lo or c.x > x_hi or c.y < 3 or c.y > WORLD_HEIGHT - 4:
+			continue
+		# Lair camps stay out of Ashvale (it has its own station).
+		if dist > 0.0 and c.x >= 6 and c.x <= 26 and c.y >= 6 and c.y <= 26:
+			continue
+		if fallback.x < 0:
+			fallback = c
+		if _plot_is_open(c):
+			return c
+	if fallback.x < 0:
+		fallback = Vector2i(clampi(origin.x, x_lo, x_hi), clampi(origin.y, 3, WORLD_HEIGHT - 4))
+	_clear_plot(fallback)
+	return fallback
+
+func _plot_is_open(c: Vector2i) -> bool:
+	for dx: int in range(-2, 3):
+		for dy: int in range(-2, 3):
+			var td: Dictionary = tile_data.get(c + Vector2i(dx, dy), {})
+			if not td.get("passable", false) or td.get("type", "") == "ore":
+				return false
+	return true
+
+# Data-only: turn the plot into plain biome ground (nodes stream in later).
+func _clear_plot(c: Vector2i) -> void:
+	var biome := _get_biome(c.x)
+	for dx: int in range(-2, 3):
+		for dy: int in range(-2, 3):
+			var t := c + Vector2i(dx, dy)
+			if tile_data.has(t) and tile_data[t].get("type", "") != "building":
+				tile_data[t] = { "type": biome.base, "element": "", "passable": true, "color": _base_color(biome.base) }
+
+func on_station_discovered(station_id: String) -> void:
+	if station_id in discovered_stations:
+		return
+	discovered_stations.append(station_id)
+	var st: Node = stations.get(station_id)
+	if st:
+		st.set_discovered(true)
+	var hud := get_node_or_null("HUD")
+	if hud and hud.has_method("show_banner") and st:
+		hud.show_banner("Field Station discovered: %s" % st.display_name, Color(0.95, 0.8, 0.45))
+	_request_autosave("station")
+
+func serialize_stations() -> Array:
+	return discovered_stations.duplicate()
+
+func restore_stations(ids: Array) -> void:
+	discovered_stations.clear()
+	for id: Variant in ids:
+		if not str(id) in discovered_stations:
+			discovered_stations.append(str(id))
+	for id: String in stations:
+		stations[id].set_discovered(id in discovered_stations)
+
+# The discovered station the player is standing at, or null.
+func station_near(pos: Vector2) -> Node:
+	for id: String in discovered_stations:
+		var st: Node2D = stations.get(id)
+		if st and st.global_position.distance_to(pos) <= float(st.interact_radius) + 8.0:
+			return st
+	return null
+
+func travel_to_station(station_id: String) -> bool:
+	var st: Node2D = stations.get(station_id)
+	var player := get_node_or_null("Player") as Node2D
+	if st == null or player == null or not station_id in discovered_stations:
+		return false
+	player.global_position = st.arrival_position()
+	if "velocity" in player:
+		player.velocity = Vector2.ZERO
+	set_player_ref(player)
+	var cam := player.get_node_or_null("Camera2D") as Camera2D
+	if cam:
+		cam.reset_smoothing()
+	return true
+
+# A boss is fighting the player (and the player hasn't fled far away).
+func is_boss_fight_active() -> bool:
+	var player := get_node_or_null("Player") as Node2D
+	if player == null:
+		return false
+	for b: Node in get_children():
+		if not ("boss_id" in b and "_state" in b) or b._state != "combat":
+			continue
+		var arena_r: float = float(b._arena._arena_radius) if b._arena and "_arena_radius" in b._arena else 160.0
+		if (b as Node2D).global_position.distance_to(player.global_position) <= arena_r + float(b.sight_range):
+			return true
+	return false
+
+func _request_autosave(reason: String) -> void:
+	var auto := get_node_or_null("Autosave")
+	if auto:
+		auto.request(reason)
+
+func _spawn_autosave(player: Node) -> void:
+	var auto := Node.new()
+	auto.set_script(load("res://scripts/world/autosave_director.gd"))
+	auto.name = "Autosave"
+	add_child(auto)
+	auto.setup(self, player)
+
+func _spawn_station_ui() -> void:
+	for script_path: String in ["res://scripts/ui/station_menu.gd", "res://scripts/ui/map_screen.gd"]:
+		var ui := CanvasLayer.new()
+		ui.set_script(load(script_path))
+		ui.name = script_path.get_file().get_basename().to_pascal_case()
+		add_child(ui)

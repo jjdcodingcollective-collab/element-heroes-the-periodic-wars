@@ -245,6 +245,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_tree().call_group("npc",       "try_interact", global_position)
 		get_tree().call_group("synthesizer","try_interact", global_position)
 		get_tree().call_group("lab_desk",  "try_interact", global_position)
+		get_tree().call_group("field_station", "try_interact", global_position)
 	elif event.is_action_pressed("save_game"):
 		SaveSystem.save_game(self)
 
