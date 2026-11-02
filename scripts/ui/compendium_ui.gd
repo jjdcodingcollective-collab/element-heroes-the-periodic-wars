@@ -17,6 +17,25 @@ var discovered: Dictionary = {}  # { "Fe": true, ... }
 func _ready() -> void:
 	_build_grid()
 	detail_panel.hide()
+	visible = false
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("compendium")   # SaveSystem finds it by group
+	UIManager.register("compendium", self)
+
+func _menu_set_open(open: bool) -> void:
+	visible = open
+	if open:
+		AudioManager.on_ui_open()
+	else:
+		AudioManager.on_ui_close()
+
+# Restores discoveries from a save.
+func restore_discovered(data: Dictionary) -> void:
+	discovered.clear()
+	for symbol in data:
+		if bool(data[symbol]):
+			discovered[str(symbol)] = true
+	_build_grid()
 
 func _build_grid() -> void:
 	for child in element_grid.get_children():

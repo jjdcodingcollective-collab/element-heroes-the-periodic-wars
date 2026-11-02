@@ -118,11 +118,23 @@ const BIOME_TIER_WEIGHTS: Dictionary = {
 # scene-placed enemies, hiding them completely.
 const GROUND_Z: int = -5
 
+# Persisted so a loaded save gets the same map (SYSTEMS_UX_REVIEW §3.1).
+var world_seed: int = -1
+var defeated_bosses: Array = []   # boss_id strings; these never respawn
+
 func _ready() -> void:
 	# Characters, enemies and props sort by Y, so a 16×24 character walking
 	# behind another overlaps it correctly.
 	y_sort_enabled = true
+	world_seed = SaveSystem.pending_world_seed()
+	if world_seed < 0:
+		world_seed = randi() & 0x7fffffff
+	defeated_bosses = SaveSystem.pending_defeated_bosses().duplicate()
+	SaveSystem.in_game = true
+	tree_exiting.connect(func() -> void: SaveSystem.in_game = false)
+	seed(world_seed)          # world generation is fully determined by the seed
 	_generate_world()
+	randomize()               # everything after generation stays random
 	_spawn_village()
 	# Wire HUD and CraftingUI after the full scene tree is loaded
 	call_deferred("_init_ui")
@@ -160,6 +172,11 @@ func _init_ui() -> void:
 		_spawn_lab_desk()
 		_spawn_minigame_ui()
 		_spawn_inventory_screen()
+		# A loaded save overwrites the starter kit and moves the player.
+		if SaveSystem.has_pending():
+			SaveSystem.apply_pending(player)
+			set_player_ref(player as Node2D)
+		hud.connect_save_feedback()
 
 	# Set Aldric's dialogue via exported property override in code
 	# (avoids needing to open the editor to set the Inspector fields)
@@ -257,7 +274,7 @@ func _on_engine_assembled(engine_name: String, hud: Node) -> void:
 
 func _generate_world() -> void:
 	var noise := FastNoiseLite.new()
-	noise.seed = randi()
+	noise.seed = world_seed
 	noise.frequency = 0.05
 
 	# Pure data pass — no nodes created here.
@@ -530,7 +547,7 @@ func _spawn_bosses() -> void:
 	for biome: Dictionary in BIOMES:
 		var biome_name: String = biome.get("name", "")
 		var boss_id: String = BIOME_BOSSES.get(biome_name, "")
-		if boss_id == "":
+		if boss_id == "" or boss_id in defeated_bosses:
 			continue
 
 		var bx_start: int = int(biome.x_start)
@@ -567,6 +584,11 @@ func _spawn_bosses() -> void:
 			if arena.has_method("init"):
 				arena.init(boss.position, maxf(160.0, boss.body_size * 2.5))
 			placed = true
+
+# Called by boss.gd when a boss dies; saved so it stays beaten.
+func on_boss_defeated(boss_id: String) -> void:
+	if not boss_id in defeated_bosses:
+		defeated_bosses.append(boss_id)
 
 func _spawn_synthesizer_ui(player: Node) -> void:
 	# Spawn Synthesizer world object near village (tile 22,12 — east of workshop)

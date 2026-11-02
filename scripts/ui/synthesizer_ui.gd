@@ -19,6 +19,8 @@ var player_equipment: Node = null
 func _ready() -> void:
 	add_to_group("synthesizer_ui")
 	visible = false
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	UIManager.register("synthesizer", self)
 
 	for child in _grid.get_children():
 		if child is Button:
@@ -40,9 +42,12 @@ func _ready() -> void:
 	_refresh_output()
 
 func toggle_visible() -> void:
-	visible = not visible
-	_play_toggle_sfx(visible)
-	if visible:
+	UIManager.toggle("synthesizer")
+
+func _menu_set_open(open: bool) -> void:
+	visible = open
+	_play_toggle_sfx(open)
+	if open:
 		_refresh_output()
 
 func _on_slot_pressed(idx: int) -> void:

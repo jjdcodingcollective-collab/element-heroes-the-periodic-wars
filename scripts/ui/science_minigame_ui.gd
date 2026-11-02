@@ -52,6 +52,8 @@ func _ready() -> void:
 	add_to_group("science_minigame_ui")
 	_build_ui()
 	_set_open(false)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	UIManager.register("quiz", self)
 	_load_questions()
 
 func _load_questions() -> void:
@@ -80,10 +82,8 @@ func open_minigame(player: Node) -> void:
 	_score         = 0
 	_current_idx   = 0
 	_session_pool  = _pick_session_questions()
-	_set_open(true)
-	AudioManager.on_ui_open()
-	get_tree().paused = false   # don't pause physics — Aldric's office is safe
 	_show_question()
+	UIManager.open("quiz")   # pauses the game like every menu
 
 func _set_open(open: bool) -> void:
 	_root_panel.visible = open
@@ -91,6 +91,15 @@ func _set_open(open: bool) -> void:
 
 func is_open() -> bool:
 	return _root_panel.visible
+
+# Called by UIManager (Esc, the close button, or another menu opening).
+func _menu_set_open(open: bool) -> void:
+	_set_open(open)
+	if open:
+		AudioManager.on_ui_open()
+	else:
+		AudioManager.on_ui_close()
+		emit_signal("minigame_closed")
 
 # ── Question flow ──────────────────────────────────────────────────────────────
 
@@ -372,13 +381,5 @@ func _set_button_color(btn: Button, color: Color) -> void:
 	btn.add_theme_stylebox_override("disabled", s)
 
 func _on_close_pressed() -> void:
-	_set_open(false)
-	AudioManager.on_ui_close()
-	emit_signal("minigame_closed")
+	UIManager.close("quiz")
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not _root_panel.visible:
-		return
-	if event.is_action_pressed("ui_cancel"):
-		get_viewport().set_input_as_handled()
-		_on_close_pressed()

@@ -2,7 +2,7 @@ extends PanelContainer
 
 # CraftingUI — 3×3 crafting grid.
 # Attached to the Panel node inside crafting_ui.tscn.
-# Toggle visibility via get_parent() from HUD's toggle_crafting().
+# Opened with R via UIManager ("crafting").
 #
 # USAGE: set player_inventory reference after instancing:
 #   crafting_ui.player_inventory = player.get_node("Inventory")
@@ -19,6 +19,9 @@ var grid_contents: Array = []       # 3×3 array of element symbols
 var player_inventory: Node = null
 
 func _ready() -> void:
+	visible = false
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	UIManager.register("crafting", self)
 	# Collect grid slot buttons from GridContainer
 	for child in _grid.get_children():
 		if child is Button:
@@ -40,6 +43,14 @@ func _ready() -> void:
 		grid_contents.append(row)
 
 	_refresh_output()
+
+func _menu_set_open(open: bool) -> void:
+	visible = open
+	if open:
+		AudioManager.on_ui_open()
+		_refresh_output()
+	else:
+		AudioManager.on_ui_close()
 
 func _on_slot_pressed(idx: int) -> void:
 	# TODO Phase 2: open element-picker popup instead of click-to-clear

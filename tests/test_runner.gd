@@ -18,8 +18,14 @@ const SpriteLibrary := preload("res://scripts/world/sprite_library.gd")
 var _passed: int = 0
 var _failed: int = 0
 
+var _test_save_dir: String = ""
+
 func _ready() -> void:
 	print("=== Element Heroes — test run ===")
+	process_mode = Node.PROCESS_MODE_ALWAYS   # menus pause the tree during tests
+	# Saves go to a private folder so tests never touch real saves or each other.
+	_test_save_dir = "user://test_saves_%d/" % Time.get_ticks_usec()
+	SaveSystem.save_dir = _test_save_dir
 	_test_data_integrity()
 	_test_compound_keying()
 	_test_crafting_pipeline()
@@ -37,6 +43,9 @@ func _ready() -> void:
 	_test_boss_scale()
 	_test_bag_and_inventory()
 
+	await _run_suites()
+
+	_cleanup_test_saves()
 	print("=== %d passed, %d failed ===" % [_passed, _failed])
 	# Let the audio server drop its playbacks before quitting, so the engine
 	# does not report the test's sounds as leaked resources.
@@ -361,9 +370,13 @@ func _test_save_migration() -> void:
 	_check("v1 gains dug_tiles", migrated.has("dug_tiles"))
 	_check("v1 gains resonance block", migrated.has("resonance"))
 
-	var migrated2: Dictionary = SaveSystem._migrate({"version": 2, "dug_tiles": [1]}, 2)
+	var migrated2: Dictionary = SaveSystem._migrate({"version": 2, "dug_tiles": [1], "inventory": {"Na": 2.0}}, 2)
 	_check("v2 gains resonance block", migrated2.has("resonance"))
-	_check_eq("v2 preserves existing data", (migrated2.get("dug_tiles") as Array).size(), 1)
+	_check_eq("v2 preserves existing data", migrated2.get("inventory", {}).get("Na", 0.0), 2.0)
+	# Pre-v6 saves have no world seed, so their dug tiles describe a lost map.
+	_check_eq("seedless save drops dug tiles", (migrated2.get("dug_tiles") as Array).size(), 0)
+	var migrated5: Dictionary = SaveSystem._migrate({"version": 5, "world_seed": 42, "dug_tiles": [[1, 2]]}, 5)
+	_check_eq("seeded save keeps dug tiles", (migrated5.get("dug_tiles") as Array).size(), 1)
 
 	ResonanceSystem.reset()
 
@@ -699,7 +712,7 @@ func _test_bag_and_inventory() -> void:
 	bag.deserialize({})
 	bag.deserialize(data)
 	_check("bag survives save/load", bag.has_key_item("co2_canister") and bag.ashmarks == 18 and bag.consumable_count("saline_tonic") == 1)
-	_check_eq("save version is 5", SaveSystem.SAVE_VERSION, 5)
+	_check_eq("save version is 6", SaveSystem.SAVE_VERSION, 6)
 	_check("v4 save gains a bag", SaveSystem._migrate({"version": 4}, 4).has("bag"))
 
 	# Kills pay Ashmarks, scaled by rarity. Earlier tests' players may still be
@@ -755,3 +768,37 @@ func _test_bag_and_inventory() -> void:
 	_check("game resumes on close", not get_tree().paused)
 	screen.queue_free()
 	p.queue_free()
+
+# ── Suites ────────────────────────────────────────────────────────────────────
+# Each feature area adds tests/suites/test_<area>.gd with
+#   extends Node
+#   func run(t: Node) -> void   (may await; use t._check / t._check_eq)
+# They run in name order after the tests above.
+
+const SUITES_DIR := "res://tests/suites/"
+
+func _run_suites() -> void:
+	var dir := DirAccess.open(SUITES_DIR)
+	if dir == null:
+		return
+	var files: Array = []
+	for f: String in dir.get_files():
+		if f.begins_with("test_") and f.ends_with(".gd"):
+			files.append(f)
+	files.sort()
+	for f: String in files:
+		var suite: Node = load(SUITES_DIR + f).new()
+		add_child(suite)
+		print("- suite: %s" % f.get_basename())
+		await suite.run(self)
+		UIManager.close_all()
+		suite.queue_free()
+		await get_tree().process_frame
+
+func _cleanup_test_saves() -> void:
+	var dir := DirAccess.open(_test_save_dir)
+	if dir == null:
+		return
+	for f: String in dir.get_files():
+		dir.remove(f)
+	DirAccess.remove_absolute(_test_save_dir)

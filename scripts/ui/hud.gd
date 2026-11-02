@@ -129,17 +129,10 @@ func toggle_inventory() -> void:
 	inventory_bar.visible = not inventory_bar.visible
 
 func toggle_compendium() -> void:
-	var compendium := $Compendium
-	if compendium:
-		compendium.visible = not compendium.visible
-		_play_toggle_sfx(compendium.visible)
+	UIManager.toggle("compendium")
 
 func toggle_crafting() -> void:
-	# CraftingUI is a sibling CanvasLayer instanced into world.tscn
-	var crafting := get_tree().get_first_node_in_group("crafting_ui")
-	if crafting:
-		crafting.visible = not crafting.visible
-		_play_toggle_sfx(crafting.visible)
+	UIManager.toggle("crafting")
 
 func _play_toggle_sfx(opened: bool) -> void:
 	if opened:
@@ -321,6 +314,36 @@ func show_victory_screen(engine_name: String) -> void:
 
 	var tween := create_tween()
 	tween.tween_property(bg, "color:a", 0.94, 1.5)
+
+# "Journal saved" toast for every save (manual, autosave, suspend).
+func connect_save_feedback() -> void:
+	if not SaveSystem.saved.is_connected(_on_saved):
+		SaveSystem.saved.connect(_on_saved)
+
+func _on_saved(slot: String, ok: bool) -> void:
+	if not ok:
+		show_toast("Could not save!", Color(1.0, 0.45, 0.4))
+	elif slot == "autosave":
+		show_toast("✎ Autosaved")
+	else:
+		show_toast("✎ Journal saved")
+
+# Small bottom-right note that fades out; does not interrupt play.
+func show_toast(text: String, colour: Color = Color(0.96, 0.9, 0.75)) -> void:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", 14)
+	l.add_theme_color_override("font_color", colour)
+	l.add_theme_color_override("font_outline_color", Color(0.18, 0.1, 0.05))
+	l.add_theme_constant_override("outline_size", 4)
+	l.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	l.position = get_viewport().get_visible_rect().size - Vector2(190, 64)
+	l.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(l)
+	var tween := l.create_tween()
+	tween.tween_interval(1.6)
+	tween.tween_property(l, "modulate:a", 0.0, 0.6)
+	tween.tween_callback(l.queue_free)
 
 func show_banner(text: String, color: Color = Color(0.7, 0.9, 1.0)) -> void:
 	var label := Label.new()

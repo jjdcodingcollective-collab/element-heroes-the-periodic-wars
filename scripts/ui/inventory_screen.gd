@@ -16,6 +16,7 @@ const TAB_NAMES := ["Elements", "Equipment", "Consumables", "Key Items"]
 const RIBBON_COLOURS := [Color("#7a2e2a"), Color("#3f6b3a"), Color("#2f4f7a"), Color("#a8822e")]
 const BOSS_ORDER := ["peroxis", "chalcor", "aurium", "azrael", "atacama", "uranox"]
 const ICON_DIR := "res://assets/sprites/items/"
+const JS := preload("res://scripts/ui/journal_style.gd")
 
 # Palette: tooled leather, brass, parchment and ink.
 const LEATHER      := Color("#5b3520")
@@ -55,38 +56,39 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS   # keeps working while the game is paused
 	add_to_group("inventory_screen")
 	_build()
-	_set_open(false)
+	_apply_visibility(false)
+	UIManager.register("journal", self)
 
-# ── Open / close ──────────────────────────────────────────────────────────────
+# ── Open / close (via UIManager: one menu at a time, pauses the game) ─────────
 
 func is_open() -> bool:
 	return _book.visible
 
 func toggle() -> void:
-	_set_open(not is_open())
-	if is_open():
-		AudioManager.on_ui_open()
-		refresh()
-	else:
-		AudioManager.on_ui_close()
+	UIManager.toggle("journal")
 
 func show_tab(tab_name: String) -> void:
 	_tab = maxi(TAB_NAMES.find(tab_name), 0)
 	_selected = 0
 	refresh()
 
-func _set_open(open: bool) -> void:
+# Called by UIManager.
+func _menu_set_open(open: bool) -> void:
+	_apply_visibility(open)
+	if open:
+		AudioManager.on_ui_open()
+		refresh()
+	else:
+		AudioManager.on_ui_close()
+
+func _apply_visibility(open: bool) -> void:
 	_book.visible = open
 	_dim.visible = open   # hidden overlays must never block clicks (quiz bug, D-015)
-	if is_inside_tree():
-		get_tree().paused = open
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_open():
 		return
-	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("open_inventory"):
-		toggle()
-	elif event.is_action_pressed("ui_down"):
+	if event.is_action_pressed("ui_down"):
 		_select(_selected + 1)
 	elif event.is_action_pressed("ui_up"):
 		_select(_selected - 1)
@@ -142,7 +144,7 @@ func _build() -> void:
 		_book.add_child(r)
 		_ribbons.append(r)
 
-	# Leather cover with stitching and brass corners (drawn by _CoverDecor).
+	# Leather cover with stitching and brass corners (drawn by JS.CoverDecor).
 	var cover := Panel.new()
 	cover.size = BOOK_SIZE
 	var leather := _box(LEATHER, LEATHER_DARK, 4, 16)
@@ -150,7 +152,7 @@ func _build() -> void:
 	leather.shadow_size = 12
 	cover.add_theme_stylebox_override("panel", leather)
 	_book.add_child(cover)
-	var decor := _CoverDecor.new()
+	var decor := JS.CoverDecor.new()
 	decor.size = BOOK_SIZE
 	decor.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_book.add_child(decor)
@@ -247,7 +249,7 @@ func _make_page(pos: Vector2, page_size: Vector2, is_left: bool) -> Control:
 	page.size = page_size
 	page.add_theme_stylebox_override("panel", _box(PAGE, PAGE_EDGE, 2, 4))
 	_book.add_child(page)
-	var grid := _PageDecor.new()
+	var grid := JS.PageDecor.new()
 	grid.size = page_size
 	grid.spine_on_right = is_left
 	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -255,7 +257,7 @@ func _make_page(pos: Vector2, page_size: Vector2, is_left: bool) -> Control:
 	return page
 
 func _ornament(centre: Vector2) -> Control:
-	var o := _Ornament.new()
+	var o := JS.Ornament.new()
 	o.position = centre - Vector2(90, 4)
 	o.size = Vector2(180, 8)
 	o.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -477,53 +479,3 @@ func _collect_key_items(bag: Node) -> void:
 			_entries.append({ "id": f, "name": str(cat[f].get("name", f)), "count_text": "%d/%d" % [held.size(), frags.size()],
 				"icon": _icon(f), "kind": "Key Fragment · %s" % boss.to_upper(), "text": str(cat[f].get("description", "")),
 				"stat": "Set: %d of %d fragments" % [held.size(), frags.size()], "stamp": "KEY ITEM · PERMANENT" })
-
-# ── Decorative drawing ────────────────────────────────────────────────────────
-
-# Stitching just inside the cover edge, brass corner caps and a spine groove.
-class _CoverDecor extends Control:
-	func _draw() -> void:
-		var inset := 9.0
-		var r := Rect2(Vector2(inset, inset), size - Vector2(inset, inset) * 2.0)
-		for edge: Array in [[r.position, Vector2(r.end.x, r.position.y)], [Vector2(r.end.x, r.position.y), r.end],
-				[r.end, Vector2(r.position.x, r.end.y)], [Vector2(r.position.x, r.end.y), r.position]]:
-			draw_dashed_line(edge[0], edge[1], Color("#c9a26b"), 1.5, 6.0)
-		var brass := Color("#d6a040")
-		var dark := Color("#8c6022")
-		for c: Vector2 in [Vector2.ZERO, Vector2(size.x, 0), size, Vector2(0, size.y)]:
-			var sx: float = 1.0 if c.x == 0.0 else -1.0
-			var sy: float = 1.0 if c.y == 0.0 else -1.0
-			var tri := PackedVector2Array([c, c + Vector2(34 * sx, 0), c + Vector2(0, 34 * sy)])
-			draw_colored_polygon(tri, brass)
-			draw_polyline(PackedVector2Array([c + Vector2(34 * sx, 0), c + Vector2(0, 34 * sy)]), dark, 2.0)
-			draw_circle(c + Vector2(11 * sx, 11 * sy), 3.0, dark)
-		var mid := size.x / 2.0
-		draw_rect(Rect2(mid - 4, 14, 8, size.y - 60), Color(0, 0, 0, 0.35))
-
-# Faint graph-paper grid (Orion's lab notebook) and a shadow toward the spine.
-class _PageDecor extends Control:
-	var spine_on_right: bool = true
-	func _draw() -> void:
-		var line := Color(0.48, 0.38, 0.24, 0.10)
-		var step := 14.0
-		var x := step
-		while x < size.x:
-			draw_line(Vector2(x, 4), Vector2(x, size.y - 4), line, 1.0)
-			x += step
-		var y := step
-		while y < size.y:
-			draw_line(Vector2(4, y), Vector2(size.x - 4, y), line, 1.0)
-			y += step
-		for i: int in 10:
-			var a: float = 0.16 * (1.0 - i / 10.0)
-			var px: float = size.x - 2 - i * 2 if spine_on_right else 2 + i * 2
-			draw_line(Vector2(px, 2), Vector2(px, size.y - 2), Color(0.25, 0.15, 0.05, a), 2.0)
-
-# A small inked divider: line, diamond, line.
-class _Ornament extends Control:
-	func _draw() -> void:
-		var ink := Color("#7a6248")
-		var c := size / 2.0
-		draw_line(Vector2(0, c.y), Vector2(c.x - 10, c.y), ink, 1.5)
-		draw_line(Vector2(c.x + 10, c.y), Vector2(size.x, c.y), ink, 1.5)
-		draw_colored_polygon(PackedVector2Array([c + Vector2(0, -5), c + Vector2(6, 0), c + Vector2(0, 5), c + Vector2(-6, 0)]), ink)

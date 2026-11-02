@@ -554,6 +554,8 @@ func _die() -> void:
 	_state = "dead"
 	velocity = Vector2.ZERO
 	get_tree().call_group("game_camera", "set_boss_zoom", false)
+	if get_parent() and get_parent().has_method("on_boss_defeated"):
+		get_parent().on_boss_defeated(boss_id)
 	if _arena and _arena.has_method("clear_hazards"):
 		_arena.clear_hazards()
 	_drop_loot()

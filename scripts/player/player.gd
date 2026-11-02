@@ -241,10 +241,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_attack()
 	elif event.is_action_pressed("dash"):
 		try_dash()
-	elif event.is_action_pressed("open_inventory"):
-		get_tree().call_group("inventory_screen", "toggle")
-	elif event.is_action_pressed("open_compendium"):
-		get_tree().call_group("ui", "toggle_compendium")
 	elif event.is_action_pressed("interact"):
 		get_tree().call_group("npc",       "try_interact", global_position)
 		get_tree().call_group("synthesizer","try_interact", global_position)

@@ -25,13 +25,14 @@ var _portrait_rect: ColorRect = null
 
 func _ready() -> void:
 	panel.visible = false
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	UIManager.register("dialogue", self)
 	continue_hint.text = "[ Press F or Click to continue ]"
 
 func show_dialogue(speaker: String, lines: Array[String], portrait_color: Color = Color(0.3, 0.5, 0.7)) -> void:
 	_lines = lines
 	_current_line = 0
-	panel.visible = true
-	get_tree().paused = false  # dialogue doesn't pause physics
+	UIManager.open("dialogue")   # dialogue pauses the game, so you can't be hit mid-read
 
 	name_label.text = speaker
 
@@ -83,10 +84,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	_current_line += 1
 	if _current_line >= _lines.size():
-		panel.visible = false
+		UIManager.close("dialogue")
 		emit_signal("dialogue_finished")
 	else:
 		_show_line(_current_line)
 
 func is_open() -> bool:
 	return panel.visible
+
+func _menu_set_open(open: bool) -> void:
+	panel.visible = open
