@@ -14,6 +14,7 @@ var _indicator:   Label     = null
 
 func _ready() -> void:
 	add_to_group("lab_desk")
+	add_to_group("crafting_bench")   # full 3×3 crafting grid nearby (crafting_ui.gd)
 	collision_layer = 1
 	_spawn_visuals()
 
