@@ -1,6 +1,6 @@
 # Boss Fights, Boss Keys and Progression Gear — Design
 
-**Status:** proposal, 2026-11-02. Not yet built. Numbers are first-pass and will be tuned in playtest.
+**Status:** approved direction, 2026-11-02 (D-016). Not yet built. Numbers are first-pass and will be tuned in playtest.
 Builds on D-011 (mythical bosses), D-014 (enemy rarity) and D-015 (dash, huge bosses).
 
 Every counter-tool and every reward below is grounded in real chemistry, so beating a boss
@@ -23,13 +23,36 @@ next biome ◄── boss drops Unique Gear ◄── defeat boss ◄── Boss
    marked on the minimap.
 2. **Boss Key.** The 3 fragments combine at the Synthesizer into the level's **Boss Key**. The key
    does two jobs:
-   - **Entrance:** it unseals the boss arena.
+   - **Entrance:** it unseals the boss arena. The key is **required**; the only other way in is
+     the Formula Gate sequence (section 1a).
    - **Counter-tool:** during the boss's vulnerable windows (section 3), pressing *Use Tool* applies
      the counter-reaction for a guaranteed stagger and bonus damage. Each key has 3 charges per
      fight; the fight can be won without using them, but much more slowly.
 3. **Unique Gear.** The boss drops one piece of gear built for the *next* level. It is optional:
    a skilled player can push on without it, but it is the intended path for players following
    the story.
+
+### 1a. The Formula Gate (hard-mode easter egg)
+
+Each sealed arena gate is ringed with element runes. Striking the runes in the order of the
+boss's formula, written out atom by atom, opens the gate without a key:
+
+| Boss | Sequence | Hint (found in the world) |
+|---|---|---|
+| Peroxis | Na · Na · O · O | A scorched lab note: "two of the salt, two of the breath" |
+| Chalcor | Cu · Fe · S · S | A miner's chalk tally on the Warden cave wall |
+| Aurium | Au · Cl · Cl · Cl · Cl · H | Scratched into a gold-flecked crystal: "one king, four guards, one servant" |
+| Azrael | Na · N · N · N | A torn airbag recall notice on Sky Island 2 |
+| Atacama | Cu · Cu · Cl · O · H · O · H · O · H | Barnacle pattern on the wreck's hull |
+| Uranox | U · O · O | Etched on the Ouroboros Ring plinth |
+
+- A wrong rune resets the gate and spawns a strong enemy, so guessing is costly.
+- Entering this way is **Unkeyed mode**: no counter-tool charges, the boss starts in its phase-2
+  attack set, and it gains +25% HP. The Boss Key's fragments still drop afterwards for completionists.
+- Beating a boss Unkeyed awards the **Formula Breaker** badge for that boss (shown in the
+  Compendium) and a unique goggle-lens tint. All six unlock the **Unkeyed** title.
+- Knowing a compound's formula is the hard-mode skill, so the easter egg rewards exactly what the
+  game teaches.
 
 ---
 
@@ -130,14 +153,25 @@ MAIN ×2–3 ─► STRONG (telegraphed) ─► RECOVERY PAUSE ─► repeat
 | **Ions** (currency) | Buy from Ashvale traders: potions, dyes, recipe hints | All enemies; ×2 strong, ×5 shiny, ×20 prime |
 | **Biome materials** (Plains Fibre, Mine Ore, Cavern Quartz, Sky Down, Sea Glass, Magma Slag) | Upgrade weapons (+damage, +dash-strike) and armour (+resistance) at Aldric's bench; also used for appearance upgrades | Each biome's enemies; strong ones drop more |
 | **Potions** | *Saline Tonic* (heal), *Buffer Solution* (clears corrode and poison), *Lead Draught* (clears irradiate) | About 1 in 8 kills |
-| **Cosmetics** | Jacket patches, goggle-lens tints, coat dyes, satchel badges for Orion (D-010 style) | Shiny kills (guaranteed) and rare drops; primes drop a unique set |
+| **Cosmetics** | Jacket patches, goggle-lens tints, coat dyes, satchel badges for Orion (D-010 style) | Shiny kills (guaranteed) and rare drops; primes drop the Prime set (4a) |
+
+### 4a. The Prime cosmetic set (Prime Codex reward)
+
+The Prime set is iridescent, matching the shimmer Primes have in the world. It is earned in steps,
+so the 1-in-1000 hunt pays out along the way:
+
+| Codex progress | Unlocks |
+|---|---|
+| First Prime recorded | **Prime Lens** goggle tint (oil-slick iridescence) |
+| All 3 Primes of a biome | That biome's **Prime Patch** for the jacket (6 patches: ember, ore, crystal, feather, scale, core) |
+| 9 of 18 | **Prime Satchel**: iridescent canvas with a Codex clasp |
+| All 18 (Codex complete) | **Chimera Prime Coat**: the full iridescent leather jacket, plus a prismatic dash trail and the **Prime Warden** title |
+
+All pieces are cosmetic only, so completionists stand out without unbalancing combat.
 
 ---
 
 ## 5. Open questions
 
-1. **Gating strength:** should the Boss Key be *required* to enter the arena (as above), or should
-   the arena be open and the key only make the fight easier?
-2. **Warden respawn:** Wardens stay beaten once killed. Should a lost fragment ever need re-earning?
-3. **Prime Codex reward** (still open from D-014).
-4. **Currency name:** "Ions" is a placeholder.
+1. **Warden respawn:** Wardens stay beaten once killed. Should a lost fragment ever need re-earning?
+2. **Currency name:** "Ions" is a placeholder; shortlist under trial.
