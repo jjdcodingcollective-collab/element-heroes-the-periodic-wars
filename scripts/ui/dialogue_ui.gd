@@ -56,7 +56,7 @@ func _process(delta: float) -> void:
 	if not panel.visible or not _typing:
 		return
 	_char_timer += delta
-	var chars_to_show: int = int(_char_timer * CHARS_PER_SECOND)
+	var chars_to_show: int = int(_char_timer * _chars_per_second())
 	if chars_to_show != _displayed_chars:
 		_displayed_chars = chars_to_show
 		var full: String = _lines[_current_line]
@@ -91,6 +91,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func is_open() -> bool:
 	return panel.visible
+
+# Options → Text speed (slow / normal / fast); CHARS_PER_SECOND without it.
+func _chars_per_second() -> float:
+	var opts := get_node_or_null("/root/OptionsMenu")
+	return opts.chars_per_second() if opts and opts.has_method("chars_per_second") else CHARS_PER_SECOND
 
 func _menu_set_open(open: bool) -> void:
 	panel.visible = open
